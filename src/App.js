@@ -1,21 +1,23 @@
 import React, { Component } from 'react';
 import './App.css';
 import numeric from 'numeric';
-import { Range } from 'rc-slider';
+import Slider, { Range } from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
 class GrainCloud extends Component {
   constructor(props) {
     super(props);
-    this.state = { audioCtx: props.audioCtx
-                 , audioData: props.audioData
-                 , grainStart: 0
-                 , grainEnd: 1
+    this.audioCtx = props.audioCtx;
+    this.audioData = props.audioData;
+    this.state = { pos: { start:0, end:1 } // pct of total duration
+                 , grainBirthRate: 10 // Hz
+                 , grainSize: .03 // s
+                 , playing: false
                  };
   }
   componentDidMount() {
     const canvasCtx = this.canvas.getContext('2d');
-    const audio = this.state.audioData;
+    const audio = this.audioData;
 
     // convert to mono
     // console.log('converting to mono...');
@@ -45,6 +47,7 @@ class GrainCloud extends Component {
     }
     // console.log('drawn.');
     this.audioImage = canvasCtx.getImageData(0,0,this.canvas.width,this.canvas.height);
+    this.posImage = this.audioImage;
   }
   componentDidUpdate() {
     // draw opaque gray rectangle over non-playing audio
@@ -53,47 +56,59 @@ class GrainCloud extends Component {
     canvasCtx.fillStyle = 'rgba(233,233,233,0.8)';
     const w = this.canvas.width;
     const h = this.canvas.height;
-    canvasCtx.fillRect(0, 0, w*this.state.grainStart, h);
-    canvasCtx.fillRect(w*this.state.grainEnd, 0, w*(1-this.state.grainEnd), h);
+    canvasCtx.fillRect(0, 0, w*this.state.pos.start, h);
+    canvasCtx.fillRect(w*this.state.pos.end, 0, w*(1-this.state.pos.start), h);
+    this.posImage = canvasCtx.getImageData(0,0,this.canvas.width,this.canvas.height);
+    if (this.state.playing) this.playCloud();
   }
   render() {
     const style = { width: 300 };
+    const playButtonFunc = () => {
+      if (this.state.playing) this.stopCloud();
+      this.setState({ playing: !this.state.playing });
+    };
+    const playButtonTxt = this.state.playing ? 'stop' : 'play';
     return (
       <div>
-        <canvas ref={c => {this.canvas = c}}></canvas>
+        <canvas ref={c => this.canvas = c}></canvas>
         <div style={style}>
-          <Range allowCross={false} defaultValue={[0,100]} onChange={value => this.changeGrain(value)} />
+          <Range allowCross={false} defaultValue={[0,100]} onChange={pos => this.changePosition(pos)} />
+          <p>Position</p>
+          <Slider defaultValue={this.state.grainBirthRate} min={1} max={100} onChange={br => this.changeGrainBirthRate(br)} />
+          <p>Grain birth rate (ms)</p>
+          <Slider defaultValue={this.state.grainSize*1000} min={1} max={5000} onChange={gs => this.changeGrainSize(gs)} />
+          <p>Grain size</p>
         </div>
-        <button type="button" onClick={() => this.playGrain()}>play</button>
+        <button type="button" onClick={playButtonFunc}>{playButtonTxt}</button>
       </div>
     );
   }
-  changeGrain(value) {
-    this.setState({ grainStart: value[0]/100, grainEnd: value[1]/100 });
+  changePosition(pos) {
+    this.stopCloud();
+    this.setState({ pos: { start: pos[0]/100, end: pos[1]/100 } });
   }
-  playGrain() {
-    const audioCtx = this.state.audioCtx;
-    const soundSource = audioCtx.createBufferSource();
-    soundSource.buffer = this.state.audioData;
-    soundSource.connect(audioCtx.destination);
-    const playTime = audioCtx.currentTime;
-    const startTime = this.state.grainStart*soundSource.buffer.duration;
-    const endTime = this.state.grainEnd*soundSource.buffer.duration;
-    soundSource.start(0, startTime, endTime-startTime);
-
-    let animation;
-    const canvasCtx = this.canvas.getContext('2d');
-    const currCanvas = canvasCtx.getImageData(0,0,this.canvas.width,this.canvas.height);
-    soundSource.onended = () => {
-      window.cancelAnimationFrame(animation);
-      canvasCtx.putImageData(currCanvas, 0, 0);
-    };
+  changeGrainBirthRate(br) {
+    this.stopCloud();
+    this.setState({ grainBirthRate: br });
+  }
+  changeGrainSize(gs) {
+    this.stopCloud();
+    this.setState({ grainSize: gs/1000 });
+  }
+  playCloud() {
+    this.playTime = this.audioCtx.currentTime;
+    this.intervalId = window.setInterval(() => this.playGrain(), 1000/this.state.grainBirthRate);
     const drawPos = () => {
-      animation = window.requestAnimationFrame(drawPos);
-      const now = audioCtx.currentTime;
-      const pos = Math.floor(soundSource.buffer.sampleRate * (now - playTime + startTime));
-      const stepsize = this.canvas.width/soundSource.buffer.getChannelData(0).length
-      canvasCtx.putImageData(currCanvas, 0, 0);
+      this.animation = window.requestAnimationFrame(drawPos);
+      const stepsize = this.canvas.width/this.audioData.getChannelData(0).length;
+      const sampleRate = this.audioData.sampleRate;
+      const canvasCtx = this.canvas.getContext('2d');
+      canvasCtx.putImageData(this.posImage, 0, 0);
+      const startTime = this.state.pos.start*this.audioData.duration;
+      const endTime = this.state.pos.end*this.audioData.duration;
+      const dur = endTime-startTime;
+      const now = (this.audioCtx.currentTime-this.playTime) % dur;
+      const pos = Math.floor(sampleRate * (now + startTime));
       canvasCtx.strokeStyle = 'red';
       canvasCtx.beginPath();
       canvasCtx.moveTo(stepsize*pos, 0);
@@ -102,20 +117,35 @@ class GrainCloud extends Component {
     };
     drawPos();
   }
+  stopCloud() {
+    window.clearInterval(this.intervalId);
+    window.cancelAnimationFrame(this.animation);
+    this.canvas.getContext('2d').putImageData(this.posImage, 0, 0);
+  }
+  playGrain() {
+    const soundSource = this.audioCtx.createBufferSource();
+    soundSource.buffer = this.audioData;
+    soundSource.connect(this.audioCtx.destination);
+    const startTime = this.state.pos.start*soundSource.buffer.duration;
+    const endTime = this.state.pos.end*soundSource.buffer.duration;
+    const dur = endTime-startTime;
+    const pos = (this.audioCtx.currentTime-this.playTime) % dur;
+    soundSource.start(0, pos+startTime, this.state.grainSize);
+  }
 }
 
 class GrainStorm extends Component {
   constructor(props) {
     super(props);
-    this.state = { audioCtx: new (window.AudioContext || window.webkitAudioContext)()
-                 , grainCloudIdSeq: 0
+    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    this.state = { grainCloudIdSeq: 0
                  , grainClouds: []
                  };
   }
   render() {
     return (
       <div>
-        {this.state.grainClouds.map(gc => <GrainCloud key={gc.id} audioCtx={this.state.audioCtx} audioData={gc.audioData} />)}
+        {this.state.grainClouds.map(gc => <GrainCloud key={gc.id} audioCtx={this.audioCtx} audioData={gc.audioData} />)}
         <input type="file" id="fileUpload" onChange={() => this.addGrainCloud()}></input>
       </div>
     );
@@ -126,7 +156,7 @@ class GrainStorm extends Component {
     const reader = new FileReader();
     reader.onload = () => {
       // console.log('decoding...');
-      this.state.audioCtx.decodeAudioData(reader.result, decodedAudioData => {
+      this.audioCtx.decodeAudioData(reader.result, decodedAudioData => {
         // console.log('decoded.');
         const gc = { id: id
                    , audioData: decodedAudioData
