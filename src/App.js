@@ -13,6 +13,7 @@ class GrainCloud extends Component {
                  , grainBirthRate: 10 // Hz
                  , grainSize: .03 // s
                  , playing: false
+                 , playHead: 0 // time audio started playing (to find current position in audio)
                  };
   }
   componentDidMount() {
@@ -64,8 +65,12 @@ class GrainCloud extends Component {
   render() {
     const style = { width: 300 };
     const playButtonFunc = () => {
-      if (this.state.playing) this.stopCloud();
-      this.setState({ playing: !this.state.playing });
+      let playHead = this.audioCtx.currentTime;
+      if (this.state.playing) {
+        this.stopCloud();
+        playHead = 0;
+      }
+      this.setState({ playing: !this.state.playing, playHead: playHead });
     };
     const playButtonTxt = this.state.playing ? 'stop' : 'play';
     return (
@@ -75,7 +80,7 @@ class GrainCloud extends Component {
           <Range allowCross={false} defaultValue={[0,100]} onChange={pos => this.changePosition(pos)} />
           <p>Position</p>
           <Slider defaultValue={this.state.grainBirthRate} min={1} max={100} onChange={br => this.changeGrainBirthRate(br)} />
-          <p>Grain birth rate (ms)</p>
+          <p>Grain birth rate (grains/second)</p>
           <Slider defaultValue={this.state.grainSize*1000} min={1} max={5000} onChange={gs => this.changeGrainSize(gs)} />
           <p>Grain size</p>
         </div>
@@ -96,7 +101,6 @@ class GrainCloud extends Component {
     this.setState({ grainSize: gs/1000 });
   }
   playCloud() {
-    this.playTime = this.audioCtx.currentTime;
     this.intervalId = window.setInterval(() => this.playGrain(), 1000/this.state.grainBirthRate);
     const drawPos = () => {
       this.animation = window.requestAnimationFrame(drawPos);
@@ -107,7 +111,7 @@ class GrainCloud extends Component {
       const startTime = this.state.pos.start*this.audioData.duration;
       const endTime = this.state.pos.end*this.audioData.duration;
       const dur = endTime-startTime;
-      const now = (this.audioCtx.currentTime-this.playTime) % dur;
+      const now = (this.audioCtx.currentTime-this.state.playHead) % dur;
       const pos = Math.floor(sampleRate * (now + startTime));
       canvasCtx.strokeStyle = 'red';
       canvasCtx.beginPath();
@@ -129,7 +133,7 @@ class GrainCloud extends Component {
     const startTime = this.state.pos.start*soundSource.buffer.duration;
     const endTime = this.state.pos.end*soundSource.buffer.duration;
     const dur = endTime-startTime;
-    const pos = (this.audioCtx.currentTime-this.playTime) % dur;
+    const pos = (this.audioCtx.currentTime-this.state.playHead) % dur;
     soundSource.start(0, pos+startTime, this.state.grainSize);
   }
 }
