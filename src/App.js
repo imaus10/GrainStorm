@@ -13,7 +13,7 @@ class GrainCloud extends Component {
                  , grainBirthRate: 10 // Hz
                  , grainSize: .03 // s
                  , playing: false
-                 , playHead: 0 // time audio started playing (to find current position in audio)
+                 , playTime: 0 // time audio started playing (to find current position in audio)
                  , speed: 1 // pct
                  };
   }
@@ -86,19 +86,19 @@ class GrainCloud extends Component {
     );
   }
   changePlaying() {
-    let playHead = this.audioCtx.currentTime;
+    let playTime = this.audioCtx.currentTime;
     if (this.state.playing) {
       this.stopCloud();
-      playHead = 0;
+      playTime = 0;
     }
     this.setState({ playing: !this.state.playing
-                  , playHead: playHead
+                  , playTime: playTime
                   });
   }
   changePosition(pos) {
     this.stopCloud();
     this.setState({ pos: { start: pos[0]/100, end: pos[1]/100 }
-                  , playHead: this.audioCtx.currentTime
+                  , playTime: this.audioCtx.currentTime
                   });
   }
   changeGrainBirthRate(br) {
@@ -116,14 +116,14 @@ class GrainCloud extends Component {
     const deltaSp = (sp-this.state.speed) / sp;
     const newPos = pos - pos*deltaSp;
     this.setState({ speed: sp
-                  , playHead: this.audioCtx.currentTime - newPos/sp
+                  , playTime: this.audioCtx.currentTime - newPos/sp
                   });
   }
   getRelativePos() {
     const startTime = this.state.pos.start*this.audioData.duration;
     const endTime = this.state.pos.end*this.audioData.duration;
     const dur = (endTime - startTime) / this.state.speed;
-    const pos = (this.audioCtx.currentTime-this.state.playHead) % dur * this.state.speed;
+    const pos = (this.audioCtx.currentTime-this.state.playTime) % dur * this.state.speed;
     return pos;
   }
   playCloud() {
