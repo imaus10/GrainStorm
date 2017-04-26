@@ -67,21 +67,29 @@ class GrainCloud extends Component {
     const style = { width: 300 };
     const playButtonTxt = this.state.playing ? 'stop' : 'play';
     return (
-      <div>
-        <canvas ref={c => this.canvas = c}></canvas>
-        <div style={style}>
+      <div className="grainCloud">
+        <div className="sourceBox">
+          <canvas ref={c => this.canvas = c}></canvas>
           <Range allowCross={false} defaultValue={[0,100]} onChange={pos => this.changePosition(pos)} />
-          <Slider defaultValue={this.state.grainBirthRate} min={1} max={100} onChange={br => this.changeGrainBirthRate(br)} />
-          <label>Grain birth rate (grains/second)</label>
-          <input type="number" value={this.state.grainBirthRate} readOnly></input>
-          <Slider defaultValue={this.state.grainSize*1000} min={1} max={5000} onChange={gs => this.changeGrainSize(gs)} />
-          <label>Grain size (ms)</label>
-          <input type="number" value={this.state.grainSize*1000} readOnly></input>
-          <Slider defaultValue={this.state.speed*100} min={0} max={200} onChange={sp => this.changeSpeed(sp)} />
+        </div>
+        <div className="parameterBox">
           <label>Speed (%)</label>
           <input type="number" value={this.state.speed*100} readOnly></input>
+          <Slider defaultValue={this.state.speed*100} min={0} max={200} onChange={sp => this.changeSpeed(sp)} />
         </div>
-        <button type="button" onClick={() => this.changePlaying()}>{playButtonTxt}</button>
+        <div className="parameterBox">
+          <label>Grain birth rate (grains/second)</label>
+          <input type="number" value={this.state.grainBirthRate} readOnly></input>
+          <Slider defaultValue={this.state.grainBirthRate} min={1} max={100} onChange={br => this.changeGrainBirthRate(br)} />
+        </div>
+        <div className="parameterBox">
+          <label>Grain size (ms)</label>
+          <input type="number" value={this.state.grainSize*1000} readOnly></input>
+          <Slider defaultValue={this.state.grainSize*1000} min={1} max={5000} onChange={gs => this.changeGrainSize(gs)} />
+        </div>
+        <div>
+          <button type="button" onClick={() => this.changePlaying()}>{playButtonTxt}</button>
+        </div>
       </div>
     );
   }
@@ -171,8 +179,12 @@ class GrainStorm extends Component {
   render() {
     return (
       <div>
-        {this.state.grainClouds.map(gc => <GrainCloud key={gc.id} audioCtx={this.audioCtx} audioData={gc.audioData} />)}
-        <input type="file" id="fileUpload" onChange={() => this.addGrainCloud()}></input>
+        <div>
+          {this.state.grainClouds.map(gc => <GrainCloud key={gc.id} audioCtx={this.audioCtx} audioData={gc.audioData} />)}
+        </div>
+        <div className="addGrainCloudBox">
+          <input type="file" id="fileUpload" onChange={() => this.addGrainCloud()}></input>
+        </div>
       </div>
     );
   }
