@@ -1,23 +1,24 @@
 .grainCloud {
-  margin-left: 5px;
   float: left;
+  padding: 5px;
+  border-right: 1px solid;
 }
 
 .sourceBox {
   width: 300px;
-  border: 1px solid;
+  /*border: 1px solid;
   margin: 10px 0 10px 0;
-  padding: 10px;
+  padding: 10px;*/
 }
 
 .parameterBox {
   width: 300px;
-  border: 1px solid;
-  margin: 10px 0 10px 0;
-  padding: 10px;
+  border-top: 1px solid;
+  margin: 5px 0 5px 0;
+  padding-top: 5px;
 }
 
 .addGrainCloudBox {
-  margin-left: 5px;
   float: left;
+  padding: 5px;
 }
