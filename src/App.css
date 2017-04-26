@@ -18,5 +18,6 @@
 }
 
 .addGrainCloudBox {
-  clear: left;
+  margin-left: 5px;
+  float: left;
 }

@@ -179,9 +179,7 @@ class GrainStorm extends Component {
   render() {
     return (
       <div>
-        <div>
-          {this.state.grainClouds.map(gc => <GrainCloud key={gc.id} audioCtx={this.audioCtx} audioData={gc.audioData} />)}
-        </div>
+        {this.state.grainClouds.map(gc => <GrainCloud key={gc.id} audioCtx={this.audioCtx} audioData={gc.audioData} />)}
         <div className="addGrainCloudBox">
           <input type="file" id="fileUpload" onChange={() => this.addGrainCloud()}></input>
         </div>
