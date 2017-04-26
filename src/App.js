@@ -11,8 +11,8 @@ class GrainCloud extends Component {
     this.audioData = props.audioData;
     this.playTime = 0; // time audio started playing (to find current position in audio)
     this.state = { pos: { start:0, end:1 } // pct of total duration
-                 , grainBirthRate: 10 // Hz
-                 , grainSize: .03 // s
+                 , grainDensity: 10 // grains/s
+                 , grainDuration: .03 // s
                  , playing: false
                  , speed: 1 // pct
                  };
@@ -77,14 +77,14 @@ class GrainCloud extends Component {
           <Slider defaultValue={this.state.speed*100} min={0} max={200} onChange={sp => this.changeSpeed(sp)} />
         </div>
         <div className="parameterBox">
-          <label>Grain birth rate (grains/second)</label>
-          <input type="number" value={this.state.grainBirthRate} readOnly></input>
-          <Slider defaultValue={this.state.grainBirthRate} min={1} max={100} onChange={br => this.changeGrainBirthRate(br)} />
+          <label>Grain density (grains/second)</label>
+          <input type="number" value={this.state.grainDensity} readOnly></input>
+          <Slider defaultValue={this.state.grainDensity} min={1} max={100} onChange={gd => this.changeGrainDensity(gd)} />
         </div>
         <div className="parameterBox">
-          <label>Grain size (ms)</label>
-          <input type="number" value={this.state.grainSize*1000} readOnly></input>
-          <Slider defaultValue={this.state.grainSize*1000} min={1} max={5000} onChange={gs => this.changeGrainSize(gs)} />
+          <label>Grain duration (ms)</label>
+          <input type="number" value={this.state.grainDuration*1000} readOnly></input>
+          <Slider defaultValue={this.state.grainDuration*1000} min={1} max={5000} onChange={gs => this.changeGrainDuration(gs)} />
         </div>
         <div>
           <button type="button" onClick={() => this.changePlaying()}>{playButtonTxt}</button>
@@ -104,13 +104,13 @@ class GrainCloud extends Component {
     this.playTime = this.audioCtx.currentTime;
     this.setState({ pos: { start: pos[0]/100, end: pos[1]/100 } });
   }
-  changeGrainBirthRate(br) {
+  changeGrainDensity(gd) {
     this.stopCloud();
-    this.setState({ grainBirthRate: br });
+    this.setState({ grainDensity: gd });
   }
-  changeGrainSize(gs) {
+  changeGrainDuration(gs) {
     this.stopCloud();
-    this.setState({ grainSize: gs/1000 });
+    this.setState({ grainDuration: gs/1000 });
   }
   changeSpeed(sp) {
     this.stopCloud();
@@ -129,7 +129,7 @@ class GrainCloud extends Component {
     return pos;
   }
   playCloud() {
-    this.intervalId = window.setInterval(() => this.playGrain(), 1000/this.state.grainBirthRate);
+    this.intervalId = window.setInterval(() => this.playGrain(), 1000/this.state.grainDensity);
     const drawPos = () => {
       this.animation = window.requestAnimationFrame(drawPos);
       const stepsize = this.canvas.width/this.audioData.getChannelData(0).length;
@@ -158,7 +158,7 @@ class GrainCloud extends Component {
     soundSource.connect(this.audioCtx.destination);
     const startTime = this.state.pos.start*soundSource.buffer.duration;
     const pos = this.getRelativePos();
-    soundSource.start(0, pos+startTime, this.state.grainSize);
+    soundSource.start(0, pos+startTime, this.state.grainDuration);
   }
 }
 
