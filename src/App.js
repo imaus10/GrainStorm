@@ -4,6 +4,16 @@ import numeric from 'numeric';
 import Slider, { Range } from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
+function ParameterBox(props) {
+  return (
+    <div className="parameterBox">
+      <label>{props.label}</label>
+      <input type="number" value={props.value} readOnly></input>
+      <Slider defaultValue={props.value} min={props.min} max={props.max} onChange={props.onChange} />
+    </div>
+  );
+}
+
 class WaveformGrainCloud extends Component {
   constructor(props) {
     super(props);
@@ -41,21 +51,24 @@ class WaveformGrainCloud extends Component {
         <div className="sourceBox">
           <canvas ref={c => this.canvas = c}></canvas>
         </div>
-        <div className="parameterBox">
-          <label>Frequency (Hz)</label>
-          <input type="number" value={this.state.waveFrequency} readOnly></input>
-          <Slider defaultValue={this.state.waveFrequency} min={1} max={20000} onChange={f => this.changeWaveFrequency(f)} />
-        </div>
-        <div className="parameterBox">
-          <label>Grain density (grains/second)</label>
-          <input type="number" value={this.state.grainDensity} readOnly></input>
-          <Slider defaultValue={this.state.grainDensity} min={1} max={100} onChange={d => this.changeGrainDensity(d)} />
-        </div>
-        <div className="parameterBox">
-          <label>Grain duration (ms)</label>
-          <input type="number" value={this.state.grainDuration*1000} readOnly></input>
-          <Slider defaultValue={this.state.grainDuration*1000} min={1} max={5000} onChange={dur => this.changeGrainDuration(dur)} />
-        </div>
+        <ParameterBox
+          label="Frequency (Hz)"
+          value={this.state.waveFrequency}
+          min={1}
+          max={20000}
+          onChange={f => this.changeWaveFrequency(f)} />
+        <ParameterBox
+          label="Grain density (grains/second)"
+          value={this.state.grainDensity}
+          min={1}
+          max={100}
+          onChange={d => this.changeGrainDensity(d)} />
+        <ParameterBox
+          label="Grain duration (ms)"
+          value={this.state.grainDuration*1000}
+          min={1}
+          max={5000}
+          onChange={dur => this.changeGrainDuration(dur)} />
         <div>
           <button type="button" onClick={() => this.changePlaying()}>{playButtonTxt}</button>
         </div>
@@ -161,21 +174,24 @@ class SampleGrainCloud extends Component {
           <canvas ref={c => this.canvas = c}></canvas>
           <Range allowCross={false} defaultValue={[0,100]} onChange={pos => this.changePosition(pos)} />
         </div>
-        <div className="parameterBox">
-          <label>Speed (%)</label>
-          <input type="number" value={this.state.speed*100} readOnly></input>
-          <Slider defaultValue={this.state.speed*100} min={0} max={200} onChange={sp => this.changeSpeed(sp)} />
-        </div>
-        <div className="parameterBox">
-          <label>Grain density (grains/second)</label>
-          <input type="number" value={this.state.grainDensity} readOnly></input>
-          <Slider defaultValue={this.state.grainDensity} min={1} max={100} onChange={d => this.changeGrainDensity(d)} />
-        </div>
-        <div className="parameterBox">
-          <label>Grain duration (ms)</label>
-          <input type="number" value={this.state.grainDuration*1000} readOnly></input>
-          <Slider defaultValue={this.state.grainDuration*1000} min={1} max={5000} onChange={dur => this.changeGrainDuration(dur)} />
-        </div>
+        <ParameterBox
+          label="Speed (%)"
+          value={this.state.speed*100}
+          min={0}
+          max={200}
+          onChange={sp => this.changeSpeed(sp)} />
+        <ParameterBox
+          label="Grain density (grains/second)"
+          value={this.state.grainDensity}
+          min={1}
+          max={100}
+          onChange={d => this.changeGrainDensity(d)} />
+        <ParameterBox
+          label="Grain duration (ms)"
+          value={this.state.grainDuration*1000}
+          min={1}
+          max={5000}
+          onChange={dur => this.changeGrainDuration(dur)} />
         <div>
           <button type="button" onClick={() => this.changePlaying()}>{playButtonTxt}</button>
         </div>
