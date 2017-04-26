@@ -120,9 +120,22 @@ class WaveformParameters extends Component {
   }
   playGrain(grainDuration) {
     const osc = this.audioCtx.createOscillator();
-    osc.connect(this.audioCtx.destination);
     osc.type = 'sine';
     osc.frequency.value = this.state.waveFrequency;
+
+    // ENVELOPE, UNFACTORED
+    const gainNode = this.audioCtx.createGain();
+    const now = this.audioCtx.currentTime;
+    const attackTime = 0.1; // s
+    const decayTime = 0.1;
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(1, now+attackTime);
+    gainNode.gain.setValueAtTime(1, now+grainDuration-decayTime);
+    gainNode.gain.linearRampToValueAtTime(0, now+grainDuration);
+
+    osc.connect(gainNode);
+    gainNode.connect(this.audioCtx.destination);
+
     osc.start();
     osc.stop(this.audioCtx.currentTime + grainDuration);
   }
