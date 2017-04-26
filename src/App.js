@@ -9,11 +9,11 @@ class GrainCloud extends Component {
     super(props);
     this.audioCtx = props.audioCtx;
     this.audioData = props.audioData;
+    this.playTime = 0; // time audio started playing (to find current position in audio)
     this.state = { pos: { start:0, end:1 } // pct of total duration
                  , grainBirthRate: 10 // Hz
                  , grainSize: .03 // s
                  , playing: false
-                 , playTime: 0 // time audio started playing (to find current position in audio)
                  , speed: 1 // pct
                  };
   }
@@ -64,7 +64,6 @@ class GrainCloud extends Component {
     if (this.state.playing) this.playCloud();
   }
   render() {
-    const style = { width: 300 };
     const playButtonTxt = this.state.playing ? 'stop' : 'play';
     return (
       <div className="grainCloud">
@@ -94,20 +93,16 @@ class GrainCloud extends Component {
     );
   }
   changePlaying() {
-    let playTime = this.audioCtx.currentTime;
+    this.playTime = this.audioCtx.currentTime;
     if (this.state.playing) {
       this.stopCloud();
-      playTime = 0;
     }
-    this.setState({ playing: !this.state.playing
-                  , playTime: playTime
-                  });
+    this.setState({ playing: !this.state.playing });
   }
   changePosition(pos) {
     this.stopCloud();
-    this.setState({ pos: { start: pos[0]/100, end: pos[1]/100 }
-                  , playTime: this.audioCtx.currentTime
-                  });
+    this.playTime = this.audioCtx.currentTime;
+    this.setState({ pos: { start: pos[0]/100, end: pos[1]/100 } });
   }
   changeGrainBirthRate(br) {
     this.stopCloud();
@@ -123,15 +118,14 @@ class GrainCloud extends Component {
     const pos = this.getRelativePos();
     const deltaSp = (sp-this.state.speed) / sp;
     const newPos = pos - pos*deltaSp;
-    this.setState({ speed: sp
-                  , playTime: this.audioCtx.currentTime - newPos/sp
-                  });
+    this.playTime = this.audioCtx.currentTime - newPos/sp;
+    this.setState({ speed: sp });
   }
   getRelativePos() {
     const startTime = this.state.pos.start*this.audioData.duration;
     const endTime = this.state.pos.end*this.audioData.duration;
     const dur = (endTime - startTime) / this.state.speed;
-    const pos = (this.audioCtx.currentTime-this.state.playTime) % dur * this.state.speed;
+    const pos = (this.audioCtx.currentTime-this.playTime) % dur * this.state.speed;
     return pos;
   }
   playCloud() {
@@ -172,9 +166,8 @@ class GrainStorm extends Component {
   constructor(props) {
     super(props);
     this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    this.state = { grainCloudIdSeq: 0
-                 , grainClouds: []
-                 };
+    this.grainCloudIdSeq = 0;
+    this.state = { grainClouds: [] };
   }
   render() {
     return (
@@ -187,19 +180,17 @@ class GrainStorm extends Component {
     );
   }
   addGrainCloud() {
-    const id = this.state.grainCloudIdSeq;
     const fileUpload = document.getElementById('fileUpload');
     const reader = new FileReader();
     reader.onload = () => {
       // console.log('decoding...');
       this.audioCtx.decodeAudioData(reader.result, decodedAudioData => {
         // console.log('decoded.');
-        const gc = { id: id
+        const gc = { id: this.grainCloudIdSeq
                    , audioData: decodedAudioData
                    };
-        this.setState({ grainCloudIdSeq: id+1
-                      , grainClouds: this.state.grainClouds.concat(gc)
-                      });
+        this.grainCloudIdSeq += 1;
+        this.setState({ grainClouds: this.state.grainClouds.concat(gc) });
       });
     };
     reader.readAsArrayBuffer(fileUpload.files[0]);
