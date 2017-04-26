@@ -14,15 +14,77 @@ function ParameterBox(props) {
   );
 }
 
-class WaveformGrainCloud extends Component {
+function grainCloud(WrappedComponent) {
+  return class GrainCloud extends Component {
+    constructor(props) {
+      super(props);
+      this.audioCtx = props.audioCtx;
+      this.state = { grainDensity: 10 // grains/s
+                   , grainDuration: .03 // s
+                   , playing: false
+                   };
+    }
+    componentDidUpdate() {
+      this.stopCloud();
+      if (this.state.playing) this.playCloud();
+    }
+    render() {
+      const playButtonTxt = this.state.playing ? 'stop' : 'play';
+      return (
+        <div className="grainCloud">
+          <WrappedComponent ref={wc => this.wrappedComponent = wc} {...this.props} />
+          <ParameterBox
+            label="Grain density (grains/second)"
+            value={this.state.grainDensity}
+            min={1}
+            max={100}
+            onChange={d => this.changeGrainDensity(d)} />
+          <ParameterBox
+            label="Grain duration (ms)"
+            value={this.state.grainDuration*1000}
+            min={1}
+            max={5000}
+            onChange={dur => this.changeGrainDuration(dur)} />
+          <div>
+            <button type="button" onClick={() => this.changePlaying()}>{playButtonTxt}</button>
+          </div>
+        </div>
+      );
+    }
+    changePlaying() {
+      if (this.state.playing) {
+        this.stopCloud();
+      } else if (typeof this.wrappedComponent.setPlayTime === 'function') {
+        this.wrappedComponent.setPlayTime();
+      }
+      this.setState({ playing: !this.state.playing });
+    }
+    changeGrainDensity(d) {
+      this.setState({ grainDensity: d });
+    }
+    changeGrainDuration(dur) {
+      this.setState({ grainDuration: dur/1000 });
+    }
+    playCloud() {
+      this.intervalId = window.setInterval(() => this.wrappedComponent.playGrain(this.state.grainDuration), 1000/this.state.grainDensity);
+      if (typeof this.wrappedComponent.playAnimation === 'function') {
+        this.wrappedComponent.playAnimation();
+      }
+    }
+    stopCloud() {
+      window.clearInterval(this.intervalId);
+      if (typeof this.wrappedComponent.playAnimation === 'function') {
+        this.wrappedComponent.stopAnimation();
+      }
+    }
+  }
+}
+
+class WaveformParameters extends Component {
   constructor(props) {
     super(props);
     this.audioCtx = props.audioCtx;
-    this.state = { grainDensity: 10 // grains/s
-                 , grainDuration: .03 // s
-                 , playing: false
-                 , waveFrequency: 10000 // Hz
-                 };
+    this.state = { waveFrequency: 10000 }; // Hz
   }
   componentDidMount() {
     let waveform = numeric.linspace(0,Math.PI*2,this.canvas.width);
@@ -40,83 +102,41 @@ class WaveformGrainCloud extends Component {
       canvasCtx.stroke();
     }
   }
-  componentDidUpdate() {
-    this.stopCloud();
-    if (this.state.playing) this.playCloud();
-  }
   render() {
-    const playButtonTxt = this.state.playing ? 'stop' : 'play';
     return (
-      <div className="grainCloud">
-        <div className="sourceBox">
-          <canvas ref={c => this.canvas = c}></canvas>
-        </div>
+      <div className="sourceBox">
+        <canvas ref={c => this.canvas = c}></canvas>
         <ParameterBox
           label="Frequency (Hz)"
           value={this.state.waveFrequency}
           min={1}
           max={20000}
           onChange={f => this.changeWaveFrequency(f)} />
-        <ParameterBox
-          label="Grain density (grains/second)"
-          value={this.state.grainDensity}
-          min={1}
-          max={100}
-          onChange={d => this.changeGrainDensity(d)} />
-        <ParameterBox
-          label="Grain duration (ms)"
-          value={this.state.grainDuration*1000}
-          min={1}
-          max={5000}
-          onChange={dur => this.changeGrainDuration(dur)} />
-        <div>
-          <button type="button" onClick={() => this.changePlaying()}>{playButtonTxt}</button>
-        </div>
       </div>
     );
-  }
-  changePlaying() {
-    if (this.state.playing) {
-      this.stopCloud();
-    }
-    this.setState({ playing: !this.state.playing });
   }
   changeWaveFrequency(f) {
     this.setState({ waveFrequency: f });
   }
-  changeGrainDensity(d) {
-    this.setState({ grainDensity: d });
-  }
-  changeGrainDuration(dur) {
-    this.setState({ grainDuration: dur/1000 });
-  }
-  playCloud() {
-    this.intervalId = window.setInterval(() => this.playGrain(), 1000/this.state.grainDensity);
-  }
-  stopCloud() {
-    window.clearInterval(this.intervalId);
-  }
-  playGrain() {
+  playGrain(grainDuration) {
     const osc = this.audioCtx.createOscillator();
     osc.connect(this.audioCtx.destination);
     osc.type = 'sine';
     osc.frequency.value = this.state.waveFrequency;
     osc.start();
-    osc.stop(this.audioCtx.currentTime + this.state.grainDuration);
+    osc.stop(this.audioCtx.currentTime + grainDuration);
   }
 }
+const WaveformGrainCloud = grainCloud(WaveformParameters);
 
-class SampleGrainCloud extends Component {
+class SampleParameters extends Component {
   constructor(props) {
     super(props);
-    this.audioCtx = props.audioCtx;
+    this.audioCtx = props.audioCtx; // begrudgingly, for playhead position...
     this.audioData = props.audioData;
     this.playTime = 0; // time audio started playing (to find current position in audio)
-    this.state = { grainDensity: 10 // grains/s
-                 , grainDuration: .03 // s
-                 , pos: { start:0, end:1 } // pct of total duration
+    this.state = { pos: { start:0, end:1 } // pct of total duration
                  , speed: 1 // pct
-                 , playing: false
                  };
   }
   componentDidMount() {
@@ -163,54 +183,26 @@ class SampleGrainCloud extends Component {
     canvasCtx.fillRect(0, 0, w*this.state.pos.start, h);
     canvasCtx.fillRect(w*this.state.pos.end, 0, w*(1-this.state.pos.start), h);
     this.posImage = canvasCtx.getImageData(0,0,this.canvas.width,this.canvas.height);
-    this.stopCloud();
-    if (this.state.playing) this.playCloud();
   }
   render() {
-    const playButtonTxt = this.state.playing ? 'stop' : 'play';
     return (
-      <div className="grainCloud">
-        <div className="sourceBox">
-          <canvas ref={c => this.canvas = c}></canvas>
-          <Range allowCross={false} defaultValue={[0,100]} onChange={pos => this.changePosition(pos)} />
-        </div>
+      <div className="sourceBox">
+        <canvas ref={c => this.canvas = c}></canvas>
+        <Range allowCross={false} defaultValue={[0,100]} onChange={pos => this.changePosition(pos)} />
         <ParameterBox
           label="Speed (%)"
           value={this.state.speed*100}
           min={0}
           max={200}
           onChange={sp => this.changeSpeed(sp)} />
-        <ParameterBox
-          label="Grain density (grains/second)"
-          value={this.state.grainDensity}
-          min={1}
-          max={100}
-          onChange={d => this.changeGrainDensity(d)} />
-        <ParameterBox
-          label="Grain duration (ms)"
-          value={this.state.grainDuration*1000}
-          min={1}
-          max={5000}
-          onChange={dur => this.changeGrainDuration(dur)} />
-        <div>
-          <button type="button" onClick={() => this.changePlaying()}>{playButtonTxt}</button>
-        </div>
       </div>
     );
   }
-  changePlaying() {
-    this.playTime = this.audioCtx.currentTime;
-    this.setState({ playing: !this.state.playing });
-  }
   changePosition(pos) {
-    this.playTime = this.audioCtx.currentTime;
+    if (pos[0]/100*this.audioData.duration > this.getRelativePos()) {
+      this.setPlayTime();
+    }
     this.setState({ pos: { start: pos[0]/100, end: pos[1]/100 } });
-  }
-  changeGrainDensity(d) {
-    this.setState({ grainDensity: d });
-  }
-  changeGrainDuration(dur) {
-    this.setState({ grainDuration: dur/1000 });
   }
   changeSpeed(sp) {
     sp /= 100;
@@ -220,6 +212,9 @@ class SampleGrainCloud extends Component {
     this.playTime = this.audioCtx.currentTime - newPos/sp;
     this.setState({ speed: sp });
   }
+  setPlayTime() {
+    this.playTime = this.audioCtx.currentTime;
+  }
   getRelativePos() {
     const startTime = this.state.pos.start*this.audioData.duration;
     const endTime = this.state.pos.end*this.audioData.duration;
@@ -227,8 +222,7 @@ class SampleGrainCloud extends Component {
     const pos = (this.audioCtx.currentTime-this.playTime) % dur * this.state.speed;
     return pos;
   }
-  playCloud() {
-    this.intervalId = window.setInterval(() => this.playGrain(), 1000/this.state.grainDensity);
+  playAnimation(playing) {
     const drawPos = () => {
       this.animation = window.requestAnimationFrame(drawPos);
       const stepsize = this.canvas.width/this.audioData.getChannelData(0).length;
@@ -245,21 +239,21 @@ class SampleGrainCloud extends Component {
     };
     drawPos();
   }
-  stopCloud() {
-    window.clearInterval(this.intervalId);
+  stopAnimation() {
     window.cancelAnimationFrame(this.animation);
     this.canvas.getContext('2d').putImageData(this.posImage, 0, 0);
   }
-  playGrain() {
+  playGrain(grainDuration) {
     const soundSource = this.audioCtx.createBufferSource();
     soundSource.buffer = this.audioData;
     soundSource.playbackRate.value = this.state.speed;
     soundSource.connect(this.audioCtx.destination);
     const startTime = this.state.pos.start*soundSource.buffer.duration;
     const pos = this.getRelativePos();
-    soundSource.start(0, pos+startTime, this.state.grainDuration);
+    soundSource.start(0, pos+startTime, grainDuration);
   }
 }
+const SampleGrainCloud = grainCloud(SampleParameters);
 
 class GrainStorm extends Component {
   constructor(props) {
