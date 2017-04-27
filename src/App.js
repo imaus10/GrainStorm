@@ -30,7 +30,7 @@ function grainCloud(WrappedComponent) {
                    };
     }
     componentDidMount() {
-      // draw waveform
+      // draw envelope
       // const canvasCtx = this.envelopeCanvas.getContext('2d');
     }
     componentDidUpdate() {
@@ -117,17 +117,36 @@ class WaveformParameters extends Component {
   constructor(props) {
     super(props);
     this.audioCtx = props.audioCtx;
-    this.state = { waveFrequency: 10000 }; // Hz
+    this.waveTypes = ['sine','square','sawtooth','triangle'];
+    this.state = { waveFrequency: 10000 // Hz
+                 , waveType: this.waveTypes[0]
+                 };
   }
-  componentDidMount() {
-    let waveform = numeric.linspace(0,Math.PI*2,this.canvas.width);
-    waveform = numeric.sin(waveform);
+  drawWave() { // TODO: draw oscilloscope/to scale
+    const wv = this.state.waveType;
+    let waveform;
+    if (wv === 'sine') {
+      waveform = numeric.linspace(0,Math.PI*2*2,this.canvas.width);
+      waveform = numeric.sin(waveform);
+    } else if (wv === 'square') {
+      const maxes = Array(this.canvas.width/4).fill(1);
+      const mins = Array(this.canvas.width/4).fill(-1);
+      waveform = maxes.concat(mins).concat(maxes).concat(mins);
+    } else if (wv === 'sawtooth') {
+      const tooth = numeric.linspace(-1,1,this.canvas.width/2);
+      waveform = tooth.concat(tooth);
+    } else if (wv === 'triangle') {
+      const up = numeric.linspace(-1,1,this.canvas.width/4);
+      const down = numeric.linspace(1,-1,this.canvas.width/4);
+      waveform = up.concat(down).concat(up).concat(down);
+    }
 
     let canvasdata = numeric.add(waveform, 1);
     canvasdata = numeric.mul(canvasdata, this.canvas.height/2);
     canvasdata = numeric.sub(this.canvas.height, canvasdata);
 
     const canvasCtx = this.canvas.getContext('2d');
+    canvasCtx.clearRect(0,0,this.canvas.width,this.canvas.height);
     for (let i=1; i<this.canvas.width; i++) {
       canvasCtx.beginPath();
       canvasCtx.moveTo(i-1, canvasdata[i-1]);
@@ -135,10 +154,19 @@ class WaveformParameters extends Component {
       canvasCtx.stroke();
     }
   }
+  componentDidMount() {
+    this.drawWave();
+  }
+  componentDidUpdate() {
+    this.drawWave();
+  }
   render() {
     return (
       <div className="sourceBox">
         <canvas ref={c => this.canvas = c}></canvas>
+        <select value={this.state.waveType} onChange={(evt) => this.changeWaveType(evt)}>
+          {this.waveTypes.map((wv) => <option value={wv} key={wv}>{wv[0].toUpperCase() + wv.slice(1)}</option>)}
+        </select>
         <ParameterBox
           label="Frequency (Hz)"
           value={this.state.waveFrequency}
@@ -148,12 +176,16 @@ class WaveformParameters extends Component {
       </div>
     );
   }
+  changeWaveType(evt) {
+    const wv = evt.target.value;
+    this.setState({ waveType: wv });
+  }
   changeWaveFrequency(f) {
     this.setState({ waveFrequency: f });
   }
   makeGrain(grainDuration) {
     const osc = this.audioCtx.createOscillator();
-    osc.type = 'sine';
+    osc.type = this.state.waveType;
     osc.frequency.value = this.state.waveFrequency;
     return osc;
   }
