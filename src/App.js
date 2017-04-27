@@ -66,9 +66,7 @@ function grainCloud(GrainSource) {
       );
     }
     changePlaying() {
-      if (this.state.playing) {
-        this.stopCloud();
-      } else if (typeof this.grainSource.setPlayTime === 'function') {
+      if (!this.state.playing && typeof this.grainSource.setPlayTime === 'function') {
         this.grainSource.setPlayTime(); // TODO PUT IN COMPONENT
       }
       this.setState({ playing: !this.state.playing });
