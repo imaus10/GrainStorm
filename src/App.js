@@ -43,7 +43,7 @@ function grainCloud(GrainSource) {
         <div className="grainCloud">
           <GrainSource
             ref={gs => this.grainSource = gs}
-            grainParams={this.state}
+            {...this.state}
             {...this.props} />
           <ParameterBox
             label="Grain density (grains/second)"
@@ -196,7 +196,7 @@ class WaveformGrainSource extends Component {
   }
   playGrain(grain) {
     grain.start();
-    grain.stop(this.audioCtx.currentTime + this.props.grainParams.grainDuration);
+    grain.stop(this.audioCtx.currentTime + this.props.grainDuration);
   }
 }
 const WaveformGrainCloud = grainCloud(WaveformGrainSource);
@@ -324,7 +324,7 @@ class SampleGrainSource extends Component {
   playGrain(grain) {
     const startTime = this.state.pos.start*grain.buffer.duration;
     const pos = this.getRelativePos();
-    grain.start(0, pos+startTime, this.props.grainParams.grainDuration);
+    grain.start(0, pos+startTime, this.props.grainDuration);
   }
 }
 const SampleGrainCloud = grainCloud(SampleGrainSource);
