@@ -14,7 +14,7 @@ function ParameterBox(props) {
   );
 }
 
-function grainCloud(WrappedComponent) {
+function grainCloud(GrainSource) {
   return class GrainCloud extends Component {
     constructor(props) {
       super(props);
@@ -41,7 +41,10 @@ function grainCloud(WrappedComponent) {
       const playButtonTxt = this.state.playing ? 'stop' : 'play';
       return (
         <div className="grainCloud">
-          <WrappedComponent ref={wc => this.wrappedComponent = wc} {...this.props} />
+          <GrainSource
+            ref={gs => this.grainSource = gs}
+            grainParams={this.state}
+            {...this.props} />
           <ParameterBox
             label="Grain density (grains/second)"
             value={this.state.grainDensity}
@@ -52,7 +55,7 @@ function grainCloud(WrappedComponent) {
             label="Grain duration (ms)"
             value={this.state.grainDuration*1000}
             min={1}
-            max={5000}
+            max={100}
             onChange={dur => this.changeGrainDuration(dur)} />
           <label>Envelope</label>
           <Range allowCross={false} defaultValue={[10,90]} onChange={env => this.changeEnvelope(env)} />
@@ -65,8 +68,8 @@ function grainCloud(WrappedComponent) {
     changePlaying() {
       if (this.state.playing) {
         this.stopCloud();
-      } else if (typeof this.wrappedComponent.setPlayTime === 'function') {
-        this.wrappedComponent.setPlayTime();
+      } else if (typeof this.grainSource.setPlayTime === 'function') {
+        this.grainSource.setPlayTime(); // TODO PUT IN COMPONENT
       }
       this.setState({ playing: !this.state.playing });
     }
@@ -81,39 +84,40 @@ function grainCloud(WrappedComponent) {
       const decay = (env[1]/100) * this.state.grainDuration;
       this.setState({ envelope: { attack:attack, decay:decay } });
     }
+    grainEnvelopeGenerator() {
+      const grainDuration = this.state.grainDuration;
+      const grain = this.grainSource.makeGrain();
+      const gainNode = this.audioCtx.createGain();
+      // the ol' grain-n-gain
+      grain.connect(gainNode);
+      gainNode.connect(this.audioCtx.destination);
+
+      const now = this.audioCtx.currentTime;
+      const attackTime = this.state.envelope.attack;
+      const decayTime = this.state.envelope.decay;
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(1, now+attackTime);
+      gainNode.gain.setValueAtTime(1, now+grainDuration-decayTime);
+      gainNode.gain.linearRampToValueAtTime(0, now+grainDuration);
+
+      this.grainSource.playGrain(grain);
+    }
     playCloud() {
-      const grainEnvelope = () => {
-        const grainDuration = this.state.grainDuration;
-        const grain = this.wrappedComponent.makeGrain(grainDuration);
-        const gainNode = this.audioCtx.createGain();
-        grain.connect(gainNode);
-        gainNode.connect(this.audioCtx.destination);
-
-        const now = this.audioCtx.currentTime;
-        const attackTime = this.state.envelope.attack;
-        const decayTime = this.state.envelope.decay;
-        gainNode.gain.setValueAtTime(0, now);
-        gainNode.gain.linearRampToValueAtTime(1, now+attackTime);
-        gainNode.gain.setValueAtTime(1, now+grainDuration-decayTime);
-        gainNode.gain.linearRampToValueAtTime(0, now+grainDuration);
-
-        this.wrappedComponent.playGrain(grain, this.state.grainDuration);
-      };
-      this.intervalId = window.setInterval(grainEnvelope, 1000/this.state.grainDensity);
-      if (typeof this.wrappedComponent.playAnimation === 'function') {
-        this.wrappedComponent.playAnimation();
+      this.intervalId = window.setInterval(() => this.grainEnvelopeGenerator(), 1000/this.state.grainDensity);
+      if (typeof this.grainSource.playAnimation === 'function') {
+        this.grainSource.playAnimation();
       }
     }
     stopCloud() {
       window.clearInterval(this.intervalId);
-      if (typeof this.wrappedComponent.playAnimation === 'function') {
-        this.wrappedComponent.stopAnimation();
+      if (typeof this.grainSource.playAnimation === 'function') {
+        this.grainSource.stopAnimation();
       }
     }
   }
 }
 
-class WaveformParameters extends Component {
+class WaveformGrainSource extends Component {
   constructor(props) {
     super(props);
     this.audioCtx = props.audioCtx;
@@ -161,11 +165,12 @@ class WaveformParameters extends Component {
     this.drawWave();
   }
   render() {
+    const wvopts = this.waveTypes.map((wv) => <option value={wv} key={wv}>{wv[0].toUpperCase() + wv.slice(1)}</option>);
     return (
       <div className="sourceBox">
         <canvas ref={c => this.canvas = c}></canvas>
         <select value={this.state.waveType} onChange={(evt) => this.changeWaveType(evt)}>
-          {this.waveTypes.map((wv) => <option value={wv} key={wv}>{wv[0].toUpperCase() + wv.slice(1)}</option>)}
+          {wvopts}
         </select>
         <ParameterBox
           label="Frequency (Hz)"
@@ -183,20 +188,20 @@ class WaveformParameters extends Component {
   changeWaveFrequency(f) {
     this.setState({ waveFrequency: f });
   }
-  makeGrain(grainDuration) {
+  makeGrain() {
     const osc = this.audioCtx.createOscillator();
     osc.type = this.state.waveType;
     osc.frequency.value = this.state.waveFrequency;
     return osc;
   }
-  playGrain(grain, grainDuration) {
+  playGrain(grain) {
     grain.start();
-    grain.stop(this.audioCtx.currentTime + grainDuration);
+    grain.stop(this.audioCtx.currentTime + this.props.grainParams.grainDuration);
   }
 }
-const WaveformGrainCloud = grainCloud(WaveformParameters);
+const WaveformGrainCloud = grainCloud(WaveformGrainSource);
 
-class SampleParameters extends Component {
+class SampleGrainSource extends Component {
   constructor(props) {
     super(props);
     this.audioCtx = props.audioCtx; // begrudgingly, for playhead position...
@@ -289,7 +294,7 @@ class SampleParameters extends Component {
     const pos = (this.audioCtx.currentTime-this.playTime) % dur * this.state.speed;
     return pos;
   }
-  playAnimation(playing) {
+  playAnimation() {
     const drawPos = () => {
       this.animation = window.requestAnimationFrame(drawPos);
       const stepsize = this.canvas.width/this.audioData.getChannelData(0).length;
@@ -310,19 +315,19 @@ class SampleParameters extends Component {
     window.cancelAnimationFrame(this.animation);
     this.canvas.getContext('2d').putImageData(this.posImage, 0, 0);
   }
-  makeGrain(grainDuration) {
+  makeGrain() {
     const soundSource = this.audioCtx.createBufferSource();
     soundSource.buffer = this.audioData;
     soundSource.playbackRate.value = this.state.speed;
     return soundSource;
   }
-  playGrain(grain, grainDuration) {
+  playGrain(grain) {
     const startTime = this.state.pos.start*grain.buffer.duration;
     const pos = this.getRelativePos();
-    grain.start(0, pos+startTime, grainDuration);
+    grain.start(0, pos+startTime, this.props.grainParams.grainDuration);
   }
 }
-const SampleGrainCloud = grainCloud(SampleParameters);
+const SampleGrainCloud = grainCloud(SampleGrainSource);
 
 class GrainStorm extends Component {
   constructor(props) {
