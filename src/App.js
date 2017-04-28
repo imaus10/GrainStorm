@@ -277,15 +277,25 @@ class SampleGrainSource extends Component {
   changeSpeed(sp) {
     sp /= 100;
     const pos = this.getRelativePos();
-    const deltaSp = (sp-this.state.speed) / sp;
-    const newPos = pos - pos*deltaSp;
-    this.playTime = this.audioCtx.currentTime - newPos/sp;
+    if (sp === 0) {
+      this.stopPos = pos;
+    } else if (this.state.speed === 0){
+      this.playTime = this.audioCtx.currentTime - pos;
+    } else {
+      // TODO: is this right? check speed and position calcs, better way?
+      const deltaSp = (sp-this.state.speed) / sp;
+      const newPos = pos - pos*deltaSp;
+      this.playTime = this.audioCtx.currentTime - newPos/sp;
+    }
     this.setState({ speed: sp });
   }
   setPlayTime() {
     this.playTime = this.audioCtx.currentTime;
   }
   getRelativePos() {
+    if (this.state.speed === 0) {
+      return this.stopPos;
+    }
     const startTime = this.state.pos.start*this.audioData.duration;
     const endTime = this.state.pos.end*this.audioData.duration;
     const dur = (endTime - startTime) / this.state.speed;
@@ -316,7 +326,7 @@ class SampleGrainSource extends Component {
   makeGrain() {
     const soundSource = this.audioCtx.createBufferSource();
     soundSource.buffer = this.audioData;
-    soundSource.playbackRate.value = this.state.speed;
+    // soundSource.playbackRate.value = this.state.speed;
     return soundSource;
   }
   playGrain(grain) {
