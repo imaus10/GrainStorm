@@ -30,12 +30,21 @@ function grainCloud(GrainSource) {
                    };
     }
     componentDidMount() {
-      // draw envelope
+      // TODO: draw envelope
       // const canvasCtx = this.envelopeCanvas.getContext('2d');
     }
-    componentDidUpdate() {
-      this.stopCloud();
-      if (this.state.playing) this.playCloud();
+    componentDidUpdate(prevProps, prevState) {
+      if (prevState.playing !== this.state.playing) {
+        if (this.state.playing) {
+          this.playCloud();
+        } else {
+          this.stopCloud();
+        }
+      } else if (this.state.playing && prevState.grainDensity !== this.state.grainDensity) {
+        // reset the interval when density changes
+        this.stopCloud();
+        this.playCloud();
+      }
     }
     render() {
       const playButtonTxt = this.state.playing ? 'stop' : 'play';
@@ -66,9 +75,6 @@ function grainCloud(GrainSource) {
       );
     }
     changePlaying() {
-      if (!this.state.playing && typeof this.grainSource.setPlayTime === 'function') {
-        this.grainSource.setPlayTime(); // TODO PUT IN COMPONENT
-      }
       this.setState({ playing: !this.state.playing });
     }
     changeGrainDensity(d) {
@@ -102,15 +108,9 @@ function grainCloud(GrainSource) {
     }
     playCloud() {
       this.intervalId = window.setInterval(() => this.grainEnvelopeGenerator(), 1000/this.state.grainDensity);
-      if (typeof this.grainSource.playAnimation === 'function') {
-        this.grainSource.playAnimation();
-      }
     }
     stopCloud() {
       window.clearInterval(this.intervalId);
-      if (typeof this.grainSource.playAnimation === 'function') {
-        this.grainSource.stopAnimation();
-      }
     }
   }
 }
@@ -159,8 +159,10 @@ class WaveformGrainSource extends Component {
   componentDidMount() {
     this.drawWave();
   }
-  componentDidUpdate() {
-    this.drawWave();
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.waveType !== prevState.waveType) {
+      this.drawWave();
+    }
   }
   render() {
     const wvopts = this.waveTypes.map((wv) => <option value={wv} key={wv}>{wv[0].toUpperCase() + wv.slice(1)}</option>);
@@ -243,16 +245,16 @@ class SampleGrainSource extends Component {
     this.audioImage = canvasCtx.getImageData(0,0,this.canvas.width,this.canvas.height);
     this.posImage = this.audioImage;
   }
-  componentDidUpdate() {
-    // draw opaque gray rectangle over non-playing audio
-    const canvasCtx = this.canvas.getContext('2d');
-    canvasCtx.putImageData(this.audioImage, 0, 0);
-    canvasCtx.fillStyle = 'rgba(233,233,233,0.8)';
-    const w = this.canvas.width;
-    const h = this.canvas.height;
-    canvasCtx.fillRect(0, 0, w*this.state.pos.start, h);
-    canvasCtx.fillRect(w*this.state.pos.end, 0, w*(1-this.state.pos.start), h);
-    this.posImage = canvasCtx.getImageData(0,0,this.canvas.width,this.canvas.height);
+  componentDidUpdate(prevProps, prevState) {
+    // start or stop animation if playing has changed
+    if (this.props.playing !== prevProps.playing) {
+      if (this.props.playing) {
+        this.playTime = this.audioCtx.currentTime;
+        this.startAnimation();
+      } else {
+        this.stopAnimation();
+      }
+    }
   }
   render() {
     return (
@@ -269,10 +271,20 @@ class SampleGrainSource extends Component {
     );
   }
   changePosition(pos) {
-    if (pos[0]/100*this.audioData.duration > this.getRelativePos()) {
-      this.setPlayTime();
+    const [start,end] = pos.map(p => p/100);
+    // draw opaque gray rectangle over non-playing audio
+    const canvasCtx = this.canvas.getContext('2d');
+    canvasCtx.putImageData(this.audioImage, 0, 0);
+    canvasCtx.fillStyle = 'rgba(233,233,233,0.8)';
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+    canvasCtx.fillRect(0, 0, w*start, h);
+    canvasCtx.fillRect(w*end, 0, w*(1-start), h);
+    this.posImage = canvasCtx.getImageData(0,0,w,h);
+    if (start*this.audioData.duration > this.getRelativePos()) {
+      this.playTime = this.audioCtx.currentTime;
     }
-    this.setState({ pos: { start: pos[0]/100, end: pos[1]/100 } });
+    this.setState({ pos: { start: start, end: end } });
   }
   changeSpeed(sp) {
     sp /= 100;
@@ -302,7 +314,7 @@ class SampleGrainSource extends Component {
     const pos = (this.audioCtx.currentTime-this.playTime) % dur * this.state.speed;
     return pos;
   }
-  playAnimation() {
+  startAnimation() {
     const drawPos = () => {
       this.animation = window.requestAnimationFrame(drawPos);
       const stepsize = this.canvas.width/this.audioData.getChannelData(0).length;
