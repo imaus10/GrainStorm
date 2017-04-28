@@ -207,6 +207,7 @@ class SampleGrainSource extends Component {
     this.audioCtx = props.audioCtx; // begrudgingly, for playhead position...
     this.audioData = props.audioData;
     this.playTime = 0; // time audio started playing (to find current position in audio)
+    this.lastPos = 0; // last position
     this.state = { pos: { start:0, end:1 } // pct of total duration
                  , speed: 1 // pct
                  };
@@ -255,6 +256,26 @@ class SampleGrainSource extends Component {
         this.stopAnimation();
       }
     }
+
+    if (this.state.pos.start !== prevState.pos.start || this.state.pos.end !== prevState.pos.end) {
+      const start = this.state.pos.start;
+      const end = this.state.pos.end;
+      // draw opaque gray rectangle over non-playing audio
+      const canvasCtx = this.canvas.getContext('2d');
+      canvasCtx.putImageData(this.audioImage, 0, 0);
+      canvasCtx.fillStyle = 'rgba(233,233,233,0.8)';
+      const w = this.canvas.width;
+      const h = this.canvas.height;
+      canvasCtx.fillRect(0, 0, w*start, h);
+      canvasCtx.fillRect(w*end, 0, w*(1-start), h);
+      this.posImage = canvasCtx.getImageData(0,0,w,h);
+      const startDiff = start - prevState.pos.start;
+      if (startDiff !== 0) {
+        // update playTime so the play head doesn't jump
+        // TODO: SPEED and also make it work
+        this.playTime -= (startDiff*this.audioData.duration);
+      }
+    }
   }
   render() {
     return (
@@ -271,20 +292,7 @@ class SampleGrainSource extends Component {
     );
   }
   changePosition(pos) {
-    const [start,end] = pos.map(p => p/100);
-    // draw opaque gray rectangle over non-playing audio
-    const canvasCtx = this.canvas.getContext('2d');
-    canvasCtx.putImageData(this.audioImage, 0, 0);
-    canvasCtx.fillStyle = 'rgba(233,233,233,0.8)';
-    const w = this.canvas.width;
-    const h = this.canvas.height;
-    canvasCtx.fillRect(0, 0, w*start, h);
-    canvasCtx.fillRect(w*end, 0, w*(1-start), h);
-    this.posImage = canvasCtx.getImageData(0,0,w,h);
-    if (start*this.audioData.duration > this.getRelativePos()) {
-      this.playTime = this.audioCtx.currentTime;
-    }
-    this.setState({ pos: { start: start, end: end } });
+    this.setState({ pos: { start: pos[0]/100, end: pos[1]/100 } });
   }
   changeSpeed(sp) {
     sp /= 100;
@@ -300,9 +308,6 @@ class SampleGrainSource extends Component {
       this.playTime = this.audioCtx.currentTime - newPos/sp;
     }
     this.setState({ speed: sp });
-  }
-  setPlayTime() {
-    this.playTime = this.audioCtx.currentTime;
   }
   getRelativePos() {
     if (this.state.speed === 0) {
