@@ -204,14 +204,15 @@ const WaveformGrainCloud = grainCloud(WaveformGrainSource);
 class SampleGrainSource extends Component {
   constructor(props) {
     super(props);
-    this.audioCtx = props.audioCtx; // begrudgingly, for playhead position...
+    this.audioCtx = props.audioCtx;
     this.audioData = props.audioData;
     this.playTime = 0; // time audio started playing (to find current position in audio)
-    this.lastPos = 0; // last position
-    this.state = { pos: { start:0, end:1 } // pct of total duration
-                 , speed: 1 // pct
+    this.state = { sampleStart: 0 // pct of total duration
+                 , sampleEnd: 1 // pct of total duration
+                 , speed: 1 // pct - 0 means playhead is still, negative reverses audio
                  };
   }
+  // draw the audio on the canvas
   componentDidMount() {
     const canvasCtx = this.canvas.getContext('2d');
     const audio = this.audioData;
@@ -257,9 +258,9 @@ class SampleGrainSource extends Component {
       }
     }
 
-    if (this.state.pos.start !== prevState.pos.start || this.state.pos.end !== prevState.pos.end) {
-      const start = this.state.pos.start;
-      const end = this.state.pos.end;
+    if (this.sampleStart !== prevState.sampleStart || this.state.sampleEnd !== prevState.sampleEnd) {
+      const start = this.state.sampleStart;
+      const end = this.state.sampleEnd;
       // draw opaque gray rectangle over non-playing audio
       const canvasCtx = this.canvas.getContext('2d');
       canvasCtx.putImageData(this.audioImage, 0, 0);
@@ -269,19 +270,19 @@ class SampleGrainSource extends Component {
       canvasCtx.fillRect(0, 0, w*start, h);
       canvasCtx.fillRect(w*end, 0, w*(1-start), h);
       this.posImage = canvasCtx.getImageData(0,0,w,h);
-      const startDiff = start - prevState.pos.start;
-      if (startDiff !== 0) {
-        // update playTime so the play head doesn't jump
-        // TODO: SPEED and also make it work
-        this.playTime -= (startDiff*this.audioData.duration);
-      }
+      // const startDiff = start - prevState.sampleStart;
+      // if (startDiff !== 0) {
+      //   // update playTime so the play head doesn't jump
+      //   // TODO: SPEED and also make it work
+      //   this.playTime -= (startDiff*this.audioData.duration);
+      // }
     }
   }
   render() {
     return (
       <div className="sourceBox">
         <canvas ref={c => this.canvas = c}></canvas>
-        <Range allowCross={false} defaultValue={[0,100]} onChange={pos => this.changePosition(pos)} />
+        <Range allowCross={false} defaultValue={[0,100]} onChange={pos => this.changeStartEnd(pos)} />
         <ParameterBox
           label="Speed (%)"
           value={this.state.speed*100}
@@ -291,8 +292,8 @@ class SampleGrainSource extends Component {
       </div>
     );
   }
-  changePosition(pos) {
-    this.setState({ pos: { start: pos[0]/100, end: pos[1]/100 } });
+  changeStartEnd(pos) {
+    this.setState({ sampleStart: pos[0]/100, sampleEnd: pos[1]/100 });
   }
   changeSpeed(sp) {
     sp /= 100;
@@ -313,8 +314,8 @@ class SampleGrainSource extends Component {
     if (this.state.speed === 0) {
       return this.stopPos;
     }
-    const startTime = this.state.pos.start*this.audioData.duration;
-    const endTime = this.state.pos.end*this.audioData.duration;
+    const startTime = this.state.sampleStart*this.audioData.duration;
+    const endTime = this.state.sampleEnd*this.audioData.duration;
     const dur = (endTime - startTime) / this.state.speed;
     const pos = (this.audioCtx.currentTime-this.playTime) % dur * this.state.speed;
     return pos;
@@ -326,7 +327,7 @@ class SampleGrainSource extends Component {
       const sampleRate = this.audioData.sampleRate;
       const canvasCtx = this.canvas.getContext('2d');
       canvasCtx.putImageData(this.posImage, 0, 0);
-      const startTime = this.state.pos.start*this.audioData.duration;
+      const startTime = this.state.sampleStart*this.audioData.duration;
       const pos = Math.floor( sampleRate * (startTime+this.getRelativePos()) );
       canvasCtx.strokeStyle = 'red';
       canvasCtx.beginPath();
@@ -343,11 +344,12 @@ class SampleGrainSource extends Component {
   makeGrain() {
     const soundSource = this.audioCtx.createBufferSource();
     soundSource.buffer = this.audioData;
+    // TODO: replace with pitch shift?
     // soundSource.playbackRate.value = this.state.speed;
     return soundSource;
   }
   playGrain(grain) {
-    const startTime = this.state.pos.start*grain.buffer.duration;
+    const startTime = this.state.sampleStart*grain.buffer.duration;
     const pos = this.getRelativePos();
     grain.start(0, pos+startTime, this.props.grainDuration);
   }
