@@ -206,7 +206,12 @@ class SampleGrainSource extends Component {
     super(props);
     this.audioCtx = props.audioCtx;
     this.audioData = props.audioData;
-    this.playTime = 0; // time audio started playing (to find current position in audio)
+    this.initialPos = 0; // where the playhead was when clipStart, clipEnd, or speed changed
+    // additional properties:
+    // this.playTime -- time audio started playing (to find current position in audio)
+    // this.stopPos -- absolute position when speed hit 0 (freeze at this position)
+    // this.audioImage -- unmodified image of original audio drawn on canvas
+    // this.trimmedAudioImage -- image of audio plus sampleStart and sampleEnd markers
     this.state = { sampleStart: 0 // pct of total duration
                  , sampleEnd: 1 // pct of total duration
                  , speed: 1 // pct - 0 means playhead is still, negative reverses audio
@@ -245,7 +250,7 @@ class SampleGrainSource extends Component {
     }
     // console.log('drawn.');
     this.audioImage = canvasCtx.getImageData(0,0,this.canvas.width,this.canvas.height);
-    this.posImage = this.audioImage;
+    this.trimmedAudioImage = this.audioImage;
   }
   componentDidUpdate(prevProps, prevState) {
     // start or stop animation if playing has changed
@@ -254,6 +259,7 @@ class SampleGrainSource extends Component {
         this.playTime = this.audioCtx.currentTime;
         this.startAnimation();
       } else {
+        this.initialPos = 0;
         this.stopAnimation();
       }
     }
@@ -269,13 +275,7 @@ class SampleGrainSource extends Component {
       const h = this.canvas.height;
       canvasCtx.fillRect(0, 0, w*start, h);
       canvasCtx.fillRect(w*end, 0, w*(1-start), h);
-      this.posImage = canvasCtx.getImageData(0,0,w,h);
-      // const startDiff = start - prevState.sampleStart;
-      // if (startDiff !== 0) {
-      //   // update playTime so the play head doesn't jump
-      //   // TODO: SPEED and also make it work
-      //   this.playTime -= (startDiff*this.audioData.duration);
-      // }
+      this.trimmedAudioImage = canvasCtx.getImageData(0,0,w,h);
     }
   }
   render() {
@@ -293,32 +293,30 @@ class SampleGrainSource extends Component {
     );
   }
   changeStartEnd(pos) {
+    if (this.props.playing) {
+      this.initialPos = this.getAbsolutePos();
+      this.playTime = this.audioCtx.currentTime;
+    } else {
+      this.initialPos = pos[0]/100*this.audioData.duration;
+    }
     this.setState({ sampleStart: pos[0]/100, sampleEnd: pos[1]/100 });
   }
   changeSpeed(sp) {
-    sp /= 100;
-    const pos = this.getRelativePos();
-    if (sp === 0) {
-      this.stopPos = pos;
-    } else if (this.state.speed === 0){
-      this.playTime = this.audioCtx.currentTime - pos;
-    } else {
-      // TODO: is this right? check speed and position calcs, better way?
-      const deltaSp = (sp-this.state.speed) / sp;
-      const newPos = pos - pos*deltaSp;
-      this.playTime = this.audioCtx.currentTime - newPos/sp;
+    if (this.props.playing) {
+      this.initialPos = this.getAbsolutePos();
+      this.playTime = this.audioCtx.currentTime;
     }
-    this.setState({ speed: sp });
+    this.setState({ speed: sp/100 });
   }
-  getRelativePos() {
-    if (this.state.speed === 0) {
-      return this.stopPos;
-    }
+  getAbsolutePos() {
     const startTime = this.state.sampleStart*this.audioData.duration;
     const endTime = this.state.sampleEnd*this.audioData.duration;
-    const dur = (endTime - startTime) / this.state.speed;
-    const pos = (this.audioCtx.currentTime-this.playTime) % dur * this.state.speed;
-    return pos;
+    if (this.state.speed === 0) {
+      return Math.min(Math.max(this.initialPos, startTime), endTime);
+    }
+    const timeElapsed = this.props.playing ? (this.audioCtx.currentTime - this.playTime)*this.state.speed : 0;
+    const dur = (endTime - startTime);
+    return (timeElapsed + this.initialPos - startTime) % dur + startTime;
   }
   startAnimation() {
     const drawPos = () => {
@@ -326,9 +324,8 @@ class SampleGrainSource extends Component {
       const stepsize = this.canvas.width/this.audioData.getChannelData(0).length;
       const sampleRate = this.audioData.sampleRate;
       const canvasCtx = this.canvas.getContext('2d');
-      canvasCtx.putImageData(this.posImage, 0, 0);
-      const startTime = this.state.sampleStart*this.audioData.duration;
-      const pos = Math.floor( sampleRate * (startTime+this.getRelativePos()) );
+      canvasCtx.putImageData(this.trimmedAudioImage, 0, 0);
+      const pos = Math.floor( sampleRate * (this.getAbsolutePos()) );
       canvasCtx.strokeStyle = 'red';
       canvasCtx.beginPath();
       canvasCtx.moveTo(stepsize*pos, 0);
@@ -339,7 +336,7 @@ class SampleGrainSource extends Component {
   }
   stopAnimation() {
     window.cancelAnimationFrame(this.animation);
-    this.canvas.getContext('2d').putImageData(this.posImage, 0, 0);
+    this.canvas.getContext('2d').putImageData(this.trimmedAudioImage, 0, 0);
   }
   makeGrain() {
     const soundSource = this.audioCtx.createBufferSource();
@@ -349,9 +346,7 @@ class SampleGrainSource extends Component {
     return soundSource;
   }
   playGrain(grain) {
-    const startTime = this.state.sampleStart*grain.buffer.duration;
-    const pos = this.getRelativePos();
-    grain.start(0, pos+startTime, this.props.grainDuration);
+    grain.start(0, this.getAbsolutePos(), this.props.grainDuration);
   }
 }
 const SampleGrainCloud = grainCloud(SampleGrainSource);
