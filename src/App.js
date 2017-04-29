@@ -215,6 +215,7 @@ class SampleGrainSource extends Component {
     this.state = { sampleStart: 0 // pct of total duration
                  , sampleEnd: 1 // pct of total duration
                  , speed: 1 // pct - 0 means playhead is still, negative reverses audio
+                 , pitchShift: 0 // cents
                  };
   }
   // draw the audio on the canvas
@@ -286,9 +287,15 @@ class SampleGrainSource extends Component {
         <ParameterBox
           label="Speed (%)"
           value={this.state.speed*100}
-          min={0}
+          min={-200}
           max={200}
           onChange={sp => this.changeSpeed(sp)} />
+        <ParameterBox
+          label="Pitch shift (cents)"
+          value={this.state.pitchShift}
+          min={-1200}
+          max={1200}
+          onChange={p => this.changePitchShift(p)} />
       </div>
     );
   }
@@ -308,6 +315,9 @@ class SampleGrainSource extends Component {
     }
     this.setState({ speed: sp/100 });
   }
+  changePitchShift(p) {
+    this.setState({ pitchShift: p });
+  }
   getAbsolutePos() {
     const startTime = this.state.sampleStart*this.audioData.duration;
     const endTime = this.state.sampleEnd*this.audioData.duration;
@@ -316,7 +326,12 @@ class SampleGrainSource extends Component {
     }
     const timeElapsed = this.props.playing ? (this.audioCtx.currentTime - this.playTime)*this.state.speed : 0;
     const dur = (endTime - startTime);
-    return (timeElapsed + this.initialPos - startTime) % dur + startTime;
+    const pos = (timeElapsed + this.initialPos - startTime) % dur + startTime;
+    if (pos >= startTime) {
+      return pos;
+    } else {
+      return endTime - Math.abs(startTime-pos)%dur;
+    }
   }
   startAnimation() {
     const drawPos = () => {
@@ -341,8 +356,7 @@ class SampleGrainSource extends Component {
   makeGrain() {
     const soundSource = this.audioCtx.createBufferSource();
     soundSource.buffer = this.audioData;
-    // TODO: replace with pitch shift?
-    // soundSource.playbackRate.value = this.state.speed;
+    soundSource.detune.value = this.state.pitchShift;
     return soundSource;
   }
   playGrain(grain) {
