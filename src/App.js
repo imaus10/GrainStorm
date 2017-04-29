@@ -119,36 +119,18 @@ class WaveformGrainSource extends Component {
   constructor(props) {
     super(props);
     this.audioCtx = props.audioCtx;
+    this.audioAnalyzer = this.audioCtx.createAnalyser();
+    this.audioAnalyzer.connect(this.audioCtx.destination);
+    console.log(this.audioAnalyzer);
     this.waveTypes = ['sine','square','sawtooth','triangle'];
     this.state = { waveFrequency: 10000 // Hz
                  , waveType: this.waveTypes[0]
                  };
   }
-  drawWave() { // TODO: draw oscilloscope/to scale
-    const wv = this.state.waveType;
-    let waveform;
-    if (wv === 'sine') {
-      waveform = numeric.linspace(0,Math.PI*2*2,this.canvas.width);
-      waveform = numeric.sin(waveform);
-    } else if (wv === 'square') {
-      const maxes = Array(this.canvas.width/4).fill(1);
-      const mins = Array(this.canvas.width/4).fill(-1);
-      waveform = maxes.concat(mins).concat(maxes).concat(mins);
-    } else if (wv === 'sawtooth') {
-      const tooth = numeric.linspace(-1,1,this.canvas.width/2);
-      waveform = tooth.concat(tooth);
-    } else if (wv === 'triangle') {
-      const up = numeric.linspace(-1,1,this.canvas.width/4);
-      const down = numeric.linspace(1,-1,this.canvas.width/4);
-      waveform = up.concat(down).concat(up).concat(down);
-    }
-
-    let canvasdata = numeric.add(waveform, 1);
-    canvasdata = numeric.mul(canvasdata, this.canvas.height/2);
-    canvasdata = numeric.sub(this.canvas.height, canvasdata);
-
+  drawInactiveOscilloscope() {
     const canvasCtx = this.canvas.getContext('2d');
     canvasCtx.clearRect(0,0,this.canvas.width,this.canvas.height);
+    const canvasdata = Array(this.canvas.width).fill(this.canvas.height/2);
     for (let i=1; i<this.canvas.width; i++) {
       canvasCtx.beginPath();
       canvasCtx.moveTo(i-1, canvasdata[i-1]);
@@ -157,12 +139,19 @@ class WaveformGrainSource extends Component {
     }
   }
   componentDidMount() {
-    this.drawWave();
+    this.drawInactiveOscilloscope();
   }
   componentDidUpdate(prevProps, prevState) {
-    if (this.state.waveType !== prevState.waveType) {
-      this.drawWave();
+    if (this.props.playing !== prevProps.playing) {
+      if (this.props.playing) {
+        this.startAnimation();
+      } else {
+        this.stopAnimation();
+      }
     }
+    // if (this.state.waveType !== prevState.waveType) {
+    //   this.drawWave();
+    // }
   }
   render() {
     const wvopts = this.waveTypes.map((wv) => <option value={wv} key={wv}>{wv[0].toUpperCase() + wv.slice(1)}</option>);
@@ -188,6 +177,40 @@ class WaveformGrainSource extends Component {
   changeWaveFrequency(f) {
     this.setState({ waveFrequency: f });
   }
+  startAnimation() {
+    const drawOscilloscope = () => {
+      this.animation = window.requestAnimationFrame(drawOscilloscope);
+
+      this.audioAnalyzer.fftSize = 2048;
+      const bufferLength = this.audioAnalyzer.frequencyBinCount;
+      let dataArray = new Uint8Array(bufferLength);
+      this.audioAnalyzer.getByteTimeDomainData(dataArray);
+
+      const canvasCtx = this.canvas.getContext('2d');
+      canvasCtx.clearRect(0,0,this.canvas.width,this.canvas.height);
+      canvasCtx.lineWidth = 2;
+      canvasCtx.beginPath();
+      const sliceWidth = this.canvas.width / bufferLength;
+      var x = 0;
+      for(var i=0; i<bufferLength; i++) {
+        var v = dataArray[i] / 128.0;
+        var y = v * this.canvas.height/2;
+        if(i === 0) {
+          canvasCtx.moveTo(x, y);
+        } else {
+          canvasCtx.lineTo(x, y);
+        }
+        x += sliceWidth;
+      }
+      canvasCtx.lineTo(this.canvas.width, this.canvas.height/2);
+      canvasCtx.stroke();
+    };
+    drawOscilloscope();
+  }
+  stopAnimation() {
+    window.cancelAnimationFrame(this.animation);
+    this.drawInactiveOscilloscope();
+  }
   makeGrain() {
     const osc = this.audioCtx.createOscillator();
     osc.type = this.state.waveType;
@@ -195,6 +218,7 @@ class WaveformGrainSource extends Component {
     return osc;
   }
   playGrain(grain) {
+    grain.connect(this.audioAnalyzer);
     grain.start();
     grain.stop(this.audioCtx.currentTime + this.props.grainDuration);
   }
