@@ -108,9 +108,16 @@ function grainCloud(GrainSource) {
     }
     playCloud() {
       this.intervalId = window.setInterval(() => this.grainEnvelopeGenerator(), 1000/this.state.grainDensity);
+      const animationFunc = () => {
+        this.animation = window.requestAnimationFrame(animationFunc);
+        this.grainSource.drawViz();
+      }
+      animationFunc();
     }
     stopCloud() {
       window.clearInterval(this.intervalId);
+      this.animation = window.cancelAnimationFrame(this.animation);
+      this.grainSource.resetViz();
     }
   }
 }
@@ -121,37 +128,13 @@ class WaveformGrainSource extends Component {
     this.audioCtx = props.audioCtx;
     this.audioAnalyzer = this.audioCtx.createAnalyser();
     this.audioAnalyzer.connect(this.audioCtx.destination);
-    console.log(this.audioAnalyzer);
     this.waveTypes = ['sine','square','sawtooth','triangle'];
     this.state = { waveFrequency: 10000 // Hz
                  , waveType: this.waveTypes[0]
                  };
   }
-  drawInactiveOscilloscope() {
-    const canvasCtx = this.canvas.getContext('2d');
-    canvasCtx.clearRect(0,0,this.canvas.width,this.canvas.height);
-    const canvasdata = Array(this.canvas.width).fill(this.canvas.height/2);
-    for (let i=1; i<this.canvas.width; i++) {
-      canvasCtx.beginPath();
-      canvasCtx.moveTo(i-1, canvasdata[i-1]);
-      canvasCtx.lineTo(i, canvasdata[i]);
-      canvasCtx.stroke();
-    }
-  }
   componentDidMount() {
-    this.drawInactiveOscilloscope();
-  }
-  componentDidUpdate(prevProps, prevState) {
-    if (this.props.playing !== prevProps.playing) {
-      if (this.props.playing) {
-        this.startAnimation();
-      } else {
-        this.stopAnimation();
-      }
-    }
-    // if (this.state.waveType !== prevState.waveType) {
-    //   this.drawWave();
-    // }
+    this.resetViz();
   }
   render() {
     const wvopts = this.waveTypes.map((wv) => <option value={wv} key={wv}>{wv[0].toUpperCase() + wv.slice(1)}</option>);
@@ -177,39 +160,43 @@ class WaveformGrainSource extends Component {
   changeWaveFrequency(f) {
     this.setState({ waveFrequency: f });
   }
-  startAnimation() {
-    const drawOscilloscope = () => {
-      this.animation = window.requestAnimationFrame(drawOscilloscope);
+  drawViz() {
+    // oscilloscope!
+    this.audioAnalyzer.fftSize = 2048;
+    const bufferLength = this.audioAnalyzer.frequencyBinCount;
+    let dataArray = new Uint8Array(bufferLength);
+    this.audioAnalyzer.getByteTimeDomainData(dataArray);
 
-      this.audioAnalyzer.fftSize = 2048;
-      const bufferLength = this.audioAnalyzer.frequencyBinCount;
-      let dataArray = new Uint8Array(bufferLength);
-      this.audioAnalyzer.getByteTimeDomainData(dataArray);
-
-      const canvasCtx = this.canvas.getContext('2d');
-      canvasCtx.clearRect(0,0,this.canvas.width,this.canvas.height);
-      canvasCtx.lineWidth = 2;
-      canvasCtx.beginPath();
-      const sliceWidth = this.canvas.width / bufferLength;
-      var x = 0;
-      for(var i=0; i<bufferLength; i++) {
-        var v = dataArray[i] / 128.0;
-        var y = v * this.canvas.height/2;
-        if(i === 0) {
-          canvasCtx.moveTo(x, y);
-        } else {
-          canvasCtx.lineTo(x, y);
-        }
-        x += sliceWidth;
+    const canvasCtx = this.canvas.getContext('2d');
+    canvasCtx.clearRect(0,0,this.canvas.width,this.canvas.height);
+    canvasCtx.lineWidth = 2;
+    canvasCtx.beginPath();
+    const sliceWidth = this.canvas.width / bufferLength;
+    var x = 0;
+    for(var i=0; i<bufferLength; i++) {
+      var v = dataArray[i] / 128.0;
+      var y = v * this.canvas.height/2;
+      if(i === 0) {
+        canvasCtx.moveTo(x, y);
+      } else {
+        canvasCtx.lineTo(x, y);
       }
-      canvasCtx.lineTo(this.canvas.width, this.canvas.height/2);
-      canvasCtx.stroke();
-    };
-    drawOscilloscope();
+      x += sliceWidth;
+    }
+    canvasCtx.lineTo(this.canvas.width, this.canvas.height/2);
+    canvasCtx.stroke();
   }
-  stopAnimation() {
-    window.cancelAnimationFrame(this.animation);
-    this.drawInactiveOscilloscope();
+  resetViz() {
+    // draw inactive oscilloscope
+    const canvasCtx = this.canvas.getContext('2d');
+    canvasCtx.clearRect(0,0,this.canvas.width,this.canvas.height);
+    const canvasdata = Array(this.canvas.width).fill(this.canvas.height/2);
+    for (let i=1; i<this.canvas.width; i++) {
+      canvasCtx.beginPath();
+      canvasCtx.moveTo(i-1, canvasdata[i-1]);
+      canvasCtx.lineTo(i, canvasdata[i]);
+      canvasCtx.stroke();
+    }
   }
   makeGrain() {
     const osc = this.audioCtx.createOscillator();
@@ -282,10 +269,8 @@ class SampleGrainSource extends Component {
     if (this.props.playing !== prevProps.playing) {
       if (this.props.playing) {
         this.playTime = this.audioCtx.currentTime;
-        this.startAnimation();
       } else {
         this.initialPos = 0;
-        this.stopAnimation();
       }
     }
 
@@ -357,24 +342,19 @@ class SampleGrainSource extends Component {
       return endTime - Math.abs(startTime-pos)%dur;
     }
   }
-  startAnimation() {
-    const drawPos = () => {
-      this.animation = window.requestAnimationFrame(drawPos);
-      const stepsize = this.canvas.width/this.audioData.getChannelData(0).length;
-      const sampleRate = this.audioData.sampleRate;
-      const canvasCtx = this.canvas.getContext('2d');
-      canvasCtx.putImageData(this.trimmedAudioImage, 0, 0);
-      const pos = Math.floor( sampleRate * (this.getAbsolutePos()) );
-      canvasCtx.strokeStyle = 'red';
-      canvasCtx.beginPath();
-      canvasCtx.moveTo(stepsize*pos, 0);
-      canvasCtx.lineTo(stepsize*pos, this.canvas.height);
-      canvasCtx.stroke();
-    };
-    drawPos();
+  drawViz() {
+    const stepsize = this.canvas.width/this.audioData.getChannelData(0).length;
+    const sampleRate = this.audioData.sampleRate;
+    const canvasCtx = this.canvas.getContext('2d');
+    canvasCtx.putImageData(this.trimmedAudioImage, 0, 0);
+    const pos = Math.floor( sampleRate * (this.getAbsolutePos()) );
+    canvasCtx.strokeStyle = 'red';
+    canvasCtx.beginPath();
+    canvasCtx.moveTo(stepsize*pos, 0);
+    canvasCtx.lineTo(stepsize*pos, this.canvas.height);
+    canvasCtx.stroke();
   }
-  stopAnimation() {
-    window.cancelAnimationFrame(this.animation);
+  resetViz() {
     this.canvas.getContext('2d').putImageData(this.trimmedAudioImage, 0, 0);
   }
   makeGrain() {
