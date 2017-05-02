@@ -234,6 +234,17 @@ class WaveformGrainSource extends Component {
     osc.type = this.state.waveType;
     osc.frequency.value = this.state.waveFrequency;
     return osc;
+    // const numsamples = Math.round(this.audioCtx.sampleRate * this.props.grainDuration);
+    // const x = numeric.linspace(0,this.props.grainDuration,numsamples);
+    // const y = numeric.sin(numeric.mul(2*Math.PI*this.state.waveFrequency, x));
+    // // console.log(y);
+    //
+    // const buff = this.audioCtx.createBuffer(1,numsamples,this.audioCtx.sampleRate);
+    // buff.copyToChannel(Float32Array.from(y),0);
+    //
+    // const soundSource = this.audioCtx.createBufferSource();
+    // soundSource.buffer = buff;
+    // return soundSource;
   }
   playGrain(grain) {
     grain.connect(this.audioAnalyzer);
