@@ -237,10 +237,39 @@ class WaveformGrainSource extends Component {
     }
   }
   makeGrain() {
-    // TODO: other types of wave
     const numsamples = Math.round(this.audioCtx.sampleRate * this.props.grainDuration);
+
+    // TODO: generate only on parameter change
     const x = numeric.linspace(0,this.props.grainDuration,numsamples);
-    const y = numeric.sin(numeric.mul(2*Math.PI*this.state.waveFrequency, x));
+    let y;
+    if (this.state.waveType === 'sine') {
+       y = numeric.sin(numeric.mul(2*Math.PI*this.state.waveFrequency, x))
+    } else if (this.state.waveType === 'square') {
+      // const sine = numeric.sin(numeric.mul(2*Math.PI*this.state.waveFrequency, x))
+      const period = 1/this.state.waveFrequency;
+      const modPeriod = numeric.mod(x,period);
+      // if less than half a period, value of 1
+      let pos = numeric.lt(modPeriod,period/2);
+      pos = numeric.mul(pos,1);
+      // if greater than/equal to half a period, value of -1
+      let neg = numeric.not(pos);
+      neg = numeric.mul(neg,-1);
+      y = numeric.add(neg,pos);
+    } else if (this.state.waveType === 'sawtooth') {
+      const a = numeric.mul(x,this.state.waveFrequency);
+      const b = numeric.floor(a);
+      y = numeric.sub(a,b);
+      y = numeric.mul(y,2);
+      y = numeric.sub(y,1);
+    } else if (this.state.waveType === 'triangle') {
+      const period = 1/this.state.waveFrequency;
+      y = numeric.sub(x,period/4)
+      y = numeric.mod(y,period);
+      y = numeric.sub(y,period/2);
+      y = numeric.abs(y);
+      y = numeric.sub(y,period/4);
+      y = numeric.mul(y,4/period);
+    }
 
     const buff = this.audioCtx.createBuffer(1,numsamples,this.audioCtx.sampleRate);
     buff.copyToChannel(Float32Array.from(y),0);
