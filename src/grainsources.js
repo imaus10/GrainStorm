@@ -90,7 +90,6 @@ export class WaveformGrainSource extends Component {
   updateGrain() {
     const numsamples = Math.round(this.audioCtx.sampleRate * this.props.grainDuration);
 
-    // TODO: generate only on parameter change
     const x = numeric.linspace(0,this.props.grainDuration,numsamples);
     let y;
     if (this.state.waveType === 'sine') {
