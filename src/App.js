@@ -17,9 +17,9 @@ function ParameterBox(props) {
 class LinearEnvelope extends Component {
   constructor(props) {
     super(props);
-    // set envelope attack and decay to 10% of grain duration
-    this.state = { attackTime: props.grainDuration*0.1
-                 , decayTime: props.grainDuration*.1
+    // attack/decay times as pct of grainDuration
+    this.state = { attackTime: 0.1
+                 , decayTime: 0.1
                  };
   }
   render() {
@@ -30,18 +30,21 @@ class LinearEnvelope extends Component {
     );
   }
   changeAttackDecay(env) {
-    const attack = (env[0]/100) * this.props.grainDuration;
-    const decay = (env[1]/100) * this.props.grainDuration;
+    const attack = (env[0]/100);
+    const decay = (1-env[1]/100);
     this.setState({ attackTime: attack, decayTime: decay });
   }
-  generate() {
-    const envelope = this.props.audioCtx.createGain();
-    const now = this.props.audioCtx.currentTime;
-    envelope.gain.setValueAtTime(0, now);
-    envelope.gain.linearRampToValueAtTime(1, now+this.state.attackTime);
-    envelope.gain.setValueAtTime(1, now+this.props.grainDuration-this.state.decayTime);
-    envelope.gain.linearRampToValueAtTime(0, now+this.props.grainDuration);
-    return envelope;
+  generate(grain) { // TODO: generate only on change?
+    const attackSamples = Math.round(grain.length*this.state.attackTime);
+    const attack = numeric.linspace(0,1,attackSamples);
+    const decaySamples = Math.round(grain.length*this.state.decayTime);
+    const decay = numeric.linspace(1,0,decaySamples);
+    // console.log('attackSamples: ' + attackSamples);
+    // console.log('decaySamples: ' + decaySamples);
+    // console.log('grain.length: ' + grain.length);
+    const sustain = Array(grain.length-attack.length-decay.length).fill(1);
+    const env = attack.concat(sustain).concat(decay);
+    return env;
   }
 }
 
@@ -79,12 +82,12 @@ function grainCloud(GrainSource) {
                      ref={eg => this.envelope = eg}
                      {...this.state}
                      {...this.props} />;
-      } // else if (this.state.envelopeType === 'gaussian') {
-        // envelope = <GaussianEnvelope
-        //              ref={eg => this.envelope = eg}
-        //              {...this.state}
-        //              {...this.props} />;
-      //}
+      } //else if (this.state.envelopeType === 'gaussian') {
+      //   envelope = <GaussianEnvelope
+      //                ref={eg => this.envelope = eg}
+      //                {...this.state}
+      //                {...this.props} />;
+      // }
       return (
         <div className="grainCloud">
           <GrainSource
@@ -130,12 +133,16 @@ function grainCloud(GrainSource) {
       this.setState({ envelopeType: env });
     }
     generateGrainEnvelope() {
-      // the ol' grain-n-gain
       const grain = this.grainSource.makeGrain();
-      const gain = this.envelope.generate();
-      grain.connect(gain);
-      gain.connect(this.audioCtx.destination);
-      this.grainSource.playGrain(grain);
+      const env = this.envelope.generate(grain);
+      for (let ch=0; ch<grain.numberOfChannels; ch++) {
+        const chanBuff = grain.getChannelData(ch);
+        grain.copyToChannel(Float32Array.from(numeric.mul(env,chanBuff)), ch);
+      }
+
+      const src = this.audioCtx.createBufferSource();
+      src.buffer = grain;
+      this.grainSource.playGrain(src);
     }
     playCloud() {
       this.intervalId = window.setInterval(() => this.generateGrainEnvelope(), 1000/this.state.grainDensity);
@@ -230,26 +237,18 @@ class WaveformGrainSource extends Component {
     }
   }
   makeGrain() {
-    const osc = this.audioCtx.createOscillator();
-    osc.type = this.state.waveType;
-    osc.frequency.value = this.state.waveFrequency;
-    return osc;
-    // const numsamples = Math.round(this.audioCtx.sampleRate * this.props.grainDuration);
-    // const x = numeric.linspace(0,this.props.grainDuration,numsamples);
-    // const y = numeric.sin(numeric.mul(2*Math.PI*this.state.waveFrequency, x));
-    // // console.log(y);
-    //
-    // const buff = this.audioCtx.createBuffer(1,numsamples,this.audioCtx.sampleRate);
-    // buff.copyToChannel(Float32Array.from(y),0);
-    //
-    // const soundSource = this.audioCtx.createBufferSource();
-    // soundSource.buffer = buff;
-    // return soundSource;
+    // TODO: other types of wave
+    const numsamples = Math.round(this.audioCtx.sampleRate * this.props.grainDuration);
+    const x = numeric.linspace(0,this.props.grainDuration,numsamples);
+    const y = numeric.sin(numeric.mul(2*Math.PI*this.state.waveFrequency, x));
+
+    const buff = this.audioCtx.createBuffer(1,numsamples,this.audioCtx.sampleRate);
+    buff.copyToChannel(Float32Array.from(y),0);
+    return buff;
   }
   playGrain(grain) {
     grain.connect(this.audioAnalyzer);
     grain.start();
-    grain.stop(this.audioCtx.currentTime + this.props.grainDuration);
   }
 }
 const WaveformGrainCloud = grainCloud(WaveformGrainSource);
@@ -258,11 +257,10 @@ class SampleGrainSource extends Component {
   constructor(props) {
     super(props);
     this.audioCtx = props.audioCtx;
-    this.audioData = props.audioData;
-    this.initialPos = 0; // where the playhead was when clipStart, clipEnd, or speed changed
+    this.audioData = props.audioData; // AudioBuffer of sample
+    this.initialPos = 0; // where the playhead was when sampleStart, sampleEnd, or speed changed
     // additional properties:
     // this.playTime -- time audio started playing (to find current position in audio)
-    // this.stopPos -- absolute position when speed hit 0 (freeze at this position)
     // this.audioImage -- unmodified image of original audio drawn on canvas
     // this.trimmedAudioImage -- image of audio plus sampleStart and sampleEnd markers
     this.state = { sampleStart: 0 // pct of total duration
@@ -400,13 +398,24 @@ class SampleGrainSource extends Component {
     this.canvas.getContext('2d').putImageData(this.trimmedAudioImage, 0, 0);
   }
   makeGrain() {
-    const soundSource = this.audioCtx.createBufferSource();
-    soundSource.buffer = this.audioData;
-    soundSource.detune.value = this.state.pitchShift;
-    return soundSource;
+    const sampleRate = this.audioData.sampleRate;
+    const nchan = this.audioData.numberOfChannels;
+    // TODO: get rid of time, use samples instead
+    const grainSamples = Math.round(this.props.grainDuration*sampleRate);
+    const grain = this.audioCtx.createBuffer(nchan, grainSamples, sampleRate);
+
+    const startSample = Math.round(this.getAbsolutePos()*sampleRate);
+    for (let ch=0; ch<nchan; ch++) {
+      const chanBuff = new Float32Array(grainSamples);
+      this.audioData.copyFromChannel(chanBuff, ch, startSample);
+      grain.copyToChannel(chanBuff, ch);
+    }
+    return grain;
   }
   playGrain(grain) {
-    grain.start(0, this.getAbsolutePos(), this.props.grainDuration);
+    grain.detune.value = this.state.pitchShift;
+    grain.connect(this.audioCtx.destination);
+    grain.start();
   }
 }
 const SampleGrainCloud = grainCloud(SampleGrainSource);
