@@ -173,6 +173,14 @@ class WaveformGrainSource extends Component {
   }
   componentDidMount() {
     this.resetViz();
+    this.updateGrain();
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.grainDuration !== prevProps.grainDuration ||
+        prevState.waveType !== this.state.waveType ||
+        prevState.waveFrequency !== this.state.waveFrequency) {
+          this.updateGrain();
+        }
   }
   render() {
     const wvopts = this.waveTypes.map(wv => <option value={wv} key={wv}>{wv[0].toUpperCase() + wv.slice(1)}</option>);
@@ -236,7 +244,7 @@ class WaveformGrainSource extends Component {
       canvasCtx.stroke();
     }
   }
-  makeGrain() {
+  updateGrain() {
     const numsamples = Math.round(this.audioCtx.sampleRate * this.props.grainDuration);
 
     // TODO: generate only on parameter change
@@ -271,9 +279,11 @@ class WaveformGrainSource extends Component {
       y = numeric.mul(y,4/period);
     }
 
-    const buff = this.audioCtx.createBuffer(1,numsamples,this.audioCtx.sampleRate);
-    buff.copyToChannel(Float32Array.from(y),0);
-    return buff;
+    this.waveform = this.audioCtx.createBuffer(1,numsamples,this.audioCtx.sampleRate);
+    this.waveform.copyToChannel(Float32Array.from(y),0);
+  }
+  makeGrain() {
+    return this.waveform;
   }
   playGrain(grain) {
     grain.connect(this.audioAnalyzer);
