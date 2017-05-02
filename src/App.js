@@ -14,24 +14,48 @@ function ParameterBox(props) {
   );
 }
 
+class LinearEnvelope extends Component {
+  constructor(props) {
+    super(props);
+    // set envelope attack and decay to 10% of grain duration
+    this.state = { attackTime: props.grainDuration*0.1
+                 , decayTime: props.grainDuration*.1
+                 };
+  }
+  render() {
+    return (
+      <div>
+        <Range allowCross={false} defaultValue={[10,90]} onChange={env => this.changeAttackDecay(env)} />
+      </div>
+    );
+  }
+  changeAttackDecay(env) {
+    const attack = (env[0]/100) * this.props.grainDuration;
+    const decay = (env[1]/100) * this.props.grainDuration;
+    this.setState({ attackTime: attack, decayTime: decay });
+  }
+  generate() {
+    const envelope = this.props.audioCtx.createGain();
+    const now = this.props.audioCtx.currentTime;
+    envelope.gain.setValueAtTime(0, now);
+    envelope.gain.linearRampToValueAtTime(1, now+this.state.attackTime);
+    envelope.gain.setValueAtTime(1, now+this.props.grainDuration-this.state.decayTime);
+    envelope.gain.linearRampToValueAtTime(0, now+this.props.grainDuration);
+    return envelope;
+  }
+}
+
 function grainCloud(GrainSource) {
   return class GrainCloud extends Component {
     constructor(props) {
       super(props);
       this.audioCtx = props.audioCtx;
-      const grainDuration = 0.03;
-      // set envelope attack and decay to 10% of grain duration
-      const envAttack = grainDuration * 0.1;
-      const envDecay = grainDuration * 0.1;
+      this.envelopeTypes = ['linear'];
       this.state = { grainDensity: 10 // grains/s
-                   , grainDuration: grainDuration // s
-                   , envelope: { attack: envAttack, decay: envDecay } // s
+                   , grainDuration: 0.03 // s
+                   , envelopeType: this.envelopeTypes[0]
                    , playing: false
                    };
-    }
-    componentDidMount() {
-      // TODO: draw envelope
-      // const canvasCtx = this.envelopeCanvas.getContext('2d');
     }
     componentDidUpdate(prevProps, prevState) {
       if (prevState.playing !== this.state.playing) {
@@ -48,6 +72,19 @@ function grainCloud(GrainSource) {
     }
     render() {
       const playButtonTxt = this.state.playing ? 'stop' : 'play';
+      const envopts = this.envelopeTypes.map(env => <option value={env} key={env}>{env[0].toUpperCase() + env.slice(1)}</option>);
+      let envelope;
+      if (this.state.envelopeType === 'linear') {
+        envelope = <LinearEnvelope
+                     ref={eg => this.envelope = eg}
+                     {...this.state}
+                     {...this.props} />;
+      } // else if (this.state.envelopeType === 'gaussian') {
+        // envelope = <GaussianEnvelope
+        //              ref={eg => this.envelope = eg}
+        //              {...this.state}
+        //              {...this.props} />;
+      //}
       return (
         <div className="grainCloud">
           <GrainSource
@@ -66,8 +103,13 @@ function grainCloud(GrainSource) {
             min={1}
             max={100}
             onChange={dur => this.changeGrainDuration(dur)} />
-          <label>Envelope</label>
-          <Range allowCross={false} defaultValue={[10,90]} onChange={env => this.changeEnvelope(env)} />
+          <div>
+            <label>Envelope</label>
+            <select value={this.state.envelopeType} onChange={evt => this.changeEnvelopeType(evt)}>
+              {envopts}
+            </select>
+            {envelope}
+          </div>
           <div>
             <button type="button" onClick={() => this.changePlaying()}>{playButtonTxt}</button>
           </div>
@@ -83,31 +125,20 @@ function grainCloud(GrainSource) {
     changeGrainDuration(dur) {
       this.setState({ grainDuration: dur/1000 });
     }
-    changeEnvelope(env) {
-      const attack = (env[0]/100) * this.state.grainDuration;
-      const decay = (env[1]/100) * this.state.grainDuration;
-      this.setState({ envelope: { attack:attack, decay:decay } });
+    changeEnvelopeType(evt) {
+      const env = evt.target.value;
+      this.setState({ envelopeType: env });
     }
-    grainEnvelopeGenerator() {
-      const grainDuration = this.state.grainDuration;
-      const grain = this.grainSource.makeGrain();
-      const gainNode = this.audioCtx.createGain();
+    generateGrainEnvelope() {
       // the ol' grain-n-gain
-      grain.connect(gainNode);
-      gainNode.connect(this.audioCtx.destination);
-
-      const now = this.audioCtx.currentTime;
-      const attackTime = this.state.envelope.attack;
-      const decayTime = this.state.envelope.decay;
-      gainNode.gain.setValueAtTime(0, now);
-      gainNode.gain.linearRampToValueAtTime(1, now+attackTime);
-      gainNode.gain.setValueAtTime(1, now+grainDuration-decayTime);
-      gainNode.gain.linearRampToValueAtTime(0, now+grainDuration);
-
+      const grain = this.grainSource.makeGrain();
+      const gain = this.envelope.generate();
+      grain.connect(gain);
+      gain.connect(this.audioCtx.destination);
       this.grainSource.playGrain(grain);
     }
     playCloud() {
-      this.intervalId = window.setInterval(() => this.grainEnvelopeGenerator(), 1000/this.state.grainDensity);
+      this.intervalId = window.setInterval(() => this.generateGrainEnvelope(), 1000/this.state.grainDensity);
       const animationFunc = () => {
         this.animation = window.requestAnimationFrame(animationFunc);
         this.grainSource.drawViz();
@@ -137,11 +168,11 @@ class WaveformGrainSource extends Component {
     this.resetViz();
   }
   render() {
-    const wvopts = this.waveTypes.map((wv) => <option value={wv} key={wv}>{wv[0].toUpperCase() + wv.slice(1)}</option>);
+    const wvopts = this.waveTypes.map(wv => <option value={wv} key={wv}>{wv[0].toUpperCase() + wv.slice(1)}</option>);
     return (
       <div className="sourceBox">
         <canvas ref={c => this.canvas = c}></canvas>
-        <select value={this.state.waveType} onChange={(evt) => this.changeWaveType(evt)}>
+        <select value={this.state.waveType} onChange={evt => this.changeWaveType(evt)}>
           {wvopts}
         </select>
         <ParameterBox
