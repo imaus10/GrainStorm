@@ -124,7 +124,9 @@ export class WaveformGrainSource extends Component {
     this.waveform.copyToChannel(Float32Array.from(y),0);
   }
   makeGrain() {
-    return this.waveform;
+    const wvCp = this.props.audioCtx.createBuffer(1,this.waveform.length,this.waveform.sampleRate);
+    wvCp.copyToChannel(this.waveform.getChannelData(0),0);
+    return wvCp;
   }
   playGrain(grain) {
     grain.connect(this.audioAnalyzer);

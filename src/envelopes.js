@@ -77,7 +77,6 @@ class LinearEnvelopeSource extends Component {
     this.setState({ attackTime: attack, decayTime: decay });
   }
   updateEnvelope(grainLength) {
-    console.log('updating envelope');
     if (typeof grainLength === 'undefined') {
       grainLength = Math.round(this.props.grainDuration*this.props.audioCtx.sampleRate);
     }
