@@ -159,3 +159,25 @@ class GaussianEnvelopeGenerator extends Component {
   }
 }
 export const GaussianEnvelope = envelope(GaussianEnvelopeGenerator);
+
+class SincEnvelopeGenerator extends Component {
+  // TODO: parameters
+  render() {
+    return (
+      <div></div>
+    );
+  }
+  generate(envLength) {
+    const x = numeric.linspace(-envLength/2,envLength/2,envLength);
+    const y = numeric.div(numeric.sin(x),x);
+    // replace NaN (x = 0) with 1
+    return numeric.or(y,1);
+  }
+  updateEnvelope(grainLength) {
+    if (typeof grainLength === 'undefined') {
+      grainLength = Math.round(this.props.grainDuration*this.props.audioCtx.sampleRate);
+    }
+    this.envelope = this.generate(grainLength);
+  }
+}
+export const SincEnvelope = envelope(SincEnvelopeGenerator);

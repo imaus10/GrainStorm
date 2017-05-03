@@ -92,7 +92,7 @@ export class WaveformGrainSource extends Component {
     const x = numeric.linspace(0,this.props.grainDuration,numsamples);
     let y;
     if (this.state.waveType === 'sine') {
-       y = numeric.sin(numeric.mul(2*Math.PI*this.state.waveFrequency, x))
+       y = numeric.sin(numeric.mul(2*Math.PI*this.state.waveFrequency, x));
     } else if (this.state.waveType === 'square') {
       // const sine = numeric.sin(numeric.mul(2*Math.PI*this.state.waveFrequency, x))
       const period = 1/this.state.waveFrequency;
