@@ -2,23 +2,23 @@ import React, { Component } from 'react';
 import numeric from 'numeric';
 import { Range } from 'rc-slider';
 
-function envelope(EnvelopeSource) {
+function envelope(EnvelopeGenerator) {
   return class Envelope extends Component {
     componentDidMount() {
-      this.envelopeSource.updateEnvelope();
+      this.envelopeGenerator.updateEnvelope();
       this.drawEnvelope();
     }
     componentDidUpdate(prevProps, prevState) {
       if (this.props.grainDuration !== prevProps.grainDuration) {
-        this.envelopeSource.updateEnvelope();
+        this.envelopeGenerator.updateEnvelope();
       }
     }
     render() {
       return (
         <div>
           <canvas ref={c => this.canvas = c}></canvas>
-          <EnvelopeSource
-            ref={es => this.envelopeSource = es}
+          <EnvelopeGenerator
+            ref={eg => this.envelopeGenerator = eg}
             drawEnvelope={() => this.drawEnvelope()}
             {...this.props} />
         </div>
@@ -28,7 +28,7 @@ function envelope(EnvelopeSource) {
       const canvasCtx = this.canvas.getContext('2d');
       canvasCtx.clearRect(0,0,this.canvas.width,this.canvas.height);
       // convert to pixel heights on canvas
-      let canvasdata = numeric.mul(this.envelopeSource.generate(this.canvas.width), this.canvas.height);
+      let canvasdata = numeric.mul(this.envelopeGenerator.generate(this.canvas.width), this.canvas.height);
       canvasdata = numeric.sub(this.canvas.height, canvasdata);
 
       // step thru the sample in chunks
@@ -41,16 +41,16 @@ function envelope(EnvelopeSource) {
       }
     }
     generate(grain) {
-      if (grain.length !== this.envelopeSource.envelope.length) {
+      if (grain.length !== this.envelopeGenerator.envelope.length) {
         // resample at the grain's sampleRate
-        this.envelopeSource.updateEnvelope(grain.length);
+        this.envelopeGenerator.updateEnvelope(grain.length);
       }
-      return this.envelopeSource.envelope;
+      return this.envelopeGenerator.envelope;
     }
   }
 }
 
-class LinearEnvelopeSource extends Component {
+class LinearEnvelopeGenerator extends Component {
   constructor(props) {
     super(props);
     // attack/decay times as pct of grainDuration
@@ -90,7 +90,7 @@ class LinearEnvelopeSource extends Component {
     this.envelope = this.generate(grainLength);
   }
 }
-export const LinearEnvelope = envelope(LinearEnvelopeSource);
+export const LinearEnvelope = envelope(LinearEnvelopeGenerator);
 
 // first and last values mirror each other's movements
 class MirrorRange extends Component {
@@ -125,7 +125,7 @@ class MirrorRange extends Component {
   }
 }
 
-class GaussianEnvelopeSource extends Component {
+class GaussianEnvelopeGenerator extends Component {
   constructor(props) {
     super(props);
     this.state = { sigma: 0.25 }; // set one standard deviation to 1/4 the grain duration
@@ -158,4 +158,4 @@ class GaussianEnvelopeSource extends Component {
     this.envelope = this.generate(grainLength);
   }
 }
-export const GaussianEnvelope = envelope(GaussianEnvelopeSource);
+export const GaussianEnvelope = envelope(GaussianEnvelopeGenerator);

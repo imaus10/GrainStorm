@@ -20,10 +20,10 @@ function grainCloud(GrainSource) {
   return class GrainCloud extends Component {
     constructor(props) {
       super(props);
-      this.envelopeTypes = ['linear','gaussian'];
+      this.envelopeTypes = ['Linear attack & decay','Gaussian'];
       this.state = { grainDensity: 10 // grains/s
                    , grainDuration: 0.03 // s
-                   , envelopeType: this.envelopeTypes[0]
+                   , envelopeType: 0
                    , playing: false
                    };
     }
@@ -42,14 +42,14 @@ function grainCloud(GrainSource) {
     }
     render() {
       const playButtonTxt = this.state.playing ? 'stop' : 'play';
-      const envopts = this.envelopeTypes.map(env => <option value={env} key={env}>{env[0].toUpperCase() + env.slice(1)}</option>);
+      const envopts = this.envelopeTypes.map((v,i) => <option value={i} key={i}>{v}</option>);
       let envelope;
-      if (this.state.envelopeType === 'linear') {
+      if (this.state.envelopeType === 0) {
         envelope = <LinearEnvelope
                      ref={eg => this.envelope = eg}
                      {...this.state}
                      {...this.props} />;
-      } else if (this.state.envelopeType === 'gaussian') {
+      } else if (this.state.envelopeType === 1) {
         envelope = <GaussianEnvelope
                      ref={eg => this.envelope = eg}
                      {...this.state}
@@ -96,8 +96,7 @@ function grainCloud(GrainSource) {
       this.setState({ grainDuration: dur/1000 });
     }
     changeEnvelopeType(evt) {
-      const env = evt.target.value;
-      this.setState({ envelopeType: env });
+      this.setState({ envelopeType: parseInt(evt.target.value, 10) });
     }
     generateGrainEnvelope() {
       const grain = this.grainSource.makeGrain();
