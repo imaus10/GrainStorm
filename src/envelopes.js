@@ -9,7 +9,6 @@ function drawEnvelope(canvas, envelope) {
   // let canvasdata = numeric.add(envelope,1);
   // convert to pixel heights on canvas
   let canvasdata = numeric.mul(envelope, canvas.height);
-  // 2px of top padding
   canvasdata = numeric.sub(canvas.height, canvasdata);
 
   // step thru the sample in chunks
@@ -77,9 +76,6 @@ class MirrorRange extends Component {
     super(props);
     this.state = { value: props.defaultValue };
   }
-  componentDidUpdate() {
-    // this.props.onChange(this.state.value);
-  }
   render() {
     return (
       // TODO: fix allowCross bug (maybe...)
@@ -101,32 +97,44 @@ class MirrorRange extends Component {
     }
     const newVal = [first].concat(mids).concat([last]);
     this.setState({ value: newVal });
+    if (typeof this.props.onChange === 'function') {
+      this.props.onChange(newVal);
+    }
   }
 }
 
 export class GaussianEnvelope extends Component {
   constructor(props) {
     super(props);
-    this.state = { sigma: 0.25 }; // 1/4 the grain duration
+    this.state = { sigma: 0.25 }; // set one standard deviation to 1/4 the grain duration
   }
   componentDidMount() {
     this.updateEnvelope(Math.round(this.props.grainDuration*this.props.audioCtx.sampleRate));
     drawEnvelope(this.canvas, this.envelope);
   }
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.sigma !== prevState.sigma || this.props.grainDuration !== prevProps.grainDuration) {
+      this.updateEnvelope(Math.round(this.props.grainDuration*this.props.audioCtx.sampleRate));
+      drawEnvelope(this.canvas, this.envelope);
+    }
+  }
   render() {
     return (
       <div>
         <canvas ref={c => this.canvas = c}></canvas>
-        <MirrorRange defaultValue={[0,100]} />
+        <MirrorRange defaultValue={[0,100]} onChange={env => this.changeSigma(env)} />
       </div>
     );
+  }
+  changeSigma(env) {
+    const pct = (50-env[0])/50;
+    this.setState({ sigma: 0.25*pct });
   }
   updateEnvelope(grainLength) {
     const x = numeric.linspace(-1,1,grainLength);
     let y = numeric.pow(x,2);
     y = numeric.div(y,-2*Math.pow(this.state.sigma,2));
     this.envelope = numeric.exp(y);
-    console.log(this.envelope);
   }
   generate(grain) {
     if (grain.length !== this.envelope.length) {
