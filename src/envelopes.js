@@ -11,7 +11,6 @@ function envelope(EnvelopeSource) {
     componentDidUpdate(prevProps, prevState) {
       if (this.props.grainDuration !== prevProps.grainDuration) {
         this.envelopeSource.updateEnvelope();
-        this.drawEnvelope();
       }
     }
     render() {
@@ -29,7 +28,7 @@ function envelope(EnvelopeSource) {
       const canvasCtx = this.canvas.getContext('2d');
       canvasCtx.clearRect(0,0,this.canvas.width,this.canvas.height);
       // convert to pixel heights on canvas
-      let canvasdata = numeric.mul(this.envelopeSource.envelope, this.canvas.height);
+      let canvasdata = numeric.mul(this.envelopeSource.generate(this.canvas.width), this.canvas.height);
       canvasdata = numeric.sub(this.canvas.height, canvasdata);
 
       // step thru the sample in chunks
@@ -76,16 +75,19 @@ class LinearEnvelopeSource extends Component {
     const decay = (1-env[1]/100);
     this.setState({ attackTime: attack, decayTime: decay });
   }
+  generate(envLength) {
+    const attackSamples = Math.round(envLength*this.state.attackTime);
+    const attack = numeric.linspace(0,1,attackSamples);
+    const decaySamples = Math.round(envLength*this.state.decayTime);
+    const decay = numeric.linspace(1,0,decaySamples);
+    const sustain = Array(envLength-attack.length-decay.length).fill(1);
+    return attack.concat(sustain).concat(decay);
+  }
   updateEnvelope(grainLength) {
     if (typeof grainLength === 'undefined') {
       grainLength = Math.round(this.props.grainDuration*this.props.audioCtx.sampleRate);
     }
-    const attackSamples = Math.round(grainLength*this.state.attackTime);
-    const attack = numeric.linspace(0,1,attackSamples);
-    const decaySamples = Math.round(grainLength*this.state.decayTime);
-    const decay = numeric.linspace(1,0,decaySamples);
-    const sustain = Array(grainLength-attack.length-decay.length).fill(1);
-    this.envelope = attack.concat(sustain).concat(decay);
+    this.envelope = this.generate(grainLength);
   }
 }
 export const LinearEnvelope = envelope(LinearEnvelopeSource);
@@ -143,14 +145,17 @@ class GaussianEnvelopeSource extends Component {
     const pct = (50-env[0])/50;
     this.setState({ sigma: 0.25*pct });
   }
+  generate(envLength) {
+    const x = numeric.linspace(-1,1,envLength);
+    let y = numeric.pow(x,2);
+    y = numeric.div(y,-2*Math.pow(this.state.sigma,2));
+    return numeric.exp(y);
+  }
   updateEnvelope(grainLength) {
     if (typeof grainLength === 'undefined') {
       grainLength = Math.round(this.props.grainDuration*this.props.audioCtx.sampleRate);
     }
-    const x = numeric.linspace(-1,1,grainLength);
-    let y = numeric.pow(x,2);
-    y = numeric.div(y,-2*Math.pow(this.state.sigma,2));
-    this.envelope = numeric.exp(y);
+    this.envelope = this.generate(grainLength);
   }
 }
 export const GaussianEnvelope = envelope(GaussianEnvelopeSource);
