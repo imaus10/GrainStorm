@@ -20,7 +20,6 @@ function grainCloud(GrainSource) {
   return class GrainCloud extends Component {
     constructor(props) {
       super(props);
-      this.audioCtx = props.audioCtx;
       this.envelopeTypes = ['linear','gaussian'];
       this.state = { grainDensity: 10 // grains/s
                    , grainDuration: 0.03 // s
@@ -108,7 +107,7 @@ function grainCloud(GrainSource) {
         grain.copyToChannel(Float32Array.from(numeric.mul(env,chanBuff)), ch);
       }
 
-      const src = this.audioCtx.createBufferSource();
+      const src = this.props.audioCtx.createBufferSource();
       src.buffer = grain;
       this.grainSource.playGrain(src);
     }

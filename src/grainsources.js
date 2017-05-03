@@ -6,9 +6,8 @@ import { ParameterBox } from './App'
 export class WaveformGrainSource extends Component {
   constructor(props) {
     super(props);
-    this.audioCtx = props.audioCtx;
-    this.audioAnalyzer = this.audioCtx.createAnalyser();
-    this.audioAnalyzer.connect(this.audioCtx.destination);
+    this.audioAnalyzer = props.audioCtx.createAnalyser();
+    this.audioAnalyzer.connect(props.audioCtx.destination);
     this.waveTypes = ['sine','square','sawtooth','triangle'];
     this.state = { waveFrequency: 10000 // Hz
                  , waveType: this.waveTypes[0]
@@ -88,7 +87,7 @@ export class WaveformGrainSource extends Component {
     }
   }
   updateGrain() {
-    const numsamples = Math.round(this.audioCtx.sampleRate * this.props.grainDuration);
+    const numsamples = Math.round(this.props.audioCtx.sampleRate * this.props.grainDuration);
 
     const x = numeric.linspace(0,this.props.grainDuration,numsamples);
     let y;
@@ -121,7 +120,7 @@ export class WaveformGrainSource extends Component {
       y = numeric.mul(y,4/period);
     }
 
-    this.waveform = this.audioCtx.createBuffer(1,numsamples,this.audioCtx.sampleRate);
+    this.waveform = this.props.audioCtx.createBuffer(1,numsamples,this.props.audioCtx.sampleRate);
     this.waveform.copyToChannel(Float32Array.from(y),0);
   }
   makeGrain() {
@@ -136,7 +135,6 @@ export class WaveformGrainSource extends Component {
 export class SampleGrainSource extends Component {
   constructor(props) {
     super(props);
-    this.audioCtx = props.audioCtx;
     this.audioData = props.audioData; // AudioBuffer of sample
     this.initialPos = 0; // where the playhead was when sampleStart, sampleEnd, or speed changed
     // additional properties:
@@ -188,7 +186,7 @@ export class SampleGrainSource extends Component {
     // start or stop animation if playing has changed
     if (this.props.playing !== prevProps.playing) {
       if (this.props.playing) {
-        this.playTime = this.audioCtx.currentTime;
+        this.playTime = this.props.audioCtx.currentTime;
       } else {
         this.initialPos = 0;
       }
@@ -231,7 +229,7 @@ export class SampleGrainSource extends Component {
   changeStartEnd(pos) {
     if (this.props.playing) {
       this.initialPos = this.getAbsolutePos();
-      this.playTime = this.audioCtx.currentTime;
+      this.playTime = this.props.audioCtx.currentTime;
     } else {
       this.initialPos = pos[0]/100*this.audioData.duration;
     }
@@ -240,7 +238,7 @@ export class SampleGrainSource extends Component {
   changeSpeed(sp) {
     if (this.props.playing) {
       this.initialPos = this.getAbsolutePos();
-      this.playTime = this.audioCtx.currentTime;
+      this.playTime = this.props.audioCtx.currentTime;
     }
     this.setState({ speed: sp/100 });
   }
@@ -253,7 +251,7 @@ export class SampleGrainSource extends Component {
     if (this.state.speed === 0) {
       return Math.min(Math.max(this.initialPos, startTime), endTime);
     }
-    const timeElapsed = this.props.playing ? (this.audioCtx.currentTime - this.playTime)*this.state.speed : 0;
+    const timeElapsed = this.props.playing ? (this.props.audioCtx.currentTime - this.playTime)*this.state.speed : 0;
     const dur = (endTime - startTime);
     const pos = (timeElapsed + this.initialPos - startTime) % dur + startTime;
     if (pos >= startTime) {
@@ -282,7 +280,7 @@ export class SampleGrainSource extends Component {
     const nchan = this.audioData.numberOfChannels;
     // TODO: get rid of time, use samples instead
     const grainSamples = Math.round(this.props.grainDuration*sampleRate);
-    const grain = this.audioCtx.createBuffer(nchan, grainSamples, sampleRate);
+    const grain = this.props.audioCtx.createBuffer(nchan, grainSamples, sampleRate);
 
     const startSample = Math.round(this.getAbsolutePos()*sampleRate);
     for (let ch=0; ch<nchan; ch++) {
@@ -294,7 +292,7 @@ export class SampleGrainSource extends Component {
   }
   playGrain(grain) {
     grain.detune.value = this.state.pitchShift;
-    grain.connect(this.audioCtx.destination);
+    grain.connect(this.props.audioCtx.destination);
     grain.start();
   }
 }
