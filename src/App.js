@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import numeric from 'numeric';
 import Slider from 'rc-slider';
-import { LinearEnvelope, GaussianEnvelope, SincEnvelope } from './envelopes';
+import { LinearEnvelope, GaussianEnvelope, SincEnvelope,
+         ExponentialDecayEnvelope } from './envelopes';
 import { WaveformGrainSource, SampleGrainSource } from './grainsources';
 import 'rc-slider/assets/index.css';
 import './App.css';
@@ -20,7 +21,7 @@ function grainCloud(GrainSource) {
   return class GrainCloud extends Component {
     constructor(props) {
       super(props);
-      this.envelopeTypes = ['Linear attack & decay','Gaussian','Sinc'];
+      this.envelopeTypes = ['Linear attack & decay','Gaussian','Sinc','Exponential decay'];
       this.state = { grainDensity: 10 // grains/s
                    , grainDuration: 0.03 // s
                    , envelopeType: 0
@@ -56,6 +57,11 @@ function grainCloud(GrainSource) {
                      {...this.props} />;
       } else if (this.state.envelopeType === 2) {
         envelope = <SincEnvelope
+                     ref={eg => this.envelope = eg}
+                     {...this.state}
+                     {...this.props} />;
+      } else if (this.state.envelopeType === 3) {
+        envelope = <ExponentialDecayEnvelope
                      ref={eg => this.envelope = eg}
                      {...this.state}
                      {...this.props} />;

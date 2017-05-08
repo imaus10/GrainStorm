@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import numeric from 'numeric';
-import { Range } from 'rc-slider';
+import Slider, { Range } from 'rc-slider';
 
 function envelope(EnvelopeGenerator) {
   return class Envelope extends Component {
@@ -189,3 +189,29 @@ class SincEnvelopeGenerator extends Component {
   }
 }
 export const SincEnvelope = envelope(SincEnvelopeGenerator);
+
+class ExponentialDecayEnvelopeGenerator extends Component {
+  constructor(props) {
+    super(props);
+    this.baseDecayRate = 1;
+    this.state = { decayRate: this.baseDecayRate };
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.decayRate !== prevState.decayRate) {
+      this.props.updateEnvelope();
+    }
+  }
+  render() {
+    return (
+      <Slider defaultValue={100} onChange={env => this.changeDecayRate(env)} />
+    );
+  }
+  changeDecayRate(env) {
+    this.setState({ decayRate: 100-env+this.baseDecayRate });
+  }
+  generate(envLength) {
+    const x = numeric.linspace(0, 1, envLength);
+    return numeric.exp(numeric.mul(x,-this.state.decayRate));
+  }
+}
+export const ExponentialDecayEnvelope = envelope(ExponentialDecayEnvelopeGenerator);
