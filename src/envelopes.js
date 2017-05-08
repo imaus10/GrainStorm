@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import numeric from 'numeric';
 import Slider, { Range } from 'rc-slider';
 
-function envelope(EnvelopeGenerator) {
+function envelope(EnvelopeGenerator, xtraProps) {
   return class Envelope extends Component {
     componentDidMount() {
       this.updateEnvelope();
@@ -20,7 +20,8 @@ function envelope(EnvelopeGenerator) {
           <EnvelopeGenerator
             ref={eg => this.envelopeGenerator = eg}
             updateEnvelope={() => this.updateEnvelope()}
-            {...this.props} />
+            {...this.props}
+            {...xtraProps} />
         </div>
       );
     }
@@ -202,16 +203,20 @@ class ExponentialDecayEnvelopeGenerator extends Component {
     }
   }
   render() {
+    const dfault = this.props.reverse ? 0 : 100;
     return (
-      <Slider defaultValue={100} onChange={env => this.changeDecayRate(env)} />
+      <Slider defaultValue={dfault} onChange={env => this.changeDecayRate(env)} />
     );
   }
   changeDecayRate(env) {
-    this.setState({ decayRate: 100-env+this.baseDecayRate });
+    const r = this.props.reverse ? env : 100-env;
+    this.setState({ decayRate: r+this.baseDecayRate });
   }
   generate(envLength) {
-    const x = numeric.linspace(0, 1, envLength);
+    const [begin,end] = this.props.reverse ? [1,0] : [0,1];
+    const x = numeric.linspace(begin, end, envLength);
     return numeric.exp(numeric.mul(x,-this.state.decayRate));
   }
 }
-export const ExponentialDecayEnvelope = envelope(ExponentialDecayEnvelopeGenerator);
+export const ExponentialDecayEnvelope = envelope(ExponentialDecayEnvelopeGenerator, {reverse:false});
+export const ReverseExponentialDecayEnvelope = envelope(ExponentialDecayEnvelopeGenerator, {reverse:true});
