@@ -5,12 +5,12 @@ import { Range } from 'rc-slider';
 function envelope(EnvelopeGenerator) {
   return class Envelope extends Component {
     componentDidMount() {
-      this.envelopeGenerator.updateEnvelope();
+      this.updateEnvelope();
       this.drawEnvelope();
     }
     componentDidUpdate(prevProps, prevState) {
       if (this.props.grainDuration !== prevProps.grainDuration) {
-        this.envelopeGenerator.updateEnvelope();
+        this.updateEnvelope();
       }
     }
     render() {
@@ -19,7 +19,7 @@ function envelope(EnvelopeGenerator) {
           <canvas ref={c => this.canvas = c}></canvas>
           <EnvelopeGenerator
             ref={eg => this.envelopeGenerator = eg}
-            drawEnvelope={() => this.drawEnvelope()}
+            updateEnvelope={() => this.updateEnvelope()}
             {...this.props} />
         </div>
       );
@@ -27,8 +27,17 @@ function envelope(EnvelopeGenerator) {
     drawEnvelope() {
       const canvasCtx = this.canvas.getContext('2d');
       canvasCtx.clearRect(0,0,this.canvas.width,this.canvas.height);
+
+      canvasCtx.setLineDash([10,2]);
+      canvasCtx.beginPath();
+      canvasCtx.moveTo(0,this.canvas.height/2);
+      canvasCtx.lineTo(this.canvas.width,this.canvas.height/2);
+      canvasCtx.stroke();
+
+      // convert to values between 0 and 2
+      let canvasdata = numeric.add(this.envelopeGenerator.generate(this.canvas.width), 1);
       // convert to pixel heights on canvas
-      let canvasdata = numeric.mul(this.envelopeGenerator.generate(this.canvas.width), this.canvas.height);
+      canvasdata = numeric.mul(canvasdata, this.canvas.height/2);
       canvasdata = numeric.sub(this.canvas.height, canvasdata);
 
       // step thru the sample in chunks
@@ -41,11 +50,18 @@ function envelope(EnvelopeGenerator) {
       }
     }
     generate(grain) {
-      if (grain.length !== this.envelopeGenerator.envelope.length) {
+      if (grain.length !== this.envelope.length) {
         // resample at the grain's sampleRate
-        this.envelopeGenerator.updateEnvelope(grain.length);
+        this.updateEnvelope(grain.length);
       }
-      return this.envelopeGenerator.envelope;
+      return this.envelope;
+    }
+    updateEnvelope(grainLength) {
+      if (typeof grainLength === 'undefined') {
+        grainLength = Math.round(this.props.grainDuration*this.props.audioCtx.sampleRate);
+      }
+      this.envelope = this.envelopeGenerator.generate(grainLength);
+      this.drawEnvelope();
     }
   }
 }
@@ -61,8 +77,7 @@ class LinearEnvelopeGenerator extends Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.state.attackTime !== prevState.attackTime ||
         this.state.decayTime !== prevState.decayTime) {
-      this.updateEnvelope();
-      this.props.drawEnvelope();
+      this.props.updateEnvelope();
     }
   }
   render() {
@@ -82,12 +97,6 @@ class LinearEnvelopeGenerator extends Component {
     const decay = numeric.linspace(1,0,decaySamples);
     const sustain = Array(envLength-attack.length-decay.length).fill(1);
     return attack.concat(sustain).concat(decay);
-  }
-  updateEnvelope(grainLength) {
-    if (typeof grainLength === 'undefined') {
-      grainLength = Math.round(this.props.grainDuration*this.props.audioCtx.sampleRate);
-    }
-    this.envelope = this.generate(grainLength);
   }
 }
 export const LinearEnvelope = envelope(LinearEnvelopeGenerator);
@@ -132,8 +141,7 @@ class GaussianEnvelopeGenerator extends Component {
   }
   componentDidUpdate(prevProps, prevState) {
     if (this.state.sigma !== prevState.sigma) {
-      this.updateEnvelope();
-      this.props.drawEnvelope();
+      this.props.updateEnvelope();
     }
   }
   render() {
@@ -151,33 +159,33 @@ class GaussianEnvelopeGenerator extends Component {
     y = numeric.div(y,-2*Math.pow(this.state.sigma,2));
     return numeric.exp(y);
   }
-  updateEnvelope(grainLength) {
-    if (typeof grainLength === 'undefined') {
-      grainLength = Math.round(this.props.grainDuration*this.props.audioCtx.sampleRate);
-    }
-    this.envelope = this.generate(grainLength);
-  }
 }
 export const GaussianEnvelope = envelope(GaussianEnvelopeGenerator);
 
 class SincEnvelopeGenerator extends Component {
-  // TODO: parameters
+  constructor(props) {
+    super(props);
+    this.state = { zeroCrossings: 3 };
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.zeroCrossings !== prevState.zeroCrossings) {
+      this.props.updateEnvelope();
+    }
+  }
   render() {
     return (
-      <div></div>
+      <MirrorRange defaultValue={[0,100]} onChange={env => this.changeWidth(env)} />
     );
   }
+  changeWidth(env) {
+    this.setState({ zeroCrossings: 3+env[0] });
+  }
   generate(envLength) {
-    const x = numeric.linspace(-envLength/2,envLength/2,envLength);
+    const numzerocross = this.state.zeroCrossings;
+    const x = numeric.linspace(-numzerocross*Math.PI,numzerocross*Math.PI,envLength);
     const y = numeric.div(numeric.sin(x),x);
     // replace NaN (x = 0) with 1
     return numeric.or(y,1);
-  }
-  updateEnvelope(grainLength) {
-    if (typeof grainLength === 'undefined') {
-      grainLength = Math.round(this.props.grainDuration*this.props.audioCtx.sampleRate);
-    }
-    this.envelope = this.generate(grainLength);
   }
 }
 export const SincEnvelope = envelope(SincEnvelopeGenerator);
