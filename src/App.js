@@ -21,7 +21,8 @@ function grainCloud(GrainSource) {
   return class GrainCloud extends Component {
     constructor(props) {
       super(props);
-      this.envelopeTypes = ['Linear attack & decay','Gaussian','Sinc','Exponential decay','Reverse exponential decay'];
+      this.envelopeLabels = ['Linear attack & decay', 'Gaussian', 'Sinc', 'Exponential decay', 'Reverse exponential decay'];
+      this.envelopeClasses = [LinearEnvelope, GaussianEnvelope, SincEnvelope, ExponentialDecayEnvelope, ReverseExponentialDecayEnvelope];
       this.state = { grainDensity: 10 // grains/s
                    , grainDuration: 0.03 // s
                    , envelopeType: 0
@@ -43,34 +44,8 @@ function grainCloud(GrainSource) {
     }
     render() {
       const playButtonTxt = this.state.playing ? 'stop' : 'play';
-      const envopts = this.envelopeTypes.map((v,i) => <option value={i} key={i}>{v}</option>);
-      let envelope;
-      if (this.state.envelopeType === 0) {
-        envelope = <LinearEnvelope
-                     ref={eg => this.envelope = eg}
-                     {...this.state}
-                     {...this.props} />;
-      } else if (this.state.envelopeType === 1) {
-        envelope = <GaussianEnvelope
-                     ref={eg => this.envelope = eg}
-                     {...this.state}
-                     {...this.props} />;
-      } else if (this.state.envelopeType === 2) {
-        envelope = <SincEnvelope
-                     ref={eg => this.envelope = eg}
-                     {...this.state}
-                     {...this.props} />;
-      } else if (this.state.envelopeType === 3) {
-        envelope = <ExponentialDecayEnvelope
-                     ref={eg => this.envelope = eg}
-                     {...this.state}
-                     {...this.props} />;
-      } else if (this.state.envelopeType === 4) {
-        envelope = <ReverseExponentialDecayEnvelope
-                     ref={eg => this.envelope = eg}
-                     {...this.state}
-                     {...this.props} />;
-      }
+      const envopts = this.envelopeLabels.map((v,i) => <option value={i} key={i}>{v}</option>);
+      const Env = this.envelopeClasses[this.state.envelopeType];
       return (
         <div className="grainCloud">
           <GrainSource
@@ -94,7 +69,10 @@ function grainCloud(GrainSource) {
             <select value={this.state.envelopeType} onChange={evt => this.changeEnvelopeType(evt)}>
               {envopts}
             </select>
-            {envelope}
+            <Env
+              ref={eg => this.envelope = eg}
+              grainDuration={this.state.grainDuration}
+              audioCtx={this.props.audioCtx} />
           </div>
           <div>
             <button type="button" onClick={() => this.changePlaying()}>{playButtonTxt}</button>
