@@ -137,7 +137,6 @@ export class WaveformGrainSource extends Component {
 export class SampleGrainSource extends Component {
   constructor(props) {
     super(props);
-    this.audioData = props.audioData; // AudioBuffer of sample
     this.initialPos = 0; // where the playhead was when sampleStart, sampleEnd, or speed changed
     // additional properties:
     // this.playTime -- time audio started playing (to find current position in audio)
@@ -152,7 +151,7 @@ export class SampleGrainSource extends Component {
   // draw the audio on the canvas
   componentDidMount() {
     const canvasCtx = this.canvas.getContext('2d');
-    const audio = this.audioData;
+    const audio = this.props.audioData;
 
     // convert to mono
     // console.log('converting to mono...');
@@ -233,7 +232,7 @@ export class SampleGrainSource extends Component {
       this.initialPos = this.getAbsolutePos();
       this.playTime = this.props.audioCtx.currentTime;
     } else {
-      this.initialPos = pos[0]/100*this.audioData.duration;
+      this.initialPos = pos[0]/100*this.props.audioData.duration;
     }
     this.setState({ sampleStart: pos[0]/100, sampleEnd: pos[1]/100 });
   }
@@ -248,8 +247,8 @@ export class SampleGrainSource extends Component {
     this.setState({ pitchShift: p });
   }
   getAbsolutePos() {
-    const startTime = this.state.sampleStart*this.audioData.duration;
-    const endTime = this.state.sampleEnd*this.audioData.duration;
+    const startTime = this.state.sampleStart*this.props.audioData.duration;
+    const endTime = this.state.sampleEnd*this.props.audioData.duration;
     if (this.state.speed === 0) {
       return Math.min(Math.max(this.initialPos, startTime), endTime);
     }
@@ -263,8 +262,8 @@ export class SampleGrainSource extends Component {
     }
   }
   drawViz() {
-    const stepsize = this.canvas.width/this.audioData.getChannelData(0).length;
-    const sampleRate = this.audioData.sampleRate;
+    const stepsize = this.canvas.width/this.props.audioData.getChannelData(0).length;
+    const sampleRate = this.props.audioData.sampleRate;
     const canvasCtx = this.canvas.getContext('2d');
     canvasCtx.putImageData(this.trimmedAudioImage, 0, 0);
     const pos = Math.floor( sampleRate * (this.getAbsolutePos()) );
@@ -278,8 +277,8 @@ export class SampleGrainSource extends Component {
     this.canvas.getContext('2d').putImageData(this.trimmedAudioImage, 0, 0);
   }
   makeGrain() {
-    const sampleRate = this.audioData.sampleRate;
-    const nchan = this.audioData.numberOfChannels;
+    const sampleRate = this.props.audioData.sampleRate;
+    const nchan = this.props.audioData.numberOfChannels;
     // TODO: get rid of time, use samples instead
     const grainSamples = Math.round(this.props.grainDuration*sampleRate);
     const grain = this.props.audioCtx.createBuffer(nchan, grainSamples, sampleRate);
@@ -287,7 +286,7 @@ export class SampleGrainSource extends Component {
     const startSample = Math.round(this.getAbsolutePos()*sampleRate);
     for (let ch=0; ch<nchan; ch++) {
       const chanBuff = new Float32Array(grainSamples);
-      this.audioData.copyFromChannel(chanBuff, ch, startSample);
+      this.props.audioData.copyFromChannel(chanBuff, ch, startSample);
       grain.copyToChannel(chanBuff, ch);
     }
     return grain;

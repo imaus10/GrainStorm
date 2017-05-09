@@ -71,8 +71,8 @@ function grainCloud(GrainSource) {
             </select>
             <Env
               ref={eg => this.envelope = eg}
-              grainDuration={this.state.grainDuration}
-              audioCtx={this.props.audioCtx} />
+              {...this.state}
+              {...this.props} />
           </div>
           <div>
             <button type="button" onClick={() => this.changePlaying()}>{playButtonTxt}</button>
