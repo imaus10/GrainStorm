@@ -147,15 +147,20 @@ class GrainStorm extends Component {
     const reader = new FileReader();
     reader.onload = () => {
       // console.log('decoding...');
-      this.audioCtx.decodeAudioData(reader.result, decodedAudioData => {
-        // console.log('decoded.');
-        const gc = { id: this.grainCloudIdSeq
-                   , audioData: decodedAudioData
-                   , type: 'sample'
-                   };
-        this.grainCloudIdSeq += 1;
-        this.setState({ grainClouds: this.state.grainClouds.concat(gc) });
-      });
+      this.audioCtx.decodeAudioData(reader.result,
+        decodedAudioData => {
+          // console.log('decoded.');
+          const gc = { id: this.grainCloudIdSeq
+                     , audioData: decodedAudioData
+                     , type: 'sample'
+                     };
+          this.grainCloudIdSeq += 1;
+          this.setState({ grainClouds: this.state.grainClouds.concat(gc) });
+        },
+        e => {
+          // TODO: prettier, more informative
+          alert("Error decoding audio data: \n" + e);
+        });
     };
     reader.readAsArrayBuffer(fileUpload.files[0]);
   }
