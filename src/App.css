@@ -22,3 +22,7 @@
   float: left;
   padding: 5px;
 }
+
+.addGrainCloudBox * {
+  padding: 5px;
+}

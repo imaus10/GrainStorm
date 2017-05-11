@@ -136,6 +136,7 @@ class GrainStorm extends Component {
         {this.state.grainClouds.map(gc => gc.type === 'sample' ? <SampleGrainCloud key={gc.id} audioCtx={this.audioCtx} audioData={gc.audioData} /> : <WaveformGrainCloud key={gc.id} audioCtx={this.audioCtx} />)}
         <div className="addGrainCloudBox">
           <button type="button" onClick={() => this.addWaveform()}>Generate waveform</button>
+          <span>OR</span>
           <input type="file" id="fileUpload" onChange={() => this.addSample()}></input>
         </div>
       </div>
