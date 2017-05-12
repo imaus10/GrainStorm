@@ -134,6 +134,7 @@ class GrainStorm extends Component {
   render() {
     return (
       <div>
+        <h1>GrainStorm: granular synthesis in the browser</h1>
         {this.state.grainClouds.map(gc => gc.type === 'sample' ? <SampleGrainCloud key={gc.id} audioCtx={this.audioCtx} audioData={gc.audioData} /> : <WaveformGrainCloud key={gc.id} audioCtx={this.audioCtx} />)}
         <div className="addGrainCloudBox">
           <button type="button" onClick={() => this.addWaveform()}>Generate waveform</button>
