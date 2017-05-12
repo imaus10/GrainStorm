@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import numeric from 'numeric';
 import Slider from 'rc-slider';
+import './audioshim';
 import { LinearEnvelope, GaussianEnvelope, SincEnvelope,
          ExponentialDecayEnvelope, ReverseExponentialDecayEnvelope } from './envelopes';
 import { WaveformGrainSource, SampleGrainSource } from './grainsources';

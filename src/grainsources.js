@@ -218,12 +218,15 @@ export class SampleGrainSource extends Component {
           min={-200}
           max={200}
           onChange={sp => this.changeSpeed(sp)} />
-        <ParameterBox
+        { typeof window.AudioBufferSourceNode.prototype.detune === 'undefined'
+          ? ''
+          : <ParameterBox
           label="Pitch shift (cents)"
           value={this.state.pitchShift}
           min={-1200}
           max={1200}
           onChange={p => this.changePitchShift(p)} />
+        }
       </div>
     );
   }
@@ -292,7 +295,9 @@ export class SampleGrainSource extends Component {
     return grain;
   }
   playGrain(grain) {
-    grain.detune.value = this.state.pitchShift;
+    if (grain.hasOwnProperty('detune')) {
+      grain.detune.value = this.state.pitchShift;
+    }
     grain.connect(this.props.audioCtx.destination);
     grain.start();
   }
