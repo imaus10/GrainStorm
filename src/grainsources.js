@@ -295,7 +295,7 @@ export class SampleGrainSource extends Component {
     return grain;
   }
   playGrain(grain) {
-    if (grain.hasOwnProperty('detune')) {
+    if (typeof grain.detune !== 'undefined') {
       grain.detune.value = this.state.pitchShift;
     }
     grain.connect(this.props.audioCtx.destination);
