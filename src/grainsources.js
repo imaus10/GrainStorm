@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import numeric from 'numeric';
 import { Range } from 'rc-slider';
-import { ParameterBox } from './App'
+import { ParameterBox, mainColor } from './App';
 
 export class WaveformGrainSource extends Component {
   constructor(props) {
@@ -14,6 +14,7 @@ export class WaveformGrainSource extends Component {
                  };
   }
   componentDidMount() {
+    this.canvas.getContext('2d').strokeStyle = mainColor;
     this.resetViz();
     this.updateGrain();
   }
@@ -29,6 +30,7 @@ export class WaveformGrainSource extends Component {
     return (
       <div className="sourceBox">
         <canvas ref={c => this.canvas = c}></canvas>
+        <label>Wave type</label>
         <select value={this.state.waveType} onChange={evt => this.changeWaveType(evt)}>
           {wvopts}
         </select>
@@ -78,13 +80,10 @@ export class WaveformGrainSource extends Component {
     // draw inactive oscilloscope
     const canvasCtx = this.canvas.getContext('2d');
     canvasCtx.clearRect(0,0,this.canvas.width,this.canvas.height);
-    const canvasdata = Array(this.canvas.width).fill(this.canvas.height/2);
-    for (let i=1; i<this.canvas.width; i++) {
-      canvasCtx.beginPath();
-      canvasCtx.moveTo(i-1, canvasdata[i-1]);
-      canvasCtx.lineTo(i, canvasdata[i]);
-      canvasCtx.stroke();
-    }
+    canvasCtx.beginPath();
+    canvasCtx.moveTo(0, this.canvas.height/2);
+    canvasCtx.lineTo(this.canvas.width, this.canvas.height/2);
+    canvasCtx.stroke();
   }
   updateGrain() {
     const numsamples = Math.round(this.props.audioCtx.sampleRate * this.props.grainDuration);
@@ -151,6 +150,7 @@ export class SampleGrainSource extends Component {
   // draw the audio on the canvas
   componentDidMount() {
     const canvasCtx = this.canvas.getContext('2d');
+    canvasCtx.strokeStyle = mainColor;
     const audio = this.props.audioData;
 
     // convert to mono
@@ -199,7 +199,7 @@ export class SampleGrainSource extends Component {
       // draw opaque gray rectangle over non-playing audio
       const canvasCtx = this.canvas.getContext('2d');
       canvasCtx.putImageData(this.audioImage, 0, 0);
-      canvasCtx.fillStyle = 'rgba(233,233,233,0.8)';
+      canvasCtx.fillStyle = 'rgba(0,15,40,0.8)';
       const w = this.canvas.width;
       const h = this.canvas.height;
       canvasCtx.fillRect(0, 0, w*start, h);
@@ -218,7 +218,7 @@ export class SampleGrainSource extends Component {
           min={-200}
           max={200}
           onChange={sp => this.changeSpeed(sp)} />
-        { typeof window.AudioBufferSourceNode.prototype.detune === 'undefined'
+        { typeof this.props.audioCtx.createBufferSource().detune === 'undefined'
           ? ''
           : <ParameterBox
           label="Pitch shift (cents)"

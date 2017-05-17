@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import numeric from 'numeric';
 import Slider, { Range } from 'rc-slider';
+import { mainColor } from './App';
 
 function envelope(EnvelopeGenerator, xtraProps) {
   return class Envelope extends Component {
     componentDidMount() {
+      this.canvas.getContext('2d').strokeStyle = mainColor;
       this.updateEnvelope();
       this.drawEnvelope();
     }
@@ -71,8 +73,8 @@ class LinearEnvelopeGenerator extends Component {
   constructor(props) {
     super(props);
     // attack/decay times as pct of grainDuration
-    this.state = { attackTime: 0.1
-                 , decayTime: 0.1
+    this.state = { attackTime: 0.2
+                 , decayTime: 0.2
                  };
   }
   componentDidUpdate(prevProps, prevState) {
@@ -82,8 +84,9 @@ class LinearEnvelopeGenerator extends Component {
     }
   }
   render() {
+    const dfault = [this.state.attackTime*100, 100-this.state.decayTime*100];
     return (
-      <Range allowCross={false} defaultValue={[10,90]} onChange={env => this.changeAttackDecay(env)} />
+      <Range allowCross={false} defaultValue={dfault} onChange={env => this.changeAttackDecay(env)} />
     );
   }
   changeAttackDecay(env) {

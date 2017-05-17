@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import numeric from 'numeric';
 import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css';
 import './audioshim';
 import { LinearEnvelope, GaussianEnvelope, SincEnvelope,
          ExponentialDecayEnvelope, ReverseExponentialDecayEnvelope } from './envelopes';
 import { WaveformGrainSource, SampleGrainSource } from './grainsources';
-import 'rc-slider/assets/index.css';
 import './App.css';
+
+export const mainColor = '#16ba42';
 
 export function ParameterBox(props) {
   return (
@@ -65,7 +67,7 @@ function grainCloud(GrainSource) {
             min={1}
             max={100}
             onChange={dur => this.changeGrainDuration(dur)} />
-          <div>
+          <div className="envelopeBox">
             <label>Envelope</label>
             <select value={this.state.envelopeType} onChange={evt => this.changeEnvelopeType(evt)}>
               {envopts}
@@ -135,11 +137,13 @@ class GrainStorm extends Component {
     return (
       <div>
         <h1>GrainStorm: granular synthesis in the browser</h1>
-        {this.state.grainClouds.map(gc => gc.type === 'sample' ? <SampleGrainCloud key={gc.id} audioCtx={this.audioCtx} audioData={gc.audioData} /> : <WaveformGrainCloud key={gc.id} audioCtx={this.audioCtx} />)}
-        <div className="addGrainCloudBox">
-          <button type="button" onClick={() => this.addWaveform()}>Generate waveform</button>
-          <span>OR</span>
-          <input type="file" id="fileUpload" onChange={() => this.addSample()}></input>
+        <div id="bigBox">
+          {this.state.grainClouds.map(gc => <gc.type key={gc.id} audioCtx={this.audioCtx} audioData={gc.audioData || null} />)}
+          <div className="addGrainCloudBox">
+            <button type="button" onClick={() => this.addWaveform()}>Generate waveform</button>
+            <div>OR</div>
+            <div><input type="file" id="fileUpload" onChange={() => this.addSample()}></input></div>
+          </div>
         </div>
       </div>
     );
@@ -154,7 +158,7 @@ class GrainStorm extends Component {
           // console.log('decoded.');
           const gc = { id: this.grainCloudIdSeq
                      , audioData: decodedAudioData
-                     , type: 'sample'
+                     , type: SampleGrainCloud
                      };
           this.grainCloudIdSeq += 1;
           this.setState({ grainClouds: this.state.grainClouds.concat(gc) });
@@ -168,7 +172,7 @@ class GrainStorm extends Component {
   }
   addWaveform() {
     const gc = { id: this.grainCloudIdSeq
-               , type: 'waveform'
+               , type: WaveformGrainCloud
                };
     this.grainCloudIdSeq += 1;
     this.setState({ grainClouds: this.state.grainClouds.concat(gc) });
