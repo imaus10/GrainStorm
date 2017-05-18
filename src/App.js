@@ -41,10 +41,17 @@ function grainCloud(GrainSource) {
         this.playCloud();
       }
     }
+    componentWillUnmount() {
+      this.stopCloud();
+    }
     render() {
       const playButtonTxt = this.state.playing ? 'stop' : 'play';
       return (
         <div className="grainCloud">
+          <div>
+            <button type="button" onClick={() => this.changePlaying()}>{playButtonTxt}</button>
+            <button className="removeCloud" type="button" onClick={this.props.removeCloud}>[x]</button>
+          </div>
           <GrainSource
             ref={gs => this.grainSource = gs}
             {...this.state}
@@ -65,9 +72,6 @@ function grainCloud(GrainSource) {
             ref={env => this.envelope = env}
             {...this.state}
             {...this.props} />
-          <div>
-            <button type="button" onClick={() => this.changePlaying()}>{playButtonTxt}</button>
-          </div>
         </div>
       );
     }
@@ -123,7 +127,7 @@ class GrainStorm extends Component {
       <div>
         <h1>GrainStorm: granular synthesis in the browser</h1>
         <div id="bigBox">
-          {this.state.grainClouds.map(gc => <gc.type key={gc.id} audioCtx={this.audioCtx} audioData={gc.audioData || null} />)}
+          {this.state.grainClouds.map(gc => <gc.type key={gc.id} audioCtx={this.audioCtx} audioData={gc.audioData || null} removeCloud={() => {this.removeCloud(gc.id)}} />)}
           <div className="addGrainCloudBox">
             <p>Granular synthesis is an electronic music technique where tiny "grains" of sound, typically lasting less than 100 milliseconds, are generated many times per second to make music.</p>
             <p>The grains can come from slicing up a sound file:</p>
@@ -172,6 +176,13 @@ class GrainStorm extends Component {
                };
     this.grainCloudIdSeq += 1;
     this.setState({ grainClouds: this.state.grainClouds.concat(gc) });
+  }
+  removeCloud(id) {
+    const idx = this.state.grainClouds.findIndex(el => {return el.id === id});
+    const c1 = this.state.grainClouds.slice(0, idx);
+    const c2 = this.state.grainClouds.slice(idx+1);
+    const clouds = c1.concat(c2);
+    this.setState({ grainClouds: clouds });
   }
 }
 

@@ -34,6 +34,9 @@
   background-color:inherit;
   float: right;
 }
+.removeCloud {
+  float: right;
+}
 
 .parameterBox .rc-slider {
   margin-top: 10px;
