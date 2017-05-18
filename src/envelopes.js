@@ -73,8 +73,8 @@ class LinearEnvelopeGenerator extends Component {
   constructor(props) {
     super(props);
     // attack/decay times as pct of grainDuration
-    this.state = { attackTime: 0.2
-                 , decayTime: 0.2
+    this.state = { attackTime: 0.3
+                 , decayTime: 0.3
                  };
   }
   componentDidUpdate(prevProps, prevState) {
@@ -103,7 +103,7 @@ class LinearEnvelopeGenerator extends Component {
     return attack.concat(sustain).concat(decay);
   }
 }
-export const LinearEnvelope = envelope(LinearEnvelopeGenerator);
+const LinearEnvelope = envelope(LinearEnvelopeGenerator);
 
 // first and last values mirror each other's movements
 class MirrorRange extends Component {
@@ -164,7 +164,7 @@ class GaussianEnvelopeGenerator extends Component {
     return numeric.exp(y);
   }
 }
-export const GaussianEnvelope = envelope(GaussianEnvelopeGenerator);
+const GaussianEnvelope = envelope(GaussianEnvelopeGenerator);
 
 class SincEnvelopeGenerator extends Component {
   constructor(props) {
@@ -192,7 +192,7 @@ class SincEnvelopeGenerator extends Component {
     return numeric.or(y,1);
   }
 }
-export const SincEnvelope = envelope(SincEnvelopeGenerator);
+const SincEnvelope = envelope(SincEnvelopeGenerator);
 
 class ExponentialDecayEnvelopeGenerator extends Component {
   constructor(props) {
@@ -221,5 +221,36 @@ class ExponentialDecayEnvelopeGenerator extends Component {
     return numeric.exp(numeric.mul(x,-this.state.decayRate));
   }
 }
-export const ExponentialDecayEnvelope = envelope(ExponentialDecayEnvelopeGenerator, {reverse:false});
-export const ReverseExponentialDecayEnvelope = envelope(ExponentialDecayEnvelopeGenerator, {reverse:true});
+const ExponentialDecayEnvelope = envelope(ExponentialDecayEnvelopeGenerator, {reverse:false});
+const ReverseExponentialDecayEnvelope = envelope(ExponentialDecayEnvelopeGenerator, {reverse:true});
+
+export default class EnvelopePicker extends Component {
+  constructor(props) {
+    super(props);
+    this.envelopeLabels = ['Linear attack & decay', 'Gaussian', 'Sinc', 'Exponential decay', 'Reverse exponential decay'];
+    this.envelopeClasses = [LinearEnvelope, GaussianEnvelope, SincEnvelope, ExponentialDecayEnvelope, ReverseExponentialDecayEnvelope];
+    this.state = { envelopeType: 0 };
+  }
+  render() {
+    const envopts = this.envelopeLabels.map((v,i) => <option value={i} key={i}>{v}</option>);
+    const EnvGen = this.envelopeClasses[this.state.envelopeType];
+    return (
+      <div className="envelopeBox">
+        <label>Envelope</label>
+        <select value={this.state.envelopeType} onChange={evt => this.changeEnvelopeType(evt)}>
+          {envopts}
+        </select>
+        <EnvGen
+          ref={env => this.envelope = env}
+          {...this.state}
+          {...this.props} />
+      </div>
+    );
+  }
+  changeEnvelopeType(evt) {
+    this.setState({ envelopeType: parseInt(evt.target.value, 10) });
+  }
+  generate(grain) {
+    return this.envelope.generate(grain);
+  }
+}

@@ -3,8 +3,7 @@ import numeric from 'numeric';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import './audioshim';
-import { LinearEnvelope, GaussianEnvelope, SincEnvelope,
-         ExponentialDecayEnvelope, ReverseExponentialDecayEnvelope } from './envelopes';
+import EnvelopePicker from './envelopes';
 import { WaveformGrainSource, SampleGrainSource } from './grainsources';
 import './App.css';
 
@@ -24,11 +23,8 @@ function grainCloud(GrainSource) {
   return class GrainCloud extends Component {
     constructor(props) {
       super(props);
-      this.envelopeLabels = ['Linear attack & decay', 'Gaussian', 'Sinc', 'Exponential decay', 'Reverse exponential decay'];
-      this.envelopeClasses = [LinearEnvelope, GaussianEnvelope, SincEnvelope, ExponentialDecayEnvelope, ReverseExponentialDecayEnvelope];
       this.state = { grainDensity: 10 // grains/s
                    , grainDuration: 0.03 // s
-                   , envelopeType: 0
                    , playing: false
                    };
     }
@@ -47,8 +43,6 @@ function grainCloud(GrainSource) {
     }
     render() {
       const playButtonTxt = this.state.playing ? 'stop' : 'play';
-      const envopts = this.envelopeLabels.map((v,i) => <option value={i} key={i}>{v}</option>);
-      const Env = this.envelopeClasses[this.state.envelopeType];
       return (
         <div className="grainCloud">
           <GrainSource
@@ -67,16 +61,10 @@ function grainCloud(GrainSource) {
             min={1}
             max={100}
             onChange={dur => this.changeGrainDuration(dur)} />
-          <div className="envelopeBox">
-            <label>Envelope</label>
-            <select value={this.state.envelopeType} onChange={evt => this.changeEnvelopeType(evt)}>
-              {envopts}
-            </select>
-            <Env
-              ref={eg => this.envelope = eg}
-              {...this.state}
-              {...this.props} />
-          </div>
+          <EnvelopePicker
+            ref={env => this.envelope = env}
+            {...this.state}
+            {...this.props} />
           <div>
             <button type="button" onClick={() => this.changePlaying()}>{playButtonTxt}</button>
           </div>
@@ -91,9 +79,6 @@ function grainCloud(GrainSource) {
     }
     changeGrainDuration(dur) {
       this.setState({ grainDuration: dur/1000 });
-    }
-    changeEnvelopeType(evt) {
-      this.setState({ envelopeType: parseInt(evt.target.value, 10) });
     }
     generateGrainEnvelope() {
       const grain = this.grainSource.makeGrain();
