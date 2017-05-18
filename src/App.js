@@ -125,9 +125,15 @@ class GrainStorm extends Component {
         <div id="bigBox">
           {this.state.grainClouds.map(gc => <gc.type key={gc.id} audioCtx={this.audioCtx} audioData={gc.audioData || null} />)}
           <div className="addGrainCloudBox">
-            <button type="button" onClick={() => this.addWaveform()}>Generate waveform</button>
-            <div>OR</div>
-            <div><input type="file" id="fileUpload" onChange={() => this.addSample()}></input></div>
+            <p>Granular synthesis is an electronic music technique where tiny "grains" of sound, typically lasting less than 100 milliseconds, are generated many times per second to make music.</p>
+            <p>The grains can come from slicing up a sound file:</p>
+            <div className="chooseGrainSource">
+              <input type="file" id="fileUpload" onChange={() => this.addSample()}></input>
+            </div>
+            <p>or by generating a tiny snippet of a waveform, for example a sine wave:</p>
+            <div className="chooseGrainSource">
+              <button type="button" onClick={() => this.addWaveform()}>Generate waveform</button>
+            </div>
           </div>
         </div>
       </div>
