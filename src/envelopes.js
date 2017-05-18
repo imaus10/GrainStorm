@@ -37,18 +37,19 @@ function envelope(EnvelopeGenerator, xtraProps) {
       canvasCtx.lineTo(this.canvas.width,this.canvas.height/2);
       canvasCtx.stroke();
 
-      // convert to values between 0 and 2
-      let canvasdata = numeric.add(this.envelopeGenerator.generate(this.canvas.width), 1);
+      let canvasdata = this.envelopeGenerator.generate(this.canvas.width);
+      const padding = 3; // pixels
       // convert to pixel heights on canvas
-      canvasdata = numeric.mul(canvasdata, this.canvas.height/2);
+      // (with padding so envelope doesn't butt up against top)
+      canvasdata = numeric.mul(canvasdata, this.canvas.height/2 - padding);
+      canvasdata = numeric.add(canvasdata, this.canvas.height/2);
       canvasdata = numeric.sub(this.canvas.height, canvasdata);
 
-      // step thru the sample in chunks
-      const stepsize = canvasdata.length/this.canvas.width;
-      for (let i=1; i<this.canvas.width; i++) {
+      // graph
+      for (let i=1; i<canvasdata.length; i++) {
         canvasCtx.beginPath();
-        canvasCtx.moveTo(i-1, canvasdata[Math.floor((i-1)*stepsize)]);
-        canvasCtx.lineTo(i, canvasdata[Math.floor(i*stepsize)]);
+        canvasCtx.moveTo(i-1, canvasdata[i-1]);
+        canvasCtx.lineTo(i, canvasdata[i]);
         canvasCtx.stroke();
       }
     }
