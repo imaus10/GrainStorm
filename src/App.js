@@ -142,6 +142,10 @@ class GrainStorm extends Component {
   addSample() {
     const fileUpload = document.getElementById('fileUpload');
     const reader = new FileReader();
+    reader.onerror = e => {
+      // TODO: prettier, more informative
+      alert("Error reading file: \n" + e);
+    }
     reader.onload = () => {
       // console.log('decoding...');
       this.audioCtx.decodeAudioData(reader.result,
@@ -158,6 +162,7 @@ class GrainStorm extends Component {
           // TODO: prettier, more informative
           alert("Error decoding audio data: \n" + e);
         });
+      fileUpload.value = '';
     };
     reader.readAsArrayBuffer(fileUpload.files[0]);
   }
