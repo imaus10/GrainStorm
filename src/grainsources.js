@@ -199,7 +199,7 @@ export class SampleGrainSource extends Component {
       // draw opaque gray rectangle over non-playing audio
       const canvasCtx = this.canvas.getContext('2d');
       canvasCtx.putImageData(this.audioImage, 0, 0);
-      canvasCtx.fillStyle = 'rgba(0,15,40,0.8)';
+      canvasCtx.fillStyle = 'rgba(0,15,40,0.7)';
       const w = this.canvas.width;
       const h = this.canvas.height;
       canvasCtx.fillRect(0, 0, w*start, h);
