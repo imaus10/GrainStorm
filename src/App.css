@@ -50,6 +50,11 @@
 .rc-slider-rail {
   background-color: #000f28;
 }
+.helpBox {
+  color: #16ba42;
+  width: 300px;
+  font-family: monospace;
+}
 
 .addGrainCloudBox span {
   padding: 5px;

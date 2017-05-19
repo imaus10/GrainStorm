@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import numeric from 'numeric';
 import Slider, { Range } from 'rc-slider';
+import Tooltip from 'rc-tooltip';
 import { mainColor } from './App';
 
 function envelope(EnvelopeGenerator, xtraProps) {
@@ -235,18 +236,33 @@ export default class EnvelopePicker extends Component {
   }
   render() {
     const envopts = this.envelopeClasses.map((cl,i) => <option value={i} key={i}>{cl.label}</option>);
-    const EnvGen = this.envelopeClasses[this.state.envelopeType];
-    return (
+    const Env = this.envelopeClasses[this.state.envelopeType];
+    const content = (
       <div className="envelopeBox">
         <label>Envelope</label>
         <select value={this.state.envelopeType} onChange={evt => this.changeEnvelopeType(evt)}>
           {envopts}
         </select>
-        <EnvGen
+        <Env
           ref={env => this.envelope = env}
           {...this.props} />
       </div>
     );
+    if (this.props.help) {
+      const hover = (
+        <div className="helpBox">
+          <p>Each grain has an envelope applied to it that affects the shape. Different envelopes create different timbral effects.</p>
+          <p className="helpBox">For instance, the Gaussian envelope has a smooth shape and so the onset is less jarring. An exponential decay (expodec) envelope starts abruptly and decays rapidly, so there is often a clicking sensation that accompanies it.</p>
+        </div>
+      );
+      return (
+        <Tooltip placement="right" overlay={hover}>
+          {content}
+        </Tooltip>
+      );
+    } else {
+      return content;
+    }
   }
   changeEnvelopeType(evt) {
     this.setState({ envelopeType: parseInt(evt.target.value, 10) });

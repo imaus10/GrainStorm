@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import numeric from 'numeric';
 import { Range } from 'rc-slider';
+import Tooltip from 'rc-tooltip';
 import { ParameterBox, mainColor } from './App';
 
 export class WaveformGrainSource extends Component {
@@ -27,18 +28,33 @@ export class WaveformGrainSource extends Component {
   }
   render() {
     const wvopts = this.waveTypes.map(wv => <option value={wv} key={wv}>{wv[0].toUpperCase() + wv.slice(1)}</option>);
-    return (
-      <div className="sourceBox">
-        <canvas ref={c => this.canvas = c}></canvas>
+    let wvcontent = (
+      <div>
         <label>Wave type</label>
         <select value={this.state.waveType} onChange={evt => this.changeWaveType(evt)}>
           {wvopts}
         </select>
+      </div>
+    );
+    if (this.props.help) {
+      const hover = <p className="helpBox">The shape of the wave used to generate a grain. Each wave type sounds slightly different.</p>;
+      wvcontent = (
+        <Tooltip placement="right" overlay={hover}>
+          {wvcontent}
+        </Tooltip>
+      );
+    }
+    return (
+      <div className="sourceBox">
+        <canvas ref={c => this.canvas = c}></canvas>
+        {wvcontent}
         <ParameterBox
           label="Frequency (Hz)"
           value={this.state.waveFrequency}
           min={20}
           max={20000}
+          help={this.props.help}
+          helpText={'The pitch of the grains.'}
           onChange={f => this.changeWaveFrequency(f)} />
       </div>
     );
@@ -208,23 +224,40 @@ export class SampleGrainSource extends Component {
     }
   }
   render() {
-    return (
-      <div className="sourceBox">
+    let vizcontent = (
+      <div>
         <canvas ref={c => this.canvas = c}></canvas>
         <Range allowCross={false} defaultValue={[0,100]} onChange={pos => this.changeStartEnd(pos)} />
+      </div>
+    );
+    if (this.props.help) {
+      const hover = <p className="helpBox">Move the slider below the wave form to change where grains get sampled from.</p>;
+      vizcontent = (
+        <Tooltip placement="right" overlay={hover}>
+          {vizcontent}
+        </Tooltip>
+      );
+    }
+    return (
+      <div className="sourceBox">
+        {vizcontent}
         <ParameterBox
-          label="Speed (%)"
+          label="Speed"
           value={this.state.speed*100}
           min={-200}
           max={200}
+          help={this.props.help}
+          helpText={'How quickly the playhead moves through the sound sample, as a percentage. Negative values move backward.'}
           onChange={sp => this.changeSpeed(sp)} />
         { typeof this.props.audioCtx.createBufferSource().detune === 'undefined'
           ? ''
           : <ParameterBox
-          label="Pitch shift (cents)"
+          label="Pitch shift"
           value={this.state.pitchShift}
           min={-1200}
           max={1200}
+          help={this.props.help}
+          helpText={'How much to change the pitch of each grain, in cents.'}
           onChange={p => this.changePitchShift(p)} />
         }
       </div>
