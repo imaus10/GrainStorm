@@ -5,6 +5,7 @@ import { mainColor } from './App';
 
 function envelope(EnvelopeGenerator, xtraProps) {
   return class Envelope extends Component {
+    static label = xtraProps.label
     componentDidMount() {
       this.canvas.getContext('2d').strokeStyle = mainColor;
       this.updateEnvelope();
@@ -104,7 +105,7 @@ class LinearEnvelopeGenerator extends Component {
     return attack.concat(sustain).concat(decay);
   }
 }
-const LinearEnvelope = envelope(LinearEnvelopeGenerator);
+const LinearEnvelope = envelope(LinearEnvelopeGenerator, { label: 'Linear attack & decay' });
 
 // first and last values mirror each other's movements
 class MirrorRange extends Component {
@@ -165,7 +166,7 @@ class GaussianEnvelopeGenerator extends Component {
     return numeric.exp(y);
   }
 }
-const GaussianEnvelope = envelope(GaussianEnvelopeGenerator);
+const GaussianEnvelope = envelope(GaussianEnvelopeGenerator, { label: 'Gaussian' });
 
 class SincEnvelopeGenerator extends Component {
   constructor(props) {
@@ -193,12 +194,13 @@ class SincEnvelopeGenerator extends Component {
     return numeric.or(y,1);
   }
 }
-const SincEnvelope = envelope(SincEnvelopeGenerator);
+const SincEnvelope = envelope(SincEnvelopeGenerator, { label: 'Sinc' });
 
 class ExponentialDecayEnvelopeGenerator extends Component {
   constructor(props) {
     super(props);
-    this.baseDecayRate = 1;
+    this.baseDecayRate = 2;
+    this.maxDecayRate = 25;
     this.state = { decayRate: this.baseDecayRate };
   }
   componentDidUpdate(prevProps, prevState) {
@@ -207,13 +209,13 @@ class ExponentialDecayEnvelopeGenerator extends Component {
     }
   }
   render() {
-    const dfault = this.props.reverse ? 0 : 100;
+    const dfault = this.props.reverse ? 0 : this.maxDecayRate;
     return (
-      <Slider defaultValue={dfault} onChange={env => this.changeDecayRate(env)} />
+      <Slider defaultValue={dfault} min={0} max={this.maxDecayRate} onChange={env => this.changeDecayRate(env)} />
     );
   }
   changeDecayRate(env) {
-    const r = this.props.reverse ? env : 100-env;
+    const r = this.props.reverse ? env : this.maxDecayRate-env;
     this.setState({ decayRate: r+this.baseDecayRate });
   }
   generate(envLength) {
@@ -222,18 +224,17 @@ class ExponentialDecayEnvelopeGenerator extends Component {
     return numeric.exp(numeric.mul(x,-this.state.decayRate));
   }
 }
-const ExponentialDecayEnvelope = envelope(ExponentialDecayEnvelopeGenerator, {reverse:false});
-const ReverseExponentialDecayEnvelope = envelope(ExponentialDecayEnvelopeGenerator, {reverse:true});
+const ExponentialDecayEnvelope = envelope(ExponentialDecayEnvelopeGenerator, { label: 'Exponential decay' , reverse: false });
+const ReverseExponentialDecayEnvelope = envelope(ExponentialDecayEnvelopeGenerator, { label: 'Reverse exponential decay', reverse: true });
 
 export default class EnvelopePicker extends Component {
   constructor(props) {
     super(props);
-    this.envelopeLabels = ['Linear attack & decay', 'Gaussian', 'Sinc', 'Exponential decay', 'Reverse exponential decay'];
     this.envelopeClasses = [LinearEnvelope, GaussianEnvelope, SincEnvelope, ExponentialDecayEnvelope, ReverseExponentialDecayEnvelope];
     this.state = { envelopeType: 0 };
   }
   render() {
-    const envopts = this.envelopeLabels.map((v,i) => <option value={i} key={i}>{v}</option>);
+    const envopts = this.envelopeClasses.map((cl,i) => <option value={i} key={i}>{cl.label}</option>);
     const EnvGen = this.envelopeClasses[this.state.envelopeType];
     return (
       <div className="envelopeBox">
@@ -243,7 +244,6 @@ export default class EnvelopePicker extends Component {
         </select>
         <EnvGen
           ref={env => this.envelope = env}
-          {...this.state}
           {...this.props} />
       </div>
     );
