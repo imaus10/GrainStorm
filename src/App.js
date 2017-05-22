@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import numeric from 'numeric';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-import Tooltip from 'rc-tooltip';
 import 'rc-tooltip/assets/bootstrap.css';
 import './audioshim';
 import EnvelopePicker from './envelopes';
@@ -13,8 +12,8 @@ import './App.css';
 export const mainColor = '#16ba42';
 
 export function ParameterBox(props) {
-  const content = (
-    <div className="parameterBox">
+  return (
+    <div className="parameterBox" onMouseEnter={() => props.changeHelpText(props.helpText)}>
       <label>{props.label}</label>
       <input type="number" value={props.value} readOnly></input>
       <Slider
@@ -24,16 +23,6 @@ export function ParameterBox(props) {
         onChange={props.onChange} />
     </div>
   );
-  if (props.help) {
-    const hover = <p className="helpBox">{props.helpText}</p>;
-    return (
-      <Tooltip placement="right" overlay={hover}>
-        {content}
-      </Tooltip>
-    );
-  } else {
-    return content;
-  }
 }
 
 function grainCloud(GrainSource) {
@@ -78,7 +67,7 @@ function grainCloud(GrainSource) {
             value={this.state.grainDensity}
             min={1}
             max={100}
-            help={this.props.help}
+            changeHelpText={this.props.changeHelpText}
             helpText={'The number of times per second a grain gets created. Smaller densities are perceived as rhythmic because of the silence between grains. At higher densities, grains overlap, and the perception of rhythm is replaced with a steady pulse.'}
             onChange={d => this.changeGrainDensity(d)} />
           <ParameterBox
@@ -86,7 +75,7 @@ function grainCloud(GrainSource) {
             value={this.state.grainDuration*1000}
             min={1}
             max={100}
-            help={this.props.help}
+            changeHelpText={this.props.changeHelpText}
             helpText={'How long each grain lasts, in milliseconds.'}
             onChange={dur => this.changeGrainDuration(dur)} />
           <EnvelopePicker
@@ -143,55 +132,65 @@ class GrainStorm extends Component {
     super(props);
     this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     this.grainCloudIdSeq = 0;
-    this.state = { grainClouds: [], walkthru: 0, help: true };
+    const expl = (
+      <div><p>Granular synthesis is an electronic music technique where tiny "grains" of sound, typically lasting less than 100 milliseconds, are generated many times per second to make music.</p>
+      <p>The grains can come from slicing up a sound file, or by generating a tiny snippet of a sound wave.</p></div>
+    );
+    this.state = { grainClouds: [], help: true, helpText: expl };
   }
   render() {
     let ctrlPanel;
-    if (this.state.walkthru === 0) {
-      ctrlPanel = (
-        <div className="ctrlPanel">
-          <p>Granular synthesis is an electronic music technique where tiny "grains" of sound, typically lasting less than 100 milliseconds, are generated many times per second to make music.</p>
-          <p>The grains can come from slicing up a sound file, or by generating a tiny snippet of a waveform, for example a sine wave.</p>
-        </div>
-      );
-    } else {
-      const halp = this.state.help ? 'Turn off help' : 'Turn on help';
-      ctrlPanel = (
-        <div className="ctrlPanel">
-          <p>Hover over labels for explanations.</p>
-          <button type="button" onClick={() => this.changeHelp()}>{halp}</button>
-        </div>
-      );
-    }
+    // if (this.state.walkthru === 0) {
+    // } else {
+    //   const halp = this.state.help ? 'Turn off help' : 'Turn on help';
+    //   ctrlPanel = (
+    //     <div>
+    //
+    //       <button type="button" onClick={() => this.changeHelp()}>{halp}</button>
+    //     </div>
+    //   );
+    // }
     return (
-      <div>
-        <h1>GrainStorm: granular synthesis in the browser</h1>
-        <div id="bigBox">
-          <div className="ctrlPanel">
-            {ctrlPanel}
-          </div>
-          {this.state.grainClouds.map(gc =>
-            <gc.type key={gc.id}
-                     audioCtx={this.audioCtx}
-                     audioData={gc.audioData || null}
-                     removeCloud={() => this.removeCloud(gc.id)}
-                     help={this.state.help} />
-          )}
-          <div className="addGrainCloudBox">
-            <div className="chooseGrainSource">
-              <input type="file" id="fileUpload" onChange={() => this.addSample()}></input>
+      <div id="grainStormDevice">
+        <div id="header">
+          <h1>GrainStorm: granular synthesis in the browser</h1>
+        </div>
+        <div id="controls">
+          <div id="leftPanel">
+            <div id="addGrainCloudBox">
+              <div>
+                <div className="chooseGrainSource">
+                  <input type="file" id="fileUpload" onChange={() => this.addSample()}></input>
+                </div>
+                <div>OR</div>
+                <div className="chooseGrainSource">
+                  <button type="button" onClick={() => this.addWaveform()}>Generate waveform</button>
+                </div>
+              </div>
             </div>
-            <div>OR</div>
-            <div className="chooseGrainSource">
-              <button type="button" onClick={() => this.addWaveform()}>Generate waveform</button>
-            </div>
+            <div id="helpPanel">{this.state.helpText}</div>
           </div>
+          <div id="grainCloudBox">
+            {this.state.grainClouds.map(gc =>
+              <gc.type key={gc.id}
+                       audioCtx={this.audioCtx}
+                       audioData={gc.audioData || null}
+                       removeCloud={() => this.removeCloud(gc.id)}
+                       changeHelpText={(text) => this.changeHelpText(text)}
+                       help={this.state.help} />
+            )}
+          </div>
+        </div>
+        <div id="footer">
         </div>
       </div>
     );
   }
   changeHelp() {
     this.setState({ help: !this.state.help });
+  }
+  changeHelpText(text) {
+    this.setState({ helpText: <p>{text}</p> });
   }
   addSample() {
     const fileUpload = document.getElementById('fileUpload');
@@ -210,9 +209,8 @@ class GrainStorm extends Component {
                      , type: SampleGrainCloud
                      };
           this.grainCloudIdSeq += 1;
-          const walkthru = this.state.walkthru === 0 ? 1 : this.state.walkthru;
           this.setState({ grainClouds: this.state.grainClouds.concat(gc)
-                        , walkthru: walkthru
+                        , helpText: <p>Hover over labels for explanations.</p>
                         });
         },
         e => {
@@ -228,9 +226,8 @@ class GrainStorm extends Component {
                , type: WaveformGrainCloud
                };
     this.grainCloudIdSeq += 1;
-    const walkthru = this.state.walkthru === 0 ? 1 : this.state.walkthru;
     this.setState({ grainClouds: this.state.grainClouds.concat(gc)
-                  , walkthru: walkthru
+                  , helpText: <p>Hover over labels for explanations.</p>
                   });
   }
   removeCloud(id) {

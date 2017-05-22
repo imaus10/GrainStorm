@@ -1,16 +1,76 @@
-#bigBox {
-  border: 1px solid white;
-  display: flex;
-  flex-wrap: wrap;
+html,body,#root {
+  height: 100%;
+  margin: 0;
 }
 
-#bigBox > div {
-  padding: 5px;
-  width: 300px;
+#grainStormDevice {
+  height: 100%;
+  display: flex;
+  flex-flow: column;
   background-color: black;
   color: white;
-  margin: 5px 0 0 5px;
+  padding: 5px;
+}
+
+#header {
+  flex: 0 1 auto;
+}
+#header h1 {
+  margin: 10px 0 10px 0;
+}
+#footer {
+  flex: 0 1 20px;
+}
+#controls {
+  flex: 1 1 auto;
+  border: 1px solid gray;
+  display: flex;
+  overflow: hidden;
+}
+
+#leftPanel {
+  border-right: 1px solid gray;
+  width: 300px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+#helpPanel,#metaPanel {
+  color: #16ba42;
+  background-color: #000f28;
+  font-family: monospace;
+  padding: 5px;
+  flex: 1;
+}
+
+#addGrainCloudBox {
+  /*padding: 5px;
+  margin: 5px;*/
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+
+#addGrainCloudBox span {
+  padding: 5px;
+}
+
+#grainCloudBox {
+  display: flex;
+  /*flex-wrap: wrap;*/
+  overflow: scroll;
+}
+
+.grainCloud {
+  padding: 5px;
+  width: 300px;
+  /*background-color: black;*/
+  /*color:   white;*/
+  margin: 5px;
   border-radius: 10px;
+  border: 1px solid white;
 }
 
 .parameterBox,.envelopeBox {
@@ -54,10 +114,6 @@
   color: #16ba42;
   width: 300px;
   font-family: monospace;
-}
-
-.addGrainCloudBox span {
-  padding: 5px;
 }
 
 canvas {
