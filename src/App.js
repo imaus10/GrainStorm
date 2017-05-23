@@ -48,7 +48,7 @@ export class ParameterBox extends Component {
                 onBeforeChange={this.props.showControllable ? () => this.changeControlled() : ()=>{}}
                 className={this.props.showControllable || this.state.controlled ? 'controllable' : ''}/>
         { this.props.showControllable && this.state.controlled
-        ? <Range defaultValue={[this.props.min,this.props.max]}
+        ? <Range defaultValue={[this.state.controlMin,this.state.controlMax]}
                  min={this.props.min}
                  max={this.props.max}
                  className='controlled'
