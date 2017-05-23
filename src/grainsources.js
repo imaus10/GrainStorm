@@ -37,13 +37,13 @@ export class WaveformGrainSource extends Component {
           </select>
         </div>
         <ParameterBox
-          label="Frequency (Hz)"
+          label="Frequency"
           value={this.state.waveFrequency}
           min={20}
           max={20000}
-          changeHelpText={this.props.changeHelpText}
-          helpText={'The pitch of the grains.'}
-          onChange={f => this.changeWaveFrequency(f)} />
+          helpText={'The pitch of the grains in Hz.'}
+          onChange={f => this.changeWaveFrequency(f)}
+          {...this.props} />
       </div>
     );
   }
@@ -223,9 +223,9 @@ export class SampleGrainSource extends Component {
           value={this.state.speed*100}
           min={-200}
           max={200}
-          changeHelpText={this.props.changeHelpText}
           helpText={'How quickly the playhead moves through the sound sample, as a percentage. Negative values move backward.'}
-          onChange={sp => this.changeSpeed(sp)} />
+          onChange={sp => this.changeSpeed(sp)}
+          {...this.props} />
         { typeof this.props.audioCtx.createBufferSource().detune === 'undefined'
           ? ''
           : <ParameterBox
@@ -233,9 +233,9 @@ export class SampleGrainSource extends Component {
           value={this.state.pitchShift}
           min={-1200}
           max={1200}
-          changeHelpText={this.props.changeHelpText}
           helpText={'How much to change the pitch of each grain, in cents.'}
-          onChange={p => this.changePitchShift(p)} />
+          onChange={p => this.changePitchShift(p)}
+          {...this.props} />
         }
       </div>
     );

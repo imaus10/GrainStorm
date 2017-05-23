@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import numeric from 'numeric';
-import Slider from 'rc-slider';
+import Slider, { Range } from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import 'rc-tooltip/assets/bootstrap.css';
 import './audioshim';
@@ -11,24 +11,70 @@ import './App.css';
 // TODO: share across css & js?
 export const mainColor = '#16ba42';
 
-export function ParameterBox(props) {
-  return (
-    <div className="parameterBox" onMouseEnter={() => props.changeHelpText(props.helpText)}>
-      <label>{props.label}</label>
-      <input type="number" value={props.value} readOnly></input>
-      <Slider
-        value={props.value}
-        min={props.min}
-        max={props.max}
-        onChange={props.onChange} />
-    </div>
-  );
+export class ParameterBox extends Component {
+  static paramIdSeq = 0
+  constructor(props) {
+    super(props);
+    this.paramId = ParameterBox.paramIdSeq;
+    ParameterBox.paramIdSeq += 1;
+    this.state = { controlled: false, controlMin: props.min, controlMax: props.max };
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.controlled !== prevState.controlled) {
+      if (this.state.controlled) {
+        console.log('adding control function');
+        this.props.addControlFunction(this.paramId, () => this.randomControl());
+      } else {
+        console.log('removing control function');
+        this.props.removeControlFunction(this.paramId);
+      }
+    }
+
+    if (this.state.controlMin !== prevState.controlMin ||
+        this.state.controlMax !== prevState.controlMax)
+    {
+      this.props.addControlFunction(this.paramId, () => this.randomControl());
+    }
+  }
+  render() {
+    return (
+      <div className="parameterBox" onMouseEnter={() => this.props.changeHelpText(this.props.helpText)}>
+        <label>{this.props.label}</label>
+        <input type="number" value={this.props.value} readOnly></input>
+        <Slider value={this.props.value}
+                min={this.props.min}
+                max={this.props.max}
+                onChange={this.props.showControllable || this.state.controlled ? ()=>{} : this.props.onChange}
+                onBeforeChange={this.props.showControllable ? () => this.changeControlled() : ()=>{}}
+                className={this.props.showControllable || this.state.controlled ? 'controllable' : ''}/>
+        { this.props.showControllable && this.state.controlled
+        ? <Range defaultValue={[this.props.min,this.props.max]}
+                 min={this.props.min}
+                 max={this.props.max}
+                 className='controlled'
+                 onChange={(vals) => this.changeControls(vals)} />
+        : ''
+        }
+      </div>
+    );
+  }
+  changeControlled() {
+    this.setState({ controlled: !this.state.controlled });
+  }
+  changeControls(vals) {
+    this.setState({ controlMin: vals[0], controlMax: vals[1] });
+  }
+  randomControl() {
+    const randInt = Math.floor(Math.random() * (this.state.controlMax-this.state.controlMin+1)) + this.state.controlMin;
+    this.props.onChange(randInt);
+  }
 }
 
 function grainCloud(GrainSource) {
   return class GrainCloud extends Component {
     constructor(props) {
       super(props);
+      this.controlFunctions = {};
       this.state = { grainDensity: 10 // grains/s
                    , grainDuration: 0.03 // s
                    , playing: false
@@ -52,6 +98,10 @@ function grainCloud(GrainSource) {
     }
     render() {
       const playButtonTxt = this.state.playing ? 'stop' : 'play';
+      const moreProps = { addControlFunction: (id,fn) => this.addControlFunction(id,fn)
+                        , removeControlFunction: id => this.removeControlFunction(id)
+                        };
+      const props = Object.assign({}, moreProps, this.props);
       return (
         <div className="grainCloud">
           <div>
@@ -61,27 +111,27 @@ function grainCloud(GrainSource) {
           <GrainSource
             ref={gs => this.grainSource = gs}
             {...this.state}
-            {...this.props} />
+            {...props} />
           <ParameterBox
             label={"Grain density"} // unicode hex 2374
             value={this.state.grainDensity}
             min={1}
             max={100}
-            changeHelpText={this.props.changeHelpText}
+            onChange={d => this.changeGrainDensity(d)}
             helpText={'The number of times per second a grain gets created. Smaller densities are perceived as rhythmic because of the silence between grains. At higher densities, grains overlap, and the perception of rhythm is replaced with a steady pulse.'}
-            onChange={d => this.changeGrainDensity(d)} />
+            {...props} />
           <ParameterBox
             label="Grain duration"
             value={this.state.grainDuration*1000}
             min={1}
             max={100}
-            changeHelpText={this.props.changeHelpText}
             helpText={'How long each grain lasts, in milliseconds.'}
-            onChange={dur => this.changeGrainDuration(dur)} />
+            onChange={dur => this.changeGrainDuration(dur)}
+            {...props} />
           <EnvelopePicker
             ref={env => this.envelope = env}
             {...this.state}
-            {...this.props} />
+            {...props} />
         </div>
       );
     }
@@ -93,6 +143,12 @@ function grainCloud(GrainSource) {
     }
     changeGrainDuration(dur) {
       this.setState({ grainDuration: dur/1000 });
+    }
+    addControlFunction(id, fn) {
+      this.controlFunctions[id] = fn;
+    }
+    removeControlFunction(id) {
+      delete this.controlFunctions[id];
     }
     generateGrainEnvelope() {
       const grain = this.grainSource.makeGrain();
@@ -109,6 +165,12 @@ function grainCloud(GrainSource) {
     playCloud() {
       this.intervalId = window.setInterval(() => {
         this.generateGrainEnvelope();
+        for (let prop in this.controlFunctions) {
+          if (this.controlFunctions.hasOwnProperty(prop)) {
+            this.controlFunctions[prop]();
+          }
+        }
+        // this.applyMetaControl();
       }, 1000/this.state.grainDensity);
       const animationFunc = () => {
         this.animation = window.requestAnimationFrame(animationFunc);
@@ -136,20 +198,10 @@ class GrainStorm extends Component {
       <div><p>Granular synthesis is an electronic music technique where tiny "grains" of sound, typically lasting less than 100 milliseconds, are generated many times per second to make music.</p>
       <p>The grains can come from slicing up a sound file, or by generating a tiny snippet of a sound wave.</p></div>
     );
-    this.state = { grainClouds: [], help: true, helpText: expl };
+    this.state = { grainClouds: [], helpText: expl, showControllable: false, controlBox: '' };
   }
   render() {
-    let ctrlPanel;
-    // if (this.state.walkthru === 0) {
-    // } else {
-    //   const halp = this.state.help ? 'Turn off help' : 'Turn on help';
-    //   ctrlPanel = (
-    //     <div>
-    //
-    //       <button type="button" onClick={() => this.changeHelp()}>{halp}</button>
-    //     </div>
-    //   );
-    // }
+    const ctrl = (this.state.showControllable ? 'Hide' : 'Show') + ' controllable parameters';
     return (
       <div id="grainStormDevice">
         <div id="header">
@@ -168,7 +220,16 @@ class GrainStorm extends Component {
                 </div>
               </div>
             </div>
-            <div id="helpPanel">{this.state.helpText}</div>
+            <div id="metaScreen">
+              <div>
+                {this.state.helpText}
+              </div>
+              <hr/>
+              <div>
+                {this.state.grainClouds.length > 0 ? <button type="button" onClick={() => this.changeShowControllable()}>{ctrl}</button> : ''}
+                {this.state.controlBox}
+              </div>
+            </div>
           </div>
           <div id="grainCloudBox">
             {this.state.grainClouds.map(gc =>
@@ -177,7 +238,7 @@ class GrainStorm extends Component {
                        audioData={gc.audioData || null}
                        removeCloud={() => this.removeCloud(gc.id)}
                        changeHelpText={(text) => this.changeHelpText(text)}
-                       help={this.state.help} />
+                       showControllable={this.state.showControllable} />
             )}
           </div>
         </div>
@@ -186,8 +247,9 @@ class GrainStorm extends Component {
       </div>
     );
   }
-  changeHelp() {
-    this.setState({ help: !this.state.help });
+  changeShowControllable() {
+    const expl = this.state.showControllable ? this.state.helpText : <p>Click on any blue slider to choose automatic control functions for that parameter.</p>;
+    this.setState({ showControllable: !this.state.showControllable, helpText: expl });
   }
   changeHelpText(text) {
     this.setState({ helpText: <p>{text}</p> });
@@ -226,7 +288,7 @@ class GrainStorm extends Component {
                , type: WaveformGrainCloud
                };
     this.grainCloudIdSeq += 1;
-    this.setState({ grainClouds: this.state.grainClouds.concat(gc)
+    this.setState({ grainClouds: [gc].concat(this.state.grainClouds)
                   , helpText: <p>Hover over labels for explanations.</p>
                   });
   }
