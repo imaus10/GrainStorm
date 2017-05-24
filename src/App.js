@@ -22,10 +22,8 @@ export class ParameterBox extends Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.state.controlled !== prevState.controlled) {
       if (this.state.controlled) {
-        console.log('adding control function');
-        this.props.addControlFunction(this.paramId, () => this.randomControl());
+        this.props.addControlFunction(this.paramId, () => this.LFOControl());
       } else {
-        console.log('removing control function');
         this.props.removeControlFunction(this.paramId);
       }
     }
@@ -33,7 +31,7 @@ export class ParameterBox extends Component {
     if (this.state.controlMin !== prevState.controlMin ||
         this.state.controlMax !== prevState.controlMax)
     {
-      this.props.addControlFunction(this.paramId, () => this.randomControl());
+      this.props.addControlFunction(this.paramId, () => this.LFOControl());
     }
   }
   render() {
@@ -67,6 +65,12 @@ export class ParameterBox extends Component {
   randomControl() {
     const randInt = Math.floor(Math.random() * (this.state.controlMax-this.state.controlMin+1)) + this.state.controlMin;
     this.props.onChange(randInt);
+  }
+  LFOControl() {
+    const f = 1;
+    const A = (this.state.controlMax - this.state.controlMin)/2;
+    const nextVal = A*Math.sin(2*Math.PI*f*Date.now()/1000) + this.state.controlMin + A;
+    this.props.onChange(nextVal);
   }
 }
 
