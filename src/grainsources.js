@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import numeric from 'numeric';
 import { Range } from 'rc-slider';
-import { ParameterBox, mainColor } from './App';
+import { mainColor } from './App';
+import ParameterBox from './parametercontrol';
 
 export class WaveformGrainSource extends Component {
   constructor(props) {
