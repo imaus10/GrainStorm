@@ -5,28 +5,29 @@ class LFOControl extends Component {
   static label = 'Low Frequency Oscillator'
   constructor(props) {
     super(props);
-    this.state = { frequency: 1 }; // in Hz
+    this.state = { period: 5 }; // in s
   }
   render() {
     return (
       <div>
-        <label>Frequency</label>
-        <input type="number" value={this.state.frequency} readOnly></input>
-        <Slider min={0.1}
-                max={10}
+        <label>Period</label>
+        <input type="number" value={this.state.period} readOnly></input>
+        <Slider min={0.5}
+                max={60}
                 step={0.1}
-                defaultValue={this.state.frequency}
-                onChange={f => this.changeFrequency(f)}
+                defaultValue={this.state.period}
+                onChange={T => this.changePeriod(T)}
                 className='controlled' />
       </div>
     );
   }
-  changeFrequency(f) {
-    this.setState({ frequency: f });
+  changePeriod(T) {
+    this.setState({ period: T });
   }
   getNextVal(min, max) {
     const A = (max - min)/2;
-    return A*Math.sin(2*Math.PI*this.state.frequency*Date.now()/1000) + min + A;
+    const f = 1/this.state.period;
+    return A*Math.sin(2*Math.PI*f*Date.now()/1000) + min + A;
   }
 }
 
