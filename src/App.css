@@ -96,11 +96,20 @@ html,body,#root {
 .grainCloud input {
   width: 5em;
 }
-.grainCloud input,select {
+input, select, button {
   font-family: monospace;
   color: #16ba42;
-  background-color:inherit;
+  background-color: inherit;
+}
+.grainCloud input, .grainCloud select {
   float: right;
+}
+.controlParameters select {
+  float: none;
+  display: block;
+}
+.controlParameters > div {
+  margin-top: 10px;
 }
 .removeCloud {
   float: right;

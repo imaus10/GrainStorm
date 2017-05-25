@@ -17,10 +17,13 @@ class GrainStorm extends Component {
       <div><p>Granular synthesis is an electronic music technique where tiny "grains" of sound, typically lasting less than 100 milliseconds, are generated many times per second to make music.</p>
       <p>The grains can come from slicing up a sound file, or by generating a tiny snippet of a sound wave.</p></div>
     );
-    this.state = { grainClouds: [], helpText: expl, showControllable: false, controlBox: '' };
+    this.state = { grainClouds: []
+                 , helpText: expl
+                 , showControllable: false
+                 };
   }
   render() {
-    const ctrl = (this.state.showControllable ? 'Hide' : 'Show') + ' controllable parameters';
+    const ctrlButton = (this.state.showControllable ? 'Hide controllable' : 'Control') + ' parameters';
     return (
       <div id="grainStormDevice">
         <div id="header">
@@ -45,8 +48,7 @@ class GrainStorm extends Component {
               </div>
               <hr/>
               <div>
-                {this.state.grainClouds.length > 0 ? <button type="button" onClick={() => this.changeShowControllable()}>{ctrl}</button> : ''}
-                {this.state.controlBox}
+                {this.state.grainClouds.length > 0 ? <button id="ctrlButton" type="button" onClick={() => this.changeShowControllable()}>{ctrlButton}</button> : ''}
               </div>
             </div>
           </div>
@@ -56,7 +58,7 @@ class GrainStorm extends Component {
                        audioCtx={this.audioCtx}
                        audioData={gc.audioData || null}
                        removeCloud={() => this.removeCloud(gc.id)}
-                       changeHelpText={(text) => this.changeHelpText(text)}
+                       changeHelpText={text => this.changeHelpText(text)}
                        showControllable={this.state.showControllable} />
             )}
           </div>
