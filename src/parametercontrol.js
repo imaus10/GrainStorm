@@ -8,8 +8,9 @@ class LFOControl extends Component {
     this.state = { period: 5 }; // in s
   }
   render() {
+    const lfohalp = 'The amount of time it takes to complete one cycle from the lowest parameter value to the highest and back again.';
     return (
-      <div onMouseEnter={() => this.props.changeHelpText('The amount of time it takes to complete one cycle from the lowest parameter value to the highest and back again.')}>
+      <div onMouseEnter={() => this.props.changeHelpText(lfohalp)}>
         <label>Period</label>
         <input type="number" value={this.state.period} readOnly></input>
         <Slider min={0.5}
@@ -45,8 +46,54 @@ class RandomControl extends Component {
   }
 }
 
+class GaussianControl extends Component {
+  static label = 'Normal distribution'
+  constructor(props) {
+    super(props);
+    // standard deviation here is a pct of (controlMax-controlMin)/2
+    // default puts max & min 5 stddevs away from mean
+    this.state = { stdDevPct: 0.2 };
+  }
+  render() {
+    const stddevhalp = 'Standard deviation of values from the midpoint. Here it is defined as a percentage of the distance from the middle. For instance, a standard deviation of 0.2 means that the min and max values are 5 standard deviations away from the middle.';
+    return (
+      <div onMouseEnter={() => this.props.changeHelpText(stddevhalp)}>
+        <label>Standard deviation</label>
+        <input type="number" value={this.state.stdDevPct} readOnly></input>
+        <Slider defaultValue={this.state.stdDevPct}
+                min={0.1}
+                max={0.33}
+                step={0.01}
+                onChange={sd => this.setState({ stdDevPct: sd })} />
+      </div>
+    );
+  }
+  // Box-Muller transform to convert
+  // two uniformly random variables to
+  // two normally distributed random variables
+  // (second not returned)
+  // https://en.wikipedia.org/wiki/Box–Muller_transform
+  getNextVal() {
+    // Subtraction to flip [0, 1) to (0, 1]
+    const u1 = 1 - Math.random();
+    const u2 = 1 - Math.random();
+    // generate a value according to the standard normal dist
+    // (mean 0 and variance 1)
+    const stdNorm = Math.sqrt(-2*Math.log(u1)) * Math.cos(2*Math.PI*u2);
+    // scale it to these parameters
+    const min = this.props.controlMin;
+    const max = this.props.controlMax;
+    // mean right in the middle of the min & max values
+    const mean = (max-min)/2 + min;
+    const stddev = (max-min/2) * this.state.stdDevPct;
+    const norm = stdNorm*stddev + mean;
+    // truncate any values below min or above max
+    return Math.min(Math.max(min, norm), max);
+  }
+}
+
 class ControlParams extends Component {
-  static controlClasses = [ LFOControl, RandomControl ]
+  static controlClasses = [ LFOControl, RandomControl, GaussianControl ]
   constructor(props) {
     super(props);
     window.addEventListener('resize', evt => {this.forceUpdate()});
