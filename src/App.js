@@ -14,8 +14,8 @@ class GrainStorm extends Component {
     this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     this.grainCloudIdSeq = 0;
     const expl = (
-      <div><p>Granular synthesis is an electronic music technique where tiny "grains" of sound, typically lasting less than 100 milliseconds, are generated many times per second to make music.</p>
-      <p>The grains can come from slicing up a sound file, or by generating a tiny snippet of a sound wave.</p></div>
+      <div><p>Granular synthesis is an electronic music technique where tiny "grains" of sound, typically lasting less than 100 milliseconds, are generated many times per second to make music. If many of these sound particles overlap, it is called a cloud.</p>
+      <p>Generate a grain cloud using one of the two sources above.</p></div>
     );
     this.state = { grainClouds: []
                  , helpText: expl
@@ -24,6 +24,9 @@ class GrainStorm extends Component {
   }
   render() {
     const ctrlButton = (this.state.showControllable ? 'Hide controllable' : 'Control') + ' parameters';
+    const ctrlhalp = 'Apply control functions to change parameters automatically.';
+    const samplehalp = 'Upload a sound file as grain source.';
+    const wavehalp = 'Use a sound wave to generate grains.';
     return (
       <div id="grainStormDevice">
         <div id="header">
@@ -33,22 +36,32 @@ class GrainStorm extends Component {
           <div id="leftPanel">
             <div id="addGrainCloudBox">
               <div>
-                <div className="chooseGrainSource">
-                  <input type="file" id="fileUpload" onChange={() => this.addSample()}></input>
-                </div>
-                <div>OR</div>
-                <div className="chooseGrainSource">
-                  <button type="button" onClick={() => this.addWaveform()}>Generate waveform</button>
-                </div>
+                <button type="button"
+                        onMouseEnter={() => this.changeHelpText(samplehalp)}
+                        onClick={() => this.fileUpload.click()}>+ sound file</button>
+                <input type="file"
+                       ref={inp => this.fileUpload = inp}
+                       style={{display:'none'}}
+                       onChange={() => this.addSample()}></input>
+                <button type="button"
+                        onClick={() => this.addWaveform()}
+                        onMouseEnter={() => this.changeHelpText(wavehalp)}>+ sound wave</button>
               </div>
             </div>
             <div id="metaScreen">
               <div>
+                <h3>HELP:</h3>
                 {this.state.helpText}
               </div>
               <hr/>
               <div>
-                {this.state.grainClouds.length > 0 ? <button id="ctrlButton" type="button" onClick={() => this.changeShowControllable()}>{ctrlButton}</button> : ''}
+                { this.state.grainClouds.length > 0
+                ? <button id="ctrlButton"
+                          type="button"
+                          onClick={() => this.changeShowControllable()}
+                          onMouseEnter={() => this.changeHelpText(ctrlhalp)}>{ctrlButton}</button>
+                : ''
+                }
               </div>
             </div>
           </div>
@@ -76,7 +89,6 @@ class GrainStorm extends Component {
     this.setState({ helpText: <p>{text}</p> });
   }
   addSample() {
-    const fileUpload = document.getElementById('fileUpload');
     const reader = new FileReader();
     reader.onerror = e => {
       // TODO: prettier, more informative
@@ -92,26 +104,22 @@ class GrainStorm extends Component {
                      , type: SampleGrainCloud
                      };
           this.grainCloudIdSeq += 1;
-          this.setState({ grainClouds: this.state.grainClouds.concat(gc)
-                        , helpText: <p>Hover over labels for explanations.</p>
-                        });
+          this.setState({ grainClouds: this.state.grainClouds.concat(gc) });
         },
         e => {
           // TODO: prettier, more informative
           alert("Error decoding audio data: \n" + e);
         });
-      fileUpload.value = '';
+      this.fileUpload.value = '';
     };
-    reader.readAsArrayBuffer(fileUpload.files[0]);
+    reader.readAsArrayBuffer(this.fileUpload.files[0]);
   }
   addWaveform() {
     const gc = { id: this.grainCloudIdSeq
                , type: WaveformGrainCloud
                };
     this.grainCloudIdSeq += 1;
-    this.setState({ grainClouds: [gc].concat(this.state.grainClouds)
-                  , helpText: <p>Hover over labels for explanations.</p>
-                  });
+    this.setState({ grainClouds: [gc].concat(this.state.grainClouds) });
   }
   removeCloud(id) {
     const idx = this.state.grainClouds.findIndex(el => {return el.id === id});

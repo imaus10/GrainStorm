@@ -72,6 +72,7 @@ function envelope(EnvelopeGenerator, xtraProps) {
 }
 
 class LinearEnvelopeGenerator extends Component {
+  static helpText = 'Move the range below to change the attack and decay of the envelope.'
   constructor(props) {
     super(props);
     // attack/decay times as pct of grainDuration
@@ -236,17 +237,15 @@ export default class EnvelopePicker extends Component {
   render() {
     const envopts = this.envelopeClasses.map((cl,i) => <option value={i} key={i}>{cl.label}</option>);
     const Env = this.envelopeClasses[this.state.envelopeType];
-    const envHelp = `Each grain has an envelope applied to it that affects the shape.
-    Different envelopes create different timbral effects.`;
+    const envHelp = 'Each grain has an envelope applied to it that affects the shape. Different envelopes create different sound textures.';
     return (
       <div className="envelopeBox" onMouseEnter={() => this.props.changeHelpText(envHelp)}>
         <label>Envelope</label>
         <select value={this.state.envelopeType} onChange={evt => this.changeEnvelopeType(evt)}>
           {envopts}
         </select>
-        <Env
-          ref={env => this.envelope = env}
-          {...this.props} />
+        <Env ref={env => this.envelope = env}
+             {...this.props} />
       </div>
     );
   }

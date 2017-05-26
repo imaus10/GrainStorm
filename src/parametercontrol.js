@@ -9,7 +9,7 @@ class LFOControl extends Component {
   }
   render() {
     return (
-      <div>
+      <div onMouseEnter={() => this.props.changeHelpText('The amount of time it takes to complete one cycle from the lowest parameter value to the highest and back again.')}>
         <label>Period</label>
         <input type="number" value={this.state.period} readOnly></input>
         <Slider min={0.5}
@@ -17,7 +17,7 @@ class LFOControl extends Component {
                 step={0.1}
                 defaultValue={this.state.period}
                 onChange={T => this.changePeriod(T)}
-                className='controlled' />
+                className='controller' />
       </div>
     );
   }
@@ -45,25 +45,29 @@ class ControlParams extends Component {
   static controlClasses = [ LFOControl, RandomControl ]
   constructor(props) {
     super(props);
+    window.addEventListener('resize', evt => {this.forceUpdate()});
     this.state = { controlIdx: 0 };
   }
   render() {
     const ctrlopts = ControlParams.controlClasses.map((cl,i) => <option value={i} key={i}>{cl.label}</option>);
     const CtrlCls = ControlParams.controlClasses[this.state.controlIdx];
     const btnPos = document.getElementById('ctrlButton').getBoundingClientRect();
+    // TODO: update position on window resize?
     const style = { display: this.props.visible ? '' : 'none'
                   , position: 'absolute'
                   , left: btnPos.left
-                  , top: btnPos.bottom+10
+                  , top: btnPos.bottom
                   , width: 290
                   };
     return (
       <div className="controlParameters" style={style}>
-        <label>Control function</label>
-        <select value={this.state.controlIdx} onChange={evt => this.changeControlType(evt)}>
-          {ctrlopts}
-        </select>
-        <CtrlCls ref={ctrl => this.control = ctrl} />
+        <div onMouseEnter={() => this.props.changeHelpText('The type of control function that will be applied to the selected parameter.')}>
+          <label>Control function</label>
+          <select value={this.state.controlIdx} onChange={evt => this.changeControlType(evt)}>
+            {ctrlopts}
+          </select>
+        </div>
+        <CtrlCls ref={ctrl => this.control = ctrl} {...this.props} />
       </div>
     );
   }
@@ -117,6 +121,7 @@ export default class ParameterBox extends Component {
         <Slider value={this.props.value}
                 min={this.props.min}
                 max={this.props.max}
+                step={this.props.step || 1}
                 onChange={val => this.wrapOnChange(val)}
                 onBeforeChange={() => this.handleParameterClick()}
                 className={this.getClassName()} />
@@ -124,7 +129,7 @@ export default class ParameterBox extends Component {
         ? <Range defaultValue={[this.state.controlMin,this.state.controlMax]}
                  min={this.props.min}
                  max={this.props.max}
-                 className='controlled'
+                 className='controller'
                  onChange={(vals) => this.changeControlRange(vals)} />
         : ''
         }
@@ -160,6 +165,7 @@ export default class ParameterBox extends Component {
         this.props.changeControlBox('');
       } else { // otherwise, select it (and deselect the other parameters)
         ParameterBox.registry.forEach(pb => pb.deselect());
+        this.props.changeHelpText('Move the purple range to select a minimum and maximum value for the control function.');
         this.setState({ selected: true, controlled: true });
       }
     }

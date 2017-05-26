@@ -9,7 +9,7 @@ html,body,#root {
   flex-flow: column;
   background-color: black;
   color: white;
-  padding: 5px;
+  padding: 0 5px 0 5px;
 }
 
 #header {
@@ -25,7 +25,6 @@ html,body,#root {
   flex: 1 1 auto;
   border: 1px solid gray;
   display: flex;
-  overflow: hidden;
 }
 
 #leftPanel {
@@ -53,39 +52,40 @@ html,body,#root {
 }
 
 #addGrainCloudBox {
-  /*padding: 5px;
-  margin: 5px;*/
   display: flex;
   align-items: center;
+  justify-content: center;
   padding: 10px;
 }
 
 
-#addGrainCloudBox span {
-  padding: 5px;
+#addGrainCloudBox button {
+  margin: 0 5px 0 5px;
 }
 
 #grainCloudBox {
   display: flex;
-  /*flex-wrap: wrap;*/
   overflow: scroll;
 }
 
 .grainCloud {
   padding: 5px;
   width: 300px;
-  /*background-color: black;*/
-  /*color:   white;*/
   margin: 5px;
   border-radius: 10px;
   border: 1px solid white;
+  overflow: scroll;
 }
 
-.parameterBox,.envelopeBox {
+.parameterBox, .envelopeBox, .controlParameters > div {
   border-top: 1px solid;
   margin: 10px 0 10px 0;
   padding-top: 10px;
 }
+.parameterBox .rc-slider {
+  margin-top: 10px;
+}
+
 .envelopeBox canvas {
   margin-top: 10px;
 }
@@ -94,7 +94,7 @@ html,body,#root {
 }
 
 .grainCloud input {
-  width: 5em;
+  width: 5.3em;
 }
 input, select, button {
   font-family: monospace;
@@ -107,18 +107,15 @@ input, select, button {
 .controlParameters select {
   float: none;
   display: block;
-}
-.controlParameters > div {
   margin-top: 10px;
 }
+.controlParameters .rc-slider-rail {
+  background-color: black;
+}
+
 .removeCloud {
   float: right;
 }
-
-.parameterBox .rc-slider {
-  margin-top: 10px;
-}
-
 
 .rc-slider-track {
   background-color: #16ba42;
@@ -139,7 +136,13 @@ input, select, button {
   border: 2px solid #a349ff;
 }
 .rc-slider.controlled .rc-slider-track {
+  background-color: #000f28;
+}
+.rc-slider.controller .rc-slider-track {
   background-color: #a349ff;
+}
+.rc-slider.controller .rc-slider-handle {
+  border: 2px solid #a349ff;
 }
 
 canvas {

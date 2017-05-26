@@ -31,7 +31,11 @@ function grainCloud(GrainSource) {
       this.stopCloud();
     }
     render() {
-      const playButtonTxt = this.state.playing ? 'stop' : 'play';
+      const playButtonTxt = this.state.playing ? '\u25a0' : '\u25ba';
+      const playhalp = this.state.playing ? 'Stop playing this grain cloud.' : 'Play this grain cloud.';
+      const remhalp = 'Remove this grain cloud.';
+      const densehalp = 'Continuing with the cloud metaphor, this is how close together grains are packed. More specifically, it is the number of times per second a grain gets created.';
+      const durhalp = 'How long each grain lasts, in milliseconds.';
       const moreProps = { addControlFunction: (id,fn) => this.addControlFunction(id,fn)
                         , removeControlFunction: id => this.removeControlFunction(id)
                         };
@@ -39,8 +43,13 @@ function grainCloud(GrainSource) {
       return (
         <div className="grainCloud">
           <div>
-            <button type="button" onClick={() => this.changePlaying()}>{playButtonTxt}</button>
-            <button className="removeCloud" type="button" onClick={this.props.removeCloud}>[x]</button>
+            <button type="button"
+                    onMouseEnter={() => this.props.changeHelpText(playhalp)}
+                    onClick={() => this.changePlaying()}>{playButtonTxt}</button>
+            <button className="removeCloud"
+                    type="button"
+                    onMouseEnter={() => this.props.changeHelpText(remhalp)}
+                    onClick={this.props.removeCloud}>[x]</button>
           </div>
           <GrainSource
             ref={gs => this.grainSource = gs}
@@ -51,15 +60,16 @@ function grainCloud(GrainSource) {
             value={this.state.grainDensity}
             min={1}
             max={100}
+            step={0.1}
             onChange={d => this.changeGrainDensity(d)}
-            helpText={'The number of times per second a grain gets created. Smaller densities are perceived as rhythmic because of the silence between grains. At higher densities, grains overlap, and the perception of rhythm is replaced with a steady pulse.'}
+            helpText={densehalp}
             {...props} />
           <ParameterBox
             label="Grain duration"
             value={this.state.grainDuration*1000}
             min={1}
             max={100}
-            helpText={'How long each grain lasts, in milliseconds.'}
+            helpText={durhalp}
             onChange={dur => this.changeGrainDuration(dur)}
             {...props} />
           <EnvelopePicker
