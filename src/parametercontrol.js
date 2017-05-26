@@ -24,7 +24,9 @@ class LFOControl extends Component {
   changePeriod(T) {
     this.setState({ period: T });
   }
-  getNextVal(min, max) {
+  getNextVal() {
+    const min = this.props.controlMin;
+    const max = this.props.controlMax;
     const A = (max - min)/2;
     const f = 1/this.state.period;
     return A*Math.sin(2*Math.PI*f*Date.now()/1000) + min + A;
@@ -36,7 +38,9 @@ class RandomControl extends Component {
   render() {
     return <div></div>;
   }
-  getNextVal(min, max) {
+  getNextVal() {
+    const min = this.props.controlMin;
+    const max = this.props.controlMax;
     return Math.floor(Math.random() * (max-min+1)) + min;
   }
 }
@@ -52,7 +56,6 @@ class ControlParams extends Component {
     const ctrlopts = ControlParams.controlClasses.map((cl,i) => <option value={i} key={i}>{cl.label}</option>);
     const CtrlCls = ControlParams.controlClasses[this.state.controlIdx];
     const btnPos = document.getElementById('ctrlButton').getBoundingClientRect();
-    // TODO: update position on window resize?
     const style = { display: this.props.visible ? '' : 'none'
                   , position: 'absolute'
                   , left: btnPos.left
@@ -75,8 +78,8 @@ class ControlParams extends Component {
     const idx = evt.target.value;
     this.setState({ controlIdx: idx });
   }
-  getControlFunc(min,max) {
-    return () => this.props.onChange(this.control.getNextVal(min, max));
+  getControlFunc() {
+    return () => this.props.onChange(this.control.getNextVal());
   }
 }
 
@@ -105,12 +108,6 @@ export default class ParameterBox extends Component {
       } else {
         this.props.removeControlFunction(this.paramId);
       }
-    }
-
-    if (this.state.controlMin !== prevState.controlMin ||
-        this.state.controlMax !== prevState.controlMax)
-    {
-      this.props.addControlFunction(this.paramId, this.getControlFunc());
     }
   }
   render() {
@@ -179,6 +176,6 @@ export default class ParameterBox extends Component {
     this.setState({ controlMin: vals[0], controlMax: vals[1] });
   }
   getControlFunc() {
-    return this.controlParams.getControlFunc(this.state.controlMin, this.state.controlMax);
+    return this.controlParams.getControlFunc();
   }
 }
