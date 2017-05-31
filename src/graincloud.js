@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
+import numeric from 'numeric';
+import Slider from 'rc-slider';
 import ParameterBox from './parametercontrol';
 import EnvelopePicker from './envelopes';
 import { WaveformGrainSource, SampleGrainSource } from './grainsources';
-import numeric from 'numeric';
 
 function grainCloud(GrainSource) {
   return class GrainCloud extends Component {
@@ -12,6 +13,7 @@ function grainCloud(GrainSource) {
       this.state = { grainDensity: 10 // grains/s
                    , grainDuration: 0.03 // s
                    , playing: false
+                   , gain: 1
                    };
     }
     componentDidUpdate(prevProps, prevState) {
@@ -36,16 +38,24 @@ function grainCloud(GrainSource) {
       const remhalp = 'Remove this grain cloud.';
       const densehalp = 'Continuing with the cloud metaphor, grain density is how close together grains are packed. More specifically, it is the number of times per second a grain gets created.';
       const durhalp = 'How long each grain lasts, in milliseconds.';
+      const volumehalp = 'The volume of this cloud.';
       const moreProps = { addControlFunction: (id,fn) => this.addControlFunction(id,fn)
                         , removeControlFunction: id => this.removeControlFunction(id)
                         };
       const props = Object.assign({}, moreProps, this.props);
       return (
         <div className="grainCloud">
-          <div>
+          <div className="cloudControls">
             <button type="button"
                     onMouseEnter={() => this.props.changeHelpText(playhalp)}
                     onClick={() => this.changePlaying()}>{playButtonTxt}</button>
+            <div onMouseEnter={() => this.props.changeHelpText(volumehalp)}>
+              <Slider min={0}
+                      max={2}
+                      step={0.1}
+                      defaultValue={this.state.gain}
+                      onChange={gain => this.changeGain(gain)} />
+            </div>
             <button className="removeCloud"
                     type="button"
                     onMouseEnter={() => this.props.changeHelpText(remhalp)}
@@ -88,6 +98,9 @@ function grainCloud(GrainSource) {
     changeGrainDuration(dur) {
       this.setState({ grainDuration: dur/1000 });
     }
+    changeGain(gain) {
+      this.setState({ gain: gain });
+    }
     addControlFunction(id, fn) {
       this.controlFunctions[id] = fn;
     }
@@ -104,14 +117,21 @@ function grainCloud(GrainSource) {
 
       const src = this.props.audioCtx.createBufferSource();
       src.buffer = grain;
-      this.grainSource.playGrain(src);
+      const gainNode = this.props.audioCtx.createGain();
+      gainNode.gain.value = this.state.gain;
+      src.connect(gainNode);
+      // pass in src for last-minute manipulations by grainSource
+      const connector = this.grainSource.getConnector(src);
+      gainNode.connect(connector);
+      connector.connect(this.props.audioCtx.destination);
+      src.start();
     }
     playCloud() {
       this.intervalId = window.setInterval(() => {
         this.generateGrainEnvelope();
-        for (let prop in this.controlFunctions) {
-          if (this.controlFunctions.hasOwnProperty(prop)) {
-            this.controlFunctions[prop]();
+        for (let id in this.controlFunctions) {
+          if (this.controlFunctions.hasOwnProperty(id)) {
+            this.controlFunctions[id]();
           }
         }
         // this.applyMetaControl();

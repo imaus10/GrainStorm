@@ -132,9 +132,8 @@ export class WaveformGrainSource extends Component {
     wvCp.copyToChannel(this.waveform.getChannelData(0),0);
     return wvCp;
   }
-  playGrain(grain) {
-    grain.connect(this.audioAnalyzer);
-    grain.start();
+  getConnector(grain) {
+    return this.audioAnalyzer;
   }
 }
 
@@ -305,11 +304,11 @@ export class SampleGrainSource extends Component {
     }
     return grain;
   }
-  playGrain(grain) {
+  getConnector(grain) {
     if (typeof grain.detune !== 'undefined') {
       grain.detune.value = this.state.pitchShift;
     }
-    grain.connect(this.props.audioCtx.destination);
-    grain.start();
+    // in this case, a no-op node
+    return this.props.audioCtx.createGain();
   }
 }
