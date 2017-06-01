@@ -42,7 +42,7 @@ function grainCloud(GrainSource) {
       const moreProps = { addControlFunction: (id,fn) => this.addControlFunction(id,fn)
                         , removeControlFunction: id => this.removeControlFunction(id)
                         };
-      const props = Object.assign({}, moreProps, this.props);
+      const props = Object.assign({}, moreProps, this.props, this.state);
       return (
         <div className="grainCloud">
           <div className="cloudControls">
@@ -63,7 +63,6 @@ function grainCloud(GrainSource) {
           </div>
           <GrainSource
             ref={gs => this.grainSource = gs}
-            {...this.state}
             {...props} />
           <ParameterBox
             label={"Grain density"} // unicode hex 2374
@@ -84,7 +83,6 @@ function grainCloud(GrainSource) {
             {...props} />
           <EnvelopePicker
             ref={env => this.envelope = env}
-            {...this.state}
             {...props} />
         </div>
       );
@@ -126,15 +124,17 @@ function grainCloud(GrainSource) {
       connector.connect(this.props.audioCtx.destination);
       src.start();
     }
+    callControlFunctions() {
+      for (let id in this.controlFunctions) {
+        if (this.controlFunctions.hasOwnProperty(id)) {
+          this.controlFunctions[id]();
+        }
+      }
+    }
     playCloud() {
       this.intervalId = window.setInterval(() => {
+        this.callControlFunctions();
         this.generateGrainEnvelope();
-        for (let id in this.controlFunctions) {
-          if (this.controlFunctions.hasOwnProperty(id)) {
-            this.controlFunctions[id]();
-          }
-        }
-        // this.applyMetaControl();
       }, 1000/this.state.grainDensity);
       const animationFunc = () => {
         this.animation = window.requestAnimationFrame(animationFunc);
@@ -146,6 +146,7 @@ function grainCloud(GrainSource) {
       window.clearInterval(this.intervalId);
       this.animation = window.cancelAnimationFrame(this.animation);
       this.grainSource.resetViz();
+      this.callControlFunctions();
     }
   }
 }

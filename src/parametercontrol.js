@@ -5,7 +5,13 @@ class LFOControl extends Component {
   static label = 'Low Frequency Oscillator'
   constructor(props) {
     super(props);
+    this.phaseOffset = Date.now();
     this.state = { period: 5 }; // in s
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.playing !== this.props.playing) {
+      this.phaseOffset = Date.now();
+    }
   }
   render() {
     const lfohalp = 'The amount of time it takes to complete one cycle from the lowest parameter value to the highest and back again.';
@@ -30,7 +36,8 @@ class LFOControl extends Component {
     const max = this.props.controlMax;
     const A = (max - min)/2;
     const f = 1/this.state.period;
-    return A*Math.sin(2*Math.PI*f*Date.now()/1000) + min + A;
+    const t = (Date.now() - this.phaseOffset)/1000;
+    return A*Math.sin(2*Math.PI*f*t) + min + A;
   }
 }
 
@@ -206,7 +213,6 @@ export default class ParameterBox extends Component {
       // if already selected, deselect
       if (this.state.selected) {
         this.setState({ selected: false, controlled: false });
-        this.props.changeControlBox('');
       } else { // otherwise, select it (and deselect the other parameters)
         ParameterBox.registry.forEach(pb => pb.deselect());
         this.props.changeHelpText('Move the purple range to select a minimum and maximum value for the control function.');
