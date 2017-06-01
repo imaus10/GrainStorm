@@ -22,6 +22,7 @@ function grainCloud(GrainSource) {
           this.playCloud();
         } else {
           this.stopCloud();
+          this.callControlFunctions();
         }
       } else if (this.state.playing && prevState.grainDensity !== this.state.grainDensity) {
         // reset the interval when density changes
@@ -146,7 +147,6 @@ function grainCloud(GrainSource) {
       window.clearInterval(this.intervalId);
       this.animation = window.cancelAnimationFrame(this.animation);
       this.grainSource.resetViz();
-      this.callControlFunctions();
     }
   }
 }
