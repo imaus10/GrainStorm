@@ -89,6 +89,26 @@ html,body,#root {
   width: auto;
 }
 
+.waveTypeSelect {
+  display: flex;
+}
+.waveTypeSelect .waveType {
+  border-radius: 7px;
+  border: 1px solid white;
+  width: 100%;
+  margin: 0 15px 0;
+  display: flex;
+  align-items: center;
+  padding: 5px;
+}
+.waveTypeSelect .waveType.selected {
+  border: 1px solid #16ba42;
+}
+.waveTypeSelect .waveType svg {
+  width: 100%;
+}
+
+
 .parameterBox, .envelopeBox, .controlParameters > div {
   border-top: 1px solid;
   margin: 10px 0 10px 0;

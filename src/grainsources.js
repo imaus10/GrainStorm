@@ -5,13 +5,18 @@ import { mainColor } from './App';
 import ParameterBox from './parametercontrol';
 
 export class WaveformGrainSource extends Component {
+  static waveTypeSVGPaths = { sine: "M 0 25 Q 25 -15, 50 25 T 100 25"
+                            , square: "M 0 4 H 50 V 46 H 100"
+                            , sawtooth: "M 0 25 L 50 4 V 46 L 100 25"
+                            , triangle: "M 0 25 L 25 4 L 75 46 L 100 25"
+                            }
   constructor(props) {
     super(props);
     this.audioAnalyzer = props.audioCtx.createAnalyser();
     this.audioAnalyzer.connect(props.audioCtx.destination);
     this.waveTypes = ['sine','square','sawtooth','triangle'];
     this.state = { waveFrequency: 10000 // Hz
-                 , waveType: this.waveTypes[0]
+                 , waveType: 'sine'
                  };
   }
   componentDidMount() {
@@ -27,15 +32,25 @@ export class WaveformGrainSource extends Component {
         }
   }
   render() {
-    const wvopts = this.waveTypes.map(wv => <option value={wv} key={wv}>{wv[0].toUpperCase() + wv.slice(1)}</option>);
+    const wvopts = Object.keys(WaveformGrainSource.waveTypeSVGPaths).map(wv => {
+      const selected = this.state.waveType === wv;
+      return (
+        <div className={'waveType' + (selected ? ' selected' : '')}
+             onClick={() => this.changeWaveType(wv)}
+             key={wv}>
+          <svg viewBox="0 0 100 50">
+            <path d={WaveformGrainSource.waveTypeSVGPaths[wv]}
+                  stroke={selected ? mainColor : 'white'}
+                  strokeWidth={selected ? '10%' : '5%'} />
+          </svg>
+        </div>
+      );
+    });
     return (
       <div className="sourceBox">
         <canvas ref={c => this.canvas = c}></canvas>
-        <div onMouseEnter={() => this.props.changeHelpText('The shape of the wave used to generate a grain. Each wave type sounds slightly different.')}>
-          <label>Wave type</label>
-          <select value={this.state.waveType} onChange={evt => this.changeWaveType(evt)}>
-            {wvopts}
-          </select>
+        <div className="waveTypeSelect">
+          {wvopts}
         </div>
         <ParameterBox
           label="Frequency"
@@ -48,8 +63,7 @@ export class WaveformGrainSource extends Component {
       </div>
     );
   }
-  changeWaveType(evt) {
-    const wv = evt.target.value;
+  changeWaveType(wv) {
     this.setState({ waveType: wv });
   }
   changeWaveFrequency(f) {

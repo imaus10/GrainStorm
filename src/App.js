@@ -24,7 +24,7 @@ class GrainStorm extends Component {
   }
   render() {
     const ctrlButton = (this.state.showControllable ? 'Hide controllable' : 'Control') + ' parameters';
-    const ctrlhalp = 'Apply control functions to change parameters automatically.';
+    const ctrlhalp = 'Move sliders automatically with control functions.';
     const samplehalp = 'Upload a sound file as grain source.';
     const wavehalp = 'Use a sound wave to generate grains.';
     return (
