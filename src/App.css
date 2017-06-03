@@ -6,6 +6,7 @@ html,body,#root {
 input, select, button {
   font-family: monospace;
   color: #16ba42;
+  background-color: inherit;
 }
 button {
   background-color: inherit;
@@ -73,15 +74,6 @@ canvas {
 }
 #addGrainCloudBox button {
   margin: 0 5px 0 5px;
-}
-
-.controlParameters select {
-  float: none;
-  display: block;
-  margin-top: 10px;
-}
-.controlParameters .rc-slider-rail {
-  background-color: black;
 }
 
 #grainCloudBox {
@@ -165,6 +157,15 @@ canvas {
 }
 .grainCloud input, .grainCloud select {
   float: right;
+}
+
+.controlParameters select {
+  float: none;
+  display: block;
+  margin-top: 10px;
+}
+.controlParameters .rc-slider-rail {
+  background-color: black;
 }
 
 .parameterBox, .envelopeBox, .controlParameters > div {
