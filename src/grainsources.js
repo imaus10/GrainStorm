@@ -33,10 +33,12 @@ export class WaveformGrainSource extends Component {
   }
   render() {
     const wvopts = Object.keys(WaveformGrainSource.waveTypeSVGPaths).map(wv => {
+      const wvhalp = 'Generate a ' + wv + ' wave.';
       const selected = this.state.waveType === wv;
       return (
         <div className={'waveType' + (selected ? ' selected' : '')}
              onClick={() => this.changeWaveType(wv)}
+             onMouseEnter={() => this.props.changeHelpText(wvhalp)}
              key={wv}>
           <svg viewBox="0 0 100 50">
             <path d={WaveformGrainSource.waveTypeSVGPaths[wv]}
