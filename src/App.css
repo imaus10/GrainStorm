@@ -3,6 +3,20 @@ html,body,#root {
   margin: 0;
 }
 
+input, select, button {
+  font-family: monospace;
+  color: #16ba42;
+}
+button {
+  background-color: inherit;
+}
+input {
+  background-color: #000f28;
+}
+canvas {
+  background-color: #000f28;
+}
+
 #grainStormDevice {
   height: 100%;
   display: flex;
@@ -57,10 +71,17 @@ html,body,#root {
   justify-content: center;
   padding: 10px;
 }
-
-
 #addGrainCloudBox button {
   margin: 0 5px 0 5px;
+}
+
+.controlParameters select {
+  float: none;
+  display: block;
+  margin-top: 10px;
+}
+.controlParameters .rc-slider-rail {
+  background-color: black;
 }
 
 #grainCloudBox {
@@ -75,74 +96,6 @@ html,body,#root {
   border-radius: 10px;
   border: 1px solid white;
   overflow: scroll;
-}
-
-.cloudControls {
-  display: flex;
-  align-items: center;
-}
-.cloudControls > div {
-  width: 100%;
-}
-.cloudControls .rc-slider {
-  margin: 0 10px 0 10px;
-  width: auto;
-}
-
-.waveTypeSelect {
-  display: flex;
-}
-.waveTypeSelect .waveType {
-  border-radius: 7px;
-  border: 1px solid white;
-  width: 100%;
-  margin: 0 15px 0;
-  display: flex;
-  align-items: center;
-  padding: 5px;
-}
-.waveTypeSelect .waveType.selected {
-  border: 1px solid #16ba42;
-}
-.waveTypeSelect .waveType svg {
-  width: 100%;
-}
-
-
-.parameterBox, .envelopeBox, .controlParameters > div {
-  border-top: 1px solid;
-  margin: 10px 0 10px 0;
-  padding-top: 10px;
-}
-.parameterBox .rc-slider {
-  margin-top: 10px;
-}
-
-.envelopeBox canvas {
-  margin-top: 10px;
-}
-.envelopeBox .rc-slider {
-  margin-top: -10px;
-}
-
-.grainCloud input {
-  width: 5.3em;
-}
-input, select, button {
-  font-family: monospace;
-  color: #16ba42;
-  background-color: inherit;
-}
-.grainCloud input, .grainCloud select {
-  float: right;
-}
-.controlParameters select {
-  float: none;
-  display: block;
-  margin-top: 10px;
-}
-.controlParameters .rc-slider-rail {
-  background-color: black;
 }
 
 .rc-slider-track {
@@ -173,6 +126,97 @@ input, select, button {
   border: 2px solid #a349ff;
 }
 
-canvas {
-  background-color: #000f28;
+.cloudControls {
+  display: flex;
+  align-items: center;
+}
+.cloudControls > div {
+  width: 100%;
+}
+.cloudControls .rc-slider {
+  margin: 0 10px 0 10px;
+  width: auto;
+}
+
+.sourceBox canvas {
+  width: 100%;
+}
+.waveTypeSelect {
+  display: flex;
+}
+.waveTypeSelect .waveType {
+  border-radius: 7px;
+  border: 1px solid #000f28;
+  width: 100%;
+  margin: 0 15px 0;
+  display: flex;
+  align-items: center;
+  padding: 5px;
+}
+.waveTypeSelect .waveType.selected {
+  border: 1px solid #16ba42;
+}
+.waveTypeSelect .waveType svg {
+  width: 100%;
+}
+
+.grainCloud input {
+  width: 5.3em;
+}
+.grainCloud input, .grainCloud select {
+  float: right;
+}
+
+.parameterBox, .envelopeBox, .controlParameters > div {
+  border-top: 1px solid;
+  margin: 10px 0 10px 0;
+  padding-top: 10px;
+}
+.parameterBox .rc-slider {
+  margin-top: 10px;
+}
+
+
+.envelopeBoxContent {
+  display: flex;
+  margin-top: 5px;
+}
+.envelopeTypeSelect {
+  /*flex: 1;*/
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.envelopeTypeSelect .envelopeType {
+  border: 1px solid #000f28;
+  display: flex;
+  align-items: center;
+  padding: 3px;
+}
+.envelopeType.first {
+  border-radius: 7px 0 0 0;
+}
+.envelopeType.last {
+  border-radius: 0 0 0 7px;
+}
+.envelopeTypeSelect .envelopeType.selected {
+  border: 1px solid #16ba42;
+}
+.envelopeTypeSelect .envelopeType svg {
+  width: 100%;
+}
+.envelope {
+  width: 100%;
+  flex: 5;
+  /*margin-left: 5px;*/
+  /*padding: 2px;*/
+}
+
+.envelope canvas {
+  width: 100%;
+  height: 100%;
+}
+.envelope .rc-slider, .sampleViz .rc-slider {
+  margin-top: -10px;
 }

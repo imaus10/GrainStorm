@@ -6,6 +6,7 @@ import { mainColor } from './App';
 function envelope(EnvelopeGenerator, xtraProps) {
   return class Envelope extends Component {
     static label = xtraProps.label
+    static path = xtraProps.path
     componentDidMount() {
       this.canvas.getContext('2d').strokeStyle = mainColor;
       this.updateEnvelope();
@@ -16,9 +17,11 @@ function envelope(EnvelopeGenerator, xtraProps) {
         this.updateEnvelope();
       }
     }
+
     render() {
       return (
-        <div>
+        <div className="envelope"
+             onMouseEnter={() => this.props.changeHelpText(EnvelopeGenerator.helpText)}>
           <canvas ref={c => this.canvas = c}></canvas>
           <EnvelopeGenerator
             ref={eg => this.envelopeGenerator = eg}
@@ -72,7 +75,7 @@ function envelope(EnvelopeGenerator, xtraProps) {
 }
 
 class LinearEnvelopeGenerator extends Component {
-  static helpText = 'Move the range below to change the attack and decay of the envelope.'
+  static helpText = 'Move the range below to change the attack and decay times of the envelope.'
   constructor(props) {
     super(props);
     // attack/decay times as pct of grainDuration
@@ -106,7 +109,10 @@ class LinearEnvelopeGenerator extends Component {
     return attack.concat(sustain).concat(decay);
   }
 }
-const LinearEnvelope = envelope(LinearEnvelopeGenerator, { label: 'Linear attack & decay' });
+const LinearEnvelope = envelope(LinearEnvelopeGenerator,
+        { label: 'linear attack & decay'
+        , path: 'M 0 25 L 20 4 H 80 L 100 25'
+        });
 
 // first and last values mirror each other's movements
 class MirrorRange extends Component {
@@ -142,6 +148,7 @@ class MirrorRange extends Component {
 }
 
 class GaussianEnvelopeGenerator extends Component {
+  static helpText = 'Move the slider below to change the width of the Gaussian envelope.'
   constructor(props) {
     super(props);
     this.state = { sigma: 0.25 }; // set one standard deviation to 1/4 the grain duration
@@ -167,9 +174,13 @@ class GaussianEnvelopeGenerator extends Component {
     return numeric.exp(y);
   }
 }
-const GaussianEnvelope = envelope(GaussianEnvelopeGenerator, { label: 'Gaussian' });
+const GaussianEnvelope = envelope(GaussianEnvelopeGenerator,
+        { label: 'gaussian'
+        , path: 'M 0 25 C 30 25, 40 4, 50 4 S 70 25, 100 25'
+        });
 
 class SincEnvelopeGenerator extends Component {
+  static helpText = 'Move the slider below to change the width of the sinc envelope.'
   constructor(props) {
     super(props);
     this.state = { zeroCrossings: 3 };
@@ -195,9 +206,20 @@ class SincEnvelopeGenerator extends Component {
     return numeric.or(y,1);
   }
 }
-const SincEnvelope = envelope(SincEnvelopeGenerator, { label: 'Sinc' });
+const SincEnvelope = envelope(SincEnvelopeGenerator,
+        { label: 'sinc'
+        , path: 'M 0 25 ' +
+                'C 6.25 30, 6.25 30, 12.5 25 ' +
+                'C 18.75 15, 18.75 15, 25 25 ' +
+                'C 31.25 40, 31.25 40, 37.5 25 ' +
+                'C 50 -5, 50 -5, 62.5 25 ' +
+                'C 68.75 40, 68.75 40, 75 25 ' +
+                'C 81.25 15, 81.25 15, 87.5 25 ' +
+                'C 93.75 30, 93.75 30, 100 25'
+        });
 
 class ExponentialDecayEnvelopeGenerator extends Component {
+  static helpText = 'Move the slider below to change the decay rate of the envelope.'
   constructor(props) {
     super(props);
     this.baseDecayRate = 2;
@@ -225,8 +247,16 @@ class ExponentialDecayEnvelopeGenerator extends Component {
     return numeric.exp(numeric.mul(x,-this.state.decayRate));
   }
 }
-const ExponentialDecayEnvelope = envelope(ExponentialDecayEnvelopeGenerator, { label: 'Exponential decay' , reverse: false });
-const ReverseExponentialDecayEnvelope = envelope(ExponentialDecayEnvelopeGenerator, { label: 'Reverse exponential decay', reverse: true });
+const ExponentialDecayEnvelope = envelope(ExponentialDecayEnvelopeGenerator,
+        { label: 'exponential decay'
+        , reverse: false
+        , path: 'M 0 0 C 20 25, 70 25, 100 25'
+        });
+const ReverseExponentialDecayEnvelope = envelope(ExponentialDecayEnvelopeGenerator,
+        { label: 'reverse exponential decay'
+        , reverse: true
+        , path: 'M 0 25 C 20 25, 70 25, 100 0'
+        });
 
 export default class EnvelopePicker extends Component {
   constructor(props) {
@@ -235,22 +265,41 @@ export default class EnvelopePicker extends Component {
     this.state = { envelopeType: 0 };
   }
   render() {
-    const envopts = this.envelopeClasses.map((cl,i) => <option value={i} key={i}>{cl.label}</option>);
+    const envopts = this.envelopeClasses.map((cl,i) => {
+      const selected = i === this.state.envelopeType;
+      const envhalp = 'Use a ' + cl.label + ' envelope.';
+      const clzNm = 'envelopeType' + (selected ? ' selected' : '')
+                                   + (i === 0 ? ' first' : '')
+                                   + (i === this.envelopeClasses.length-1 ? ' last' : '');
+      return (
+        <button className={clzNm}
+             onClick={() => this.changeEnvelopeType(i)}
+             onMouseEnter={() => this.props.changeHelpText(envhalp)}
+             key={cl.label}>
+          <svg viewBox="0 0 100 50">
+            <path d={cl.path}
+                  stroke={selected ? mainColor : "white"}
+                  strokeWidth={selected ? "10%" : "5%"} />
+          </svg>
+        </button>
+      );
+    });
     const Env = this.envelopeClasses[this.state.envelopeType];
-    const envHelp = 'Each grain has an envelope applied to it that affects the shape. Different envelopes create different sound textures.';
     return (
-      <div className="envelopeBox" onMouseEnter={() => this.props.changeHelpText(envHelp)}>
+      <div className="envelopeBox">
         <label>Envelope</label>
-        <select value={this.state.envelopeType} onChange={evt => this.changeEnvelopeType(evt)}>
-          {envopts}
-        </select>
-        <Env ref={env => this.envelope = env}
-             {...this.props} />
+        <div className="envelopeBoxContent">
+          <div className="envelopeTypeSelect">
+            {envopts}
+          </div>
+          <Env ref={env => this.envelope = env}
+               {...this.props} />
+        </div>
       </div>
     );
   }
-  changeEnvelopeType(evt) {
-    this.setState({ envelopeType: parseInt(evt.target.value, 10) });
+  changeEnvelopeType(idx) {
+    this.setState({ envelopeType: idx });
   }
   generate(grain) {
     return this.envelope.generate(grain);

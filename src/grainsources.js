@@ -36,7 +36,7 @@ export class WaveformGrainSource extends Component {
       const wvhalp = 'Generate a ' + wv + ' wave.';
       const selected = this.state.waveType === wv;
       return (
-        <div className={'waveType' + (selected ? ' selected' : '')}
+        <button className={'waveType' + (selected ? ' selected' : '')}
              onClick={() => this.changeWaveType(wv)}
              onMouseEnter={() => this.props.changeHelpText(wvhalp)}
              key={wv}>
@@ -45,7 +45,7 @@ export class WaveformGrainSource extends Component {
                   stroke={selected ? mainColor : 'white'}
                   strokeWidth={selected ? '10%' : '5%'} />
           </svg>
-        </div>
+        </button>
       );
     });
     return (
@@ -230,7 +230,8 @@ export class SampleGrainSource extends Component {
   render() {
     return (
       <div className="sourceBox">
-        <div onMouseEnter={() => this.props.changeHelpText('Move the slider below the wave form to change where grains get sampled from.')}>
+        <div className="sampleViz"
+             onMouseEnter={() => this.props.changeHelpText('Move the slider below the wave form to change where grains get sampled from.')}>
           <canvas ref={c => this.canvas = c}></canvas>
           <Range allowCross={false} defaultValue={[0,100]} onChange={pos => this.changeStartEnd(pos)} />
         </div>
