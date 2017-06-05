@@ -285,8 +285,11 @@ export default class EnvelopePicker extends Component {
       );
     });
     const Env = this.envelopeClasses[this.state.envelopeType];
+    // TODO: svg picture
+    const envlabhalp = 'Each grain has an envelope to stop clicks and pops caused by sudden onsets and stops.';
     return (
-      <div className="envelopeBox">
+      <div className="envelopeBox"
+           onMouseEnter={() => this.props.changeHelpText(envlabhalp)}>
         <label>Envelope</label>
         <div className="envelopeBoxContent">
           <div className="envelopeTypeSelect">
