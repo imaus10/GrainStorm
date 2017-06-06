@@ -17,8 +17,7 @@ class LFOControl extends Component {
     const lfohalp = 'The amount of time it takes to complete one cycle from the lowest parameter value to the highest and back again.';
     return (
       <div onMouseEnter={() => this.props.changeHelpText(lfohalp)}>
-        <label>Period</label>
-        <input type="number" value={this.state.period} readOnly></input>
+        <label>Period = {this.state.period}</label>
         <Slider min={0.5}
                 max={60}
                 step={0.1}
@@ -65,8 +64,7 @@ class GaussianControl extends Component {
     const stddevhalp = 'Standard deviation of values from the midpoint. Here it is defined as a percentage of the distance from the middle. For instance, a standard deviation of 0.2 means that the min and max values are 5 standard deviations away from the middle.';
     return (
       <div onMouseEnter={() => this.props.changeHelpText(stddevhalp)}>
-        <label>Standard deviation</label>
-        <input type="number" value={this.state.stdDevPct} readOnly></input>
+        <label>Standard deviation = {this.state.stdDevPct}</label>
         <Slider defaultValue={this.state.stdDevPct}
                 min={0.1}
                 max={0.33}
@@ -109,7 +107,7 @@ class ControlParams extends Component {
   render() {
     const ctrlopts = ControlParams.controlClasses.map((cl,i) => <option value={i} key={i}>{cl.label}</option>);
     const CtrlCls = ControlParams.controlClasses[this.state.controlIdx];
-    const btnPos = document.getElementById('ctrlButton').getBoundingClientRect();
+    const btnPos = document.getElementById('ctrlBtn').parentElement.getBoundingClientRect();
     const style = { display: this.props.visible ? '' : 'none'
                   , position: 'absolute'
                   , left: btnPos.left

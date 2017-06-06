@@ -23,10 +23,11 @@ class GrainStorm extends Component {
                  };
   }
   render() {
-    const ctrlButton = (this.state.showControllable ? 'Hide controllable' : 'Control') + ' parameters';
+    const ctrlButton = this.state.showControllable ? 'hide' : 'show';
     const ctrlhalp = 'Move sliders automatically with control functions.';
     const samplehalp = 'Upload a sound file as grain source.';
     const wavehalp = 'Use a sound wave to generate grains.';
+    const ctrlBtnViz = this.state.grainClouds.length > 0 ? 'visible' : 'hidden';
     return (
       <div id="grainStormDevice">
         <div id="header">
@@ -49,20 +50,15 @@ class GrainStorm extends Component {
               </div>
             </div>
             <div id="metaScreen">
-              <div>
-                <h3>HELP:</h3>
-                {this.state.helpText}
-              </div>
-              <hr/>
-              <div>
-                { this.state.grainClouds.length > 0
-                ? <button id="ctrlButton"
-                          type="button"
-                          onClick={() => this.changeShowControllable()}
-                          onMouseEnter={() => this.changeHelpText(ctrlhalp)}>{ctrlButton}</button>
-                : ''
-                }
-              </div>
+              <h3>HELP</h3>
+              <div>{this.state.helpText}</div>
+              <span><h3>PARAMETER CTRL</h3>
+              {<button id="ctrlBtn"
+                       type="button"
+                       onClick={() => this.changeShowControllable()}
+                       onMouseEnter={() => this.changeHelpText(ctrlhalp)}
+                       style={{visibility: ctrlBtnViz}}>{ctrlButton}</button>}</span>
+              <div></div>
             </div>
           </div>
           <div id="grainCloudBox">
