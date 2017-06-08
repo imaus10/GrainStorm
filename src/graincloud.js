@@ -102,6 +102,7 @@ function grainCloud(GrainSource) {
     }
     addControlFunction(id, fn) {
       this.controlFunctions[id] = fn;
+      fn(); // call to set initial param
     }
     removeControlFunction(id) {
       delete this.controlFunctions[id];

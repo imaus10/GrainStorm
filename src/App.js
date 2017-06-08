@@ -49,16 +49,18 @@ class GrainStorm extends Component {
                         onMouseEnter={() => this.changeHelpText(wavehalp)}>+ sound wave</button>
               </div>
             </div>
-            <div id="metaScreen">
+            <div id="metaPanel">
               <h3>HELP</h3>
-              <div>{this.state.helpText}</div>
-              <span><h3>PARAMETER CTRL</h3>
-              {<button id="ctrlBtn"
-                       type="button"
-                       onClick={() => this.changeShowControllable()}
-                       onMouseEnter={() => this.changeHelpText(ctrlhalp)}
-                       style={{visibility: ctrlBtnViz}}>{ctrlButton}</button>}</span>
-              <div></div>
+              <div className="leftScreen">{this.state.helpText}</div>
+              <span>
+                <h3>PARAMETER CTRL</h3>
+                {<button id="showCtrlBtn"
+                         type="button"
+                         onClick={() => this.changeShowControllable()}
+                         onMouseEnter={() => this.changeHelpText(ctrlhalp)}
+                         style={{visibility: ctrlBtnViz}}>{ctrlButton}</button>}
+              </span>
+              <div id="metaScreen" className="leftScreen"></div>
             </div>
           </div>
           <div id="grainCloudBox">

@@ -12,12 +12,20 @@ class LFOControl extends Component {
     if (prevProps.playing !== this.props.playing) {
       this.phaseOffset = Date.now();
     }
+
+    if (!this.props.playing &&
+          ( prevProps.controlMin !== this.props.controlMin ||
+            prevProps.controlMax !== this.props.controlMax ))
+    {
+      this.phaseOffset = Date.now();
+    }
   }
   render() {
     const lfohalp = 'The amount of time it takes to complete one cycle from the lowest parameter value to the highest and back again.';
     return (
-      <div onMouseEnter={() => this.props.changeHelpText(lfohalp)}>
-        <label>Period = {this.state.period}</label>
+      <div className="controlParam"
+           onMouseEnter={() => this.props.changeHelpText(lfohalp)}>
+        <label>Period</label><span> = {this.state.period}</span>
         <Slider min={0.5}
                 max={60}
                 step={0.1}
@@ -63,8 +71,9 @@ class GaussianControl extends Component {
   render() {
     const stddevhalp = 'Standard deviation of values from the midpoint. Here it is defined as a percentage of the distance from the middle. For instance, a standard deviation of 0.2 means that the min and max values are 5 standard deviations away from the middle.';
     return (
-      <div onMouseEnter={() => this.props.changeHelpText(stddevhalp)}>
-        <label>Standard deviation = {this.state.stdDevPct}</label>
+      <div className="controlParam"
+           onMouseEnter={() => this.props.changeHelpText(stddevhalp)}>
+        <label>Standard deviation</label><span> = {this.state.stdDevPct}</span>
         <Slider defaultValue={this.state.stdDevPct}
                 min={0.1}
                 max={0.33}
@@ -107,15 +116,8 @@ class ControlParams extends Component {
   render() {
     const ctrlopts = ControlParams.controlClasses.map((cl,i) => <option value={i} key={i}>{cl.label}</option>);
     const CtrlCls = ControlParams.controlClasses[this.state.controlIdx];
-    const btnPos = document.getElementById('ctrlBtn').parentElement.getBoundingClientRect();
-    const style = { display: this.props.visible ? '' : 'none'
-                  , position: 'absolute'
-                  , left: btnPos.left
-                  , top: btnPos.bottom
-                  , width: 290
-                  };
     return (
-      <div className="controlParameters" style={style}>
+      <div>
         <div onMouseEnter={() => this.props.changeHelpText('The type of control function that will be applied to the selected parameter.')}>
           <label>Control function</label>
           <select value={this.state.controlIdx} onChange={evt => this.changeControlType(evt)}>
@@ -161,32 +163,63 @@ export default class ParameterBox extends Component {
         this.props.removeControlFunction(this.paramId);
       }
     }
+
+    if ( this.state.controlMax !== prevState.controlMax ||
+         this.state.controlMin !== prevState.controlMin )
+    {
+      this.getControlFunc()();
+    }
   }
   render() {
+    const metaScreen = document.getElementById('metaScreen').getBoundingClientRect();
+    const style = { display: this.state.selected && this.props.showControllable ? '' : 'none'
+                  , position: 'absolute'
+                  , left: metaScreen.left
+                  , top: metaScreen.top
+                  , width: 290
+                  , padding: 5
+                  };
+    const handle = (props) => {
+      const { index, dragging, ...restProps } = props;
+      return <Slider.Handle key={index}
+                            onClick={() => {
+                              if (index === 1) {
+                                this.stopControlling();
+                              }
+                            }}
+                            {...restProps} />;
+    };
     return (
       <div className="parameterBox" onMouseEnter={() => this.props.changeHelpText(this.props.helpText)}>
         <label>{this.props.label}</label>
         <input type="number" value={this.props.value} readOnly></input>
-        <Slider value={this.props.value}
-                min={this.props.min}
-                max={this.props.max}
-                step={this.props.step || 1}
-                onChange={val => this.wrapOnChange(val)}
-                onBeforeChange={() => this.handleParameterClick()}
-                className={this.getClassName()} />
         { this.props.showControllable && this.state.selected
-        ? <Range defaultValue={[this.state.controlMin,this.state.controlMax]}
+        ? <Range value={[this.state.controlMin,this.props.value,this.state.controlMax]}
                  min={this.props.min}
                  max={this.props.max}
+                 step={this.props.step}
+                 handle={handle}
                  className='controller'
                  onChange={(vals) => this.changeControlRange(vals)} />
-        : ''
+        : <Slider value={this.props.value}
+                  min={this.props.min}
+                  max={this.props.max}
+                  step={this.props.step || 1}
+                  marks={ this.state.controlled
+                        ? { [this.state.controlMin]: ''
+                          , [this.state.controlMax]: ''
+                          }
+                        : {}}
+                  onChange={val => this.wrapOnChange(val)}
+                  onBeforeChange={() => this.handleParameterClick()}
+                  className={this.getClassName()} />
         }
         { this.state.controlled
-        ? <ControlParams ref={ctrl => this.controlParams = ctrl}
-                         visible={this.state.selected && this.props.showControllable}
-                         {...this.state}
-                         {...this.props} />
+        ? <div className="controlParameters" style={style}>
+            <ControlParams ref={ctrl => this.controlParams = ctrl}
+                           {...this.state}
+                           {...this.props} />
+          </div>
         : ''
         }
       </div>
@@ -208,15 +241,14 @@ export default class ParameterBox extends Component {
   }
   handleParameterClick() {
     if (this.props.showControllable) {
-      // if already selected, deselect
-      if (this.state.selected) {
-        this.setState({ selected: false, controlled: false });
-      } else { // otherwise, select it (and deselect the other parameters)
-        ParameterBox.registry.forEach(pb => pb.deselect());
-        this.props.changeHelpText('Move the purple range to select a minimum and maximum value for the control function.');
-        this.setState({ selected: true, controlled: true });
-      }
+      // select it (and deselect the other parameters)
+      ParameterBox.registry.forEach(pb => pb.deselect());
+      this.props.changeHelpText('Move the purple range to select a minimum and maximum value for the control function.');
+      this.setState({ selected: true, controlled: true });
     }
+  }
+  stopControlling() {
+    this.setState({ selected: false, controlled: false });
   }
   deselect() {
     if (this.state.selected) {
@@ -224,7 +256,7 @@ export default class ParameterBox extends Component {
     }
   }
   changeControlRange(vals) {
-    this.setState({ controlMin: vals[0], controlMax: vals[1] });
+    this.setState({ controlMin: vals[0], controlMax: vals[2] });
   }
   getControlFunc() {
     return this.controlParams.getControlFunc();

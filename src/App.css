@@ -2,7 +2,10 @@ html,body,#root {
   height: 100%;
   margin: 0;
 }
-
+h3, label {
+  font-style: italic;
+  color: white;
+}
 input, select, button {
   font-family: monospace;
   color: #16ba42;
@@ -51,20 +54,20 @@ canvas {
   font-family: monospace;
 }
 
-#metaScreen {
+#metaPanel {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
-#metaScreen h3 {
+#metaPanel h3 {
   margin: 5px 0;
   display: inline-block;
   font-family: sans-serif;
 }
-#metaScreen #ctrlBtn {
+#metaPanel #showCtrlBtn {
   float: right;
 }
-#metaScreen > div {
+.leftScreen {
   color: #16ba42;
   background-color: #000f28;
   padding: 5px;
@@ -111,17 +114,20 @@ canvas {
 .rc-slider.controllable .rc-slider-track {
   background-color: #00e5ff;
 }
-.rc-slider.controlled .rc-slider-handle {
+.rc-slider.controlled .rc-slider-dot {
   border: 2px solid #a349ff;
 }
 .rc-slider.controlled .rc-slider-track {
   background-color: #000f28;
 }
 .rc-slider.controller .rc-slider-track {
-  background-color: #a349ff;
+  background-color: #a348ff;
 }
 .rc-slider.controller .rc-slider-handle {
   border: 2px solid #a349ff;
+}
+.rc-slider.controller .rc-slider-dot {
+  border: 2px solid #16ba42;
 }
 
 .cloudControls {
@@ -177,8 +183,13 @@ canvas {
 .controlParameters .rc-slider-rail {
   background-color: black;
 }
+.controlParam {
+  border-top: 1px solid #16ba42;
+  margin-top: 10px;
+  padding: 5px 0;
+}
 
-.parameterBox, .envelopeBox, .controlParameters > div {
+.parameterBox, .envelopeBox {
   border-top: 1px solid;
   margin: 10px 0 10px 0;
   padding-top: 10px;
