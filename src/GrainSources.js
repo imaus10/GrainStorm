@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import numeric from 'numeric';
 import { Range } from 'rc-slider';
 import { mainColor } from './App';
-import ParameterBox from './parametercontrol';
+import Parameter from './Parameter';
 
 export class WaveformGrainSource extends Component {
   static waveTypeSVGPaths = { sine: "M 0 25 Q 25 -15, 50 25 T 100 25"
@@ -54,7 +54,7 @@ export class WaveformGrainSource extends Component {
         <div className="waveTypeSelect">
           {wvopts}
         </div>
-        <ParameterBox
+        <Parameter
           label="Frequency"
           value={this.state.waveFrequency}
           min={20}
@@ -235,7 +235,7 @@ export class SampleGrainSource extends Component {
           <canvas ref={c => this.canvas = c}></canvas>
           <Range allowCross={false} defaultValue={[0,100]} onChange={pos => this.changeStartEnd(pos)} />
         </div>
-        <ParameterBox
+        <Parameter
           label="Speed"
           value={this.state.speed*100}
           min={-200}
@@ -245,7 +245,7 @@ export class SampleGrainSource extends Component {
           {...this.props} />
         { typeof this.props.audioCtx.createBufferSource().detune === 'undefined'
           ? ''
-          : <ParameterBox
+          : <Parameter
           label="Pitch shift"
           value={this.state.pitchShift}
           min={-1200}

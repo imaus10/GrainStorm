@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import numeric from 'numeric';
 import Slider from 'rc-slider';
-import ParameterBox from './parametercontrol';
-import EnvelopePicker from './envelopes';
-import { WaveformGrainSource, SampleGrainSource } from './grainsources';
+import Parameter from './Parameter';
+import EnvelopePicker from './Envelopes';
+import { WaveformGrainSource, SampleGrainSource } from './GrainSources';
 
 function grainCloud(GrainSource) {
   return class GrainCloud extends Component {
@@ -65,7 +65,7 @@ function grainCloud(GrainSource) {
           <GrainSource
             ref={gs => this.grainSource = gs}
             {...props} />
-          <ParameterBox
+          <Parameter
             label={"Grain density"} // unicode hex 2374
             value={this.state.grainDensity}
             min={1}
@@ -74,7 +74,7 @@ function grainCloud(GrainSource) {
             onChange={d => this.changeGrainDensity(d)}
             helpText={densehalp}
             {...props} />
-          <ParameterBox
+          <Parameter
             label="Grain duration"
             value={this.state.grainDuration*1000}
             min={1}

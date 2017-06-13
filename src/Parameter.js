@@ -137,14 +137,14 @@ class ControlParams extends Component {
   }
 }
 
-export default class ParameterBox extends Component {
+export default class Parameter extends Component {
   static paramIdSeq = 0
   static registry = []
   constructor(props) {
     super(props);
-    this.paramId = ParameterBox.paramIdSeq;
-    ParameterBox.paramIdSeq += 1;
-    ParameterBox.registry.push(this);
+    this.paramId = Parameter.paramIdSeq;
+    Parameter.paramIdSeq += 1;
+    Parameter.registry.push(this);
     this.state = { controlled: false
                  , selected: false
                  , controlMin: props.min
@@ -152,8 +152,8 @@ export default class ParameterBox extends Component {
                  };
   }
   componentWillUnmount() {
-    const idx = ParameterBox.registry.findIndex(pb => pb === this);
-    ParameterBox.registry.splice(idx, 1);
+    const idx = Parameter.registry.findIndex(pb => pb === this);
+    Parameter.registry.splice(idx, 1);
   }
   componentDidUpdate(prevProps, prevState) {
     if (this.state.controlled !== prevState.controlled) {
@@ -242,7 +242,7 @@ export default class ParameterBox extends Component {
   handleParameterClick() {
     if (this.props.showControllable) {
       // select it (and deselect the other parameters)
-      ParameterBox.registry.forEach(pb => pb.deselect());
+      Parameter.registry.forEach(pb => pb.deselect());
       this.props.changeHelpText('Move the purple range to select a minimum and maximum value for the control function.');
       this.setState({ selected: true, controlled: true });
     }

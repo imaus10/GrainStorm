@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import 'rc-slider/assets/index.css';
 import 'rc-tooltip/assets/bootstrap.css';
 import './audioshim';
-import { WaveformGrainCloud, SampleGrainCloud } from './graincloud';
+import { WaveformGrainCloud, SampleGrainCloud } from './GrainCloud';
 import './App.css';
 
 // TODO: share across css & js?
