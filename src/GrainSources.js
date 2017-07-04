@@ -4,12 +4,26 @@ import { Range } from 'rc-slider';
 import { mainColor } from './App';
 import Parameter from './Parameter';
 
+// each GrainSource must implement these functions:
+// 1. drawViz: show what's being played in a visualizer
+// 2. resetViz: return to the default state of the visualizer
+// 3. makeGrain: make an AudioBuffer grain to be played!
+// 4. getConnector: return an AudioNode that will be connected to the grain
+//    (this is so WaveformGrainSource's visualizer can
+//     make the oscillator with an AnalyserNode)
+
+// this generates grains using mathematical wave functions.
+// (the wave types are implemented in updateGrain)
+// the only additional controllable parameter is frequency.
 export class WaveformGrainSource extends Component {
+  // the classy wave shapes on the buttons are drawn with SVG paths
   static waveTypeSVGPaths = { sine: "M 0 25 Q 25 -15, 50 25 T 100 25"
                             , square: "M 0 4 H 50 V 46 H 100"
                             , sawtooth: "M 0 25 L 50 4 V 46 L 100 25"
                             , triangle: "M 0 25 L 25 4 L 75 46 L 100 25"
                             }
+
+  // React methods:
   constructor(props) {
     super(props);
     this.audioAnalyzer = props.audioCtx.createAnalyser();
@@ -25,6 +39,8 @@ export class WaveformGrainSource extends Component {
     this.updateGrain();
   }
   componentDidUpdate(prevProps, prevState) {
+    // WaveformGrainSource "generates" the exact same grain (this.waveform)
+    // until grainDuration, waveType, or waveFrequency changes
     if (this.props.grainDuration !== prevProps.grainDuration ||
         prevState.waveType !== this.state.waveType ||
         prevState.waveFrequency !== this.state.waveFrequency) {
@@ -65,14 +81,17 @@ export class WaveformGrainSource extends Component {
       </div>
     );
   }
+
+  // methods that call setState:
   changeWaveType(wv) {
     this.setState({ waveType: wv });
   }
   changeWaveFrequency(f) {
     this.setState({ waveFrequency: f });
   }
+
+  // draw an oscilloscope!
   drawViz() {
-    // oscilloscope!
     this.audioAnalyzer.fftSize = 2048;
     const bufferLength = this.audioAnalyzer.frequencyBinCount;
     let dataArray = new Uint8Array(bufferLength);
@@ -97,8 +116,9 @@ export class WaveformGrainSource extends Component {
     canvasCtx.lineTo(this.canvas.width, this.canvas.height/2);
     canvasCtx.stroke();
   }
+
+  // draw inactive oscilloscope
   resetViz() {
-    // draw inactive oscilloscope
     const canvasCtx = this.canvas.getContext('2d');
     canvasCtx.clearRect(0,0,this.canvas.width,this.canvas.height);
     canvasCtx.beginPath();
@@ -106,6 +126,7 @@ export class WaveformGrainSource extends Component {
     canvasCtx.lineTo(this.canvas.width, this.canvas.height/2);
     canvasCtx.stroke();
   }
+
   updateGrain() {
     const numsamples = Math.round(this.props.audioCtx.sampleRate * this.props.grainDuration);
 
@@ -153,22 +174,29 @@ export class WaveformGrainSource extends Component {
   }
 }
 
+// this generates grains using a sampled sound file.
+// additional controllable parameters: speed & pitch shift
+// (IE doesn't implement AudioBufferSourceNode.detune, so no pitch shift there)
 export class SampleGrainSource extends Component {
+  // React methods:
   constructor(props) {
     super(props);
-    this.initialPos = 0; // where the playhead was when sampleStart, sampleEnd, or speed changed
+    // used with this.playTime to find the current position of the playhead
+    // both properties are reset when sampleStart, sampleEnd, or speed changes
+    this.initialPos = 0;
     // additional properties:
-    // this.playTime -- time audio started playing (to find current position in audio)
     // this.audioImage -- unmodified image of original audio drawn on canvas
-    // this.trimmedAudioImage -- image of audio plus sampleStart and sampleEnd markers
+    //                    (see componentDidMount)
+    // this.trimmedAudioImage -- image of audio plus sampleStart
+    //                           and sampleEnd markers
     this.state = { sampleStart: 0 // pct of total duration
                  , sampleEnd: 1 // pct of total duration
                  , speed: 1 // pct - 0 means playhead is still, negative reverses audio
                  , pitchShift: 0 // cents
                  };
   }
-  // draw the audio on the canvas
   componentDidMount() {
+    // draw the audio on the canvas
     const canvasCtx = this.canvas.getContext('2d');
     canvasCtx.strokeStyle = mainColor;
     const audio = this.props.audioData;
@@ -257,8 +285,12 @@ export class SampleGrainSource extends Component {
       </div>
     );
   }
+
+  // methods that call setState:
   changeStartEnd(pos) {
     if (this.props.playing) {
+      // catch the current playhead position before state change
+      // to use as initialPos after state change
       this.initialPos = this.getAbsolutePos();
       this.playTime = this.props.audioCtx.currentTime;
     } else {
@@ -268,6 +300,8 @@ export class SampleGrainSource extends Component {
   }
   changeSpeed(sp) {
     if (this.props.playing) {
+      // catch the current playhead position before state change
+      // to use as initialPos after state change
       this.initialPos = this.getAbsolutePos();
       this.playTime = this.props.audioCtx.currentTime;
     }
@@ -276,21 +310,37 @@ export class SampleGrainSource extends Component {
   changePitchShift(p) {
     this.setState({ pitchShift: p });
   }
+
   getAbsolutePos() {
     const startTime = this.state.sampleStart*this.props.audioData.duration;
     const endTime = this.state.sampleEnd*this.props.audioData.duration;
+
+    // if the speed is zero, return the same position over and over again
     if (this.state.speed === 0) {
+      // but don't go beyond startTime or endTime
       return Math.min(Math.max(this.initialPos, startTime), endTime);
     }
+
+    // the current position is
     const timeElapsed = this.props.playing ? (this.props.audioCtx.currentTime - this.playTime)*this.state.speed : 0;
     const dur = (endTime - startTime);
     const pos = (timeElapsed + this.initialPos - startTime) % dur + startTime;
+
+    // if the speed is negative, the playhead will go below startTime and
+    // continue to decrease.
     if (pos >= startTime) {
       return pos;
     } else {
+      // once it does, correct by wrapping pos around endTime.
+      // Math.abs(startTime-pos) is how far below startTime pos has gone.
+      // use that as a distance from endTime instead --
+      // mod with dur and subtract from endTime to make pos wrap around.
       return endTime - Math.abs(startTime-pos)%dur;
     }
   }
+
+  // draw a red playhead at current position on the trimmedAudioImage
+  // (clip before sampleStart and after sampleEnd greyed out)
   drawViz() {
     const stepsize = this.canvas.width/this.props.audioData.getChannelData(0).length;
     const sampleRate = this.props.audioData.sampleRate;
@@ -303,16 +353,20 @@ export class SampleGrainSource extends Component {
     canvasCtx.lineTo(stepsize*pos, this.canvas.height);
     canvasCtx.stroke();
   }
+
+  // reset the trimmedAudioImage
   resetViz() {
     this.canvas.getContext('2d').putImageData(this.trimmedAudioImage, 0, 0);
   }
+
   makeGrain() {
+    // make an empty buffer with the correct number of samples
     const sampleRate = this.props.audioData.sampleRate;
     const nchan = this.props.audioData.numberOfChannels;
-    // TODO: get rid of time, use samples instead
     const grainSamples = Math.round(this.props.grainDuration*sampleRate);
     const grain = this.props.audioCtx.createBuffer(nchan, grainSamples, sampleRate);
 
+    // fill it from the sound file starting at the current position
     const startSample = Math.round(this.getAbsolutePos()*sampleRate);
     for (let ch=0; ch<nchan; ch++) {
       const chanBuff = new Float32Array(grainSamples);
@@ -321,7 +375,9 @@ export class SampleGrainSource extends Component {
     }
     return grain;
   }
+
   getConnector(grain) {
+    // IE doesn't have detune...
     if (typeof grain.detune !== 'undefined') {
       grain.detune.value = this.state.pitchShift;
     }

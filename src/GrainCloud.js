@@ -5,8 +5,16 @@ import Parameter from './Parameter';
 import EnvelopePicker from './Envelopes';
 import { WaveformGrainSource, SampleGrainSource } from './GrainSources';
 
+// a higher order component (HOC) that keeps the parameters common
+// to all GrainSources while allowing for extra parameters to be
+// defined within each particular GrainSource.
+// this HOC mainly does two things:
+// 1. generates and plays grains with a time interval between each grain
+// 2. applies control functions before each new grain
+// See playCloud() and generateAndPlayGrain().
 function grainCloud(GrainSource) {
   return class GrainCloud extends Component {
+    // React methods:
     constructor(props) {
       super(props);
       this.controlFunctions = {};
@@ -22,10 +30,11 @@ function grainCloud(GrainSource) {
           this.playCloud();
         } else {
           this.stopCloud();
+          // reset controlled parameters to start value
           this.callControlFunctions();
         }
       } else if (this.state.playing && prevState.grainDensity !== this.state.grainDensity) {
-        // reset the interval when density changes
+        // reset the interval (window.setInterval in playCloud) when density changes
         this.stopCloud();
         this.playCloud();
       }
@@ -35,11 +44,15 @@ function grainCloud(GrainSource) {
     }
     render() {
       const playButtonTxt = this.state.playing ? '\u25a0' : '\u25ba';
+
+      // hover help texts
       const playhalp = this.state.playing ? 'Stop playing this grain cloud.' : 'Play this grain cloud.';
       const remhalp = 'Remove this grain cloud.';
       const densehalp = 'How close together grains are packed in a cloud. More specifically, it is the number of times per second a grain gets created.';
       const durhalp = 'How long each grain lasts, in milliseconds.';
       const volumehalp = 'The volume of this cloud.';
+
+      // add t
       const moreProps = { addControlFunction: (id,fn) => this.addControlFunction(id,fn)
                         , removeControlFunction: id => this.removeControlFunction(id)
                         };
@@ -88,6 +101,8 @@ function grainCloud(GrainSource) {
         </div>
       );
     }
+
+    // methods that call setState
     changePlaying() {
       this.setState({ playing: !this.state.playing });
     }
@@ -100,6 +115,12 @@ function grainCloud(GrainSource) {
     changeGain(gain) {
       this.setState({ gain: gain });
     }
+
+    // these two methods are passed down to all child components
+    // so that this HOC can abstractly call the control functions
+    // before each grain generation, while the child component handles
+    // the implementation of the actual functions.
+    // see Parameter.js for Control components.
     addControlFunction(id, fn) {
       this.controlFunctions[id] = fn;
       fn(); // call to set initial param
@@ -107,25 +128,43 @@ function grainCloud(GrainSource) {
     removeControlFunction(id) {
       delete this.controlFunctions[id];
     }
-    generateGrainEnvelope() {
+
+    // this method does three things:
+    // 1. applies the grain envelope, set in the EnvelopePicker component
+    // 2. applies gain to each grain
+    // 3. plays the grain
+    generateAndPlayGrain() {
+      // 1.
+      // generate a grain,
       const grain = this.grainSource.makeGrain();
+      // generate an envelope,
       const env = this.envelope.generate(grain);
+      // and apply the envelope to the grain
+      // by multiplying with each channel.
       for (let ch=0; ch<grain.numberOfChannels; ch++) {
         const chanBuff = grain.getChannelData(ch);
         grain.copyToChannel(Float32Array.from(numeric.mul(env,chanBuff)), ch);
       }
 
+      // 2.
+      // create the AudioBufferSourceNode from the grain AudioBuffer,
       const src = this.props.audioCtx.createBufferSource();
       src.buffer = grain;
+      // apply a GainNode,
       const gainNode = this.props.audioCtx.createGain();
       gainNode.gain.value = this.state.gain;
       src.connect(gainNode);
-      // pass in src for last-minute manipulations by grainSource
+      // get any additional connector AudioNodes from grainSource,
+      // (pass in src for last-minute manipulations by grainSource)
       const connector = this.grainSource.getConnector(src);
       gainNode.connect(connector);
+
+      // 3.
+      // and play the grain!
       connector.connect(this.props.audioCtx.destination);
       src.start();
     }
+
     callControlFunctions() {
       for (let id in this.controlFunctions) {
         if (this.controlFunctions.hasOwnProperty(id)) {
@@ -133,11 +172,14 @@ function grainCloud(GrainSource) {
         }
       }
     }
+
     playCloud() {
+      // play something...
       this.intervalId = window.setInterval(() => {
         this.callControlFunctions();
-        this.generateGrainEnvelope();
+        this.generateAndPlayGrain();
       }, 1000/this.state.grainDensity);
+      // and show something.
       const animationFunc = () => {
         this.animation = window.requestAnimationFrame(animationFunc);
         this.grainSource.drawViz();
@@ -145,7 +187,9 @@ function grainCloud(GrainSource) {
       animationFunc();
     }
     stopCloud() {
+      // stop playing...
       window.clearInterval(this.intervalId);
+      // and stop showing.
       this.animation = window.cancelAnimationFrame(this.animation);
       this.grainSource.resetViz();
     }

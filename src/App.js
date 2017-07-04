@@ -8,13 +8,17 @@ import './App.css';
 // TODO: share across css & js?
 export const mainColor = '#16ba42';
 
+// the main class of the app,
+// which has a list of grain sources,
+// help text that gets displayed in the left panel,
+// and a button that turns on the automatic control functions.
 class GrainStorm extends Component {
   constructor(props) {
     super(props);
     this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     this.grainCloudIdSeq = 0;
     const expl = (
-      <div><p>Granular synthesis is an electronic music technique where tiny "grains" of sound, typically lasting less than 100 milliseconds, are generated many times per second to make music. If many of these sound particles overlap, it is called a cloud.</p>
+      <div><p>Granular synthesis is an electronic music technique where tiny "grains" of sound, typically lasting less than 100 milliseconds, are generated many times per second to make music. When many of these sound particles overlap, it is called a cloud.</p>
       <p>Generate a grain cloud using one of the two sources above.</p></div>
     );
     this.state = { grainClouds: []
