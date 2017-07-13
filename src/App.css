@@ -42,28 +42,12 @@ canvas {
   box-shadow: -5px 5px 5px 3px rgba(0,0,0,0.4);
 }
 
-#middle {
-  display: flex;
-  flex-flow: column;
-  flex-grow: 1;
-  align-self: center;
-  overflow: hidden;
-  background-color: #161616;
-  height:98%;
-  box-shadow: 0 3px 5px 5px rgba(0,0,0,0.6);
-}
-
-#header {
-  flex: 0 1 auto;
-  border-bottom: 1px solid gray;
-}
 #labelPlate {
   display: flex;
   flex-flow: column;
   align-items: center;
   width: 300px;
-  padding: 3px;
-  margin: 5px;
+  margin-bottom: 10px;
   /*border: 1px solid white;*/
   /*background-color: #c0c0c0;*/
   /*color: black;*/
@@ -72,30 +56,53 @@ canvas {
 }
 #labelPlate h1 {
   margin: 0;
+  font-size: 2.5em;
+  /*text-shadow: -2px -2px 0 #000,
+               2px -2px 0 #000,
+               -2px 2px 0 #000,
+               2px 2px 0 #000;*/
 }
 #labelPlate h2 {
   margin: 0;
   font-size: 0.75em;
+  letter-spacing: 0.2em;
 }
 #controls {
   flex: 1 1 auto;
   display: flex;
+  /*flex-flow: column;*/
+  /*flex-grow: 1;*/
+  align-self: center;
+  overflow: hidden;
+  height:98%;
+  box-shadow: 0 3px 5px 5px rgba(0,0,0,0.6);
 }
 
 #leftPanel {
-  border-right: 1px solid gray;
   min-width: 300px;
   width: 300px;
   padding: 8px;
   display: flex;
   flex-direction: column;
+  background-color: #161616;
+}
+
+#addGrainCloudBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
   font-family: monospace;
+}
+#addGrainCloudBox button {
+  margin: 0 5px 0 5px;
 }
 
 #metaPanel {
   flex: 1;
   display: flex;
   flex-direction: column;
+  font-family: monospace;
 }
 #metaPanel h3 {
   margin: 5px 0;
@@ -113,19 +120,13 @@ canvas {
   margin: 5px 0;
 }
 
-#addGrainCloudBox {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-}
-#addGrainCloudBox button {
-  margin: 0 5px 0 5px;
-}
-
 #grainCloudBox {
   display: flex;
   overflow: scroll;
+  background-color: #101010;
+  border-top: 1px solid #040404;
+  border-left: 1px solid #040404;
+  flex: 1 1 auto;
 }
 
 .grainCloud {

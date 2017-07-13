@@ -35,53 +35,49 @@ class GrainStorm extends Component {
     return (
       <div id="grainStormDevice">
         <div className="woodPanel"></div>
-        <div id="middle">
-          <div id="header">
+        <div id="controls">
+          <div id="leftPanel">
             <div id="labelPlate">
               <h1>GrainStorm</h1>
-              <h2>granular synthesis in the browser</h2>
+              <h2>(granular synthesis in the browser)</h2>
+            </div>
+            <div id="addGrainCloudBox">
+              <div>
+                <button type="button"
+                        onMouseEnter={() => this.changeHelpText(samplehalp)}
+                        onClick={() => this.fileUpload.click()}>+ sound file</button>
+                <input type="file"
+                       ref={inp => this.fileUpload = inp}
+                       style={{display:'none'}}
+                       onChange={() => this.addSample()}></input>
+                <button type="button"
+                        onClick={() => this.addWaveform()}
+                        onMouseEnter={() => this.changeHelpText(wavehalp)}>+ sound wave</button>
+              </div>
+            </div>
+            <div id="metaPanel">
+              <h3>HELP</h3>
+              <div className="leftScreen">{this.state.helpText}</div>
+              <span>
+                <h3>PARAMETER CTRL</h3>
+                {<button id="showCtrlBtn"
+                         type="button"
+                         onClick={() => this.changeShowControllable()}
+                         onMouseEnter={() => this.changeHelpText(ctrlhalp)}
+                         style={{visibility: ctrlBtnViz}}>{ctrlButton}</button>}
+              </span>
+              <div id="metaScreen" className="leftScreen"></div>
             </div>
           </div>
-          <div id="controls">
-            <div id="leftPanel">
-              <div id="addGrainCloudBox">
-                <div>
-                  <button type="button"
-                          onMouseEnter={() => this.changeHelpText(samplehalp)}
-                          onClick={() => this.fileUpload.click()}>+ sound file</button>
-                  <input type="file"
-                         ref={inp => this.fileUpload = inp}
-                         style={{display:'none'}}
-                         onChange={() => this.addSample()}></input>
-                  <button type="button"
-                          onClick={() => this.addWaveform()}
-                          onMouseEnter={() => this.changeHelpText(wavehalp)}>+ sound wave</button>
-                </div>
-              </div>
-              <div id="metaPanel">
-                <h3>HELP</h3>
-                <div className="leftScreen">{this.state.helpText}</div>
-                <span>
-                  <h3>PARAMETER CTRL</h3>
-                  {<button id="showCtrlBtn"
-                           type="button"
-                           onClick={() => this.changeShowControllable()}
-                           onMouseEnter={() => this.changeHelpText(ctrlhalp)}
-                           style={{visibility: ctrlBtnViz}}>{ctrlButton}</button>}
-                </span>
-                <div id="metaScreen" className="leftScreen"></div>
-              </div>
-            </div>
-            <div id="grainCloudBox">
-              {this.state.grainClouds.map(gc =>
-                <gc.type key={gc.id}
-                         audioCtx={this.audioCtx}
-                         audioData={gc.audioData || null}
-                         removeCloud={() => this.removeCloud(gc.id)}
-                         changeHelpText={text => this.changeHelpText(text)}
-                         showControllable={this.state.showControllable} />
-              )}
-            </div>
+          <div id="grainCloudBox">
+            {this.state.grainClouds.map(gc =>
+              <gc.type key={gc.id}
+                       audioCtx={this.audioCtx}
+                       audioData={gc.audioData || null}
+                       removeCloud={() => this.removeCloud(gc.id)}
+                       changeHelpText={text => this.changeHelpText(text)}
+                       showControllable={this.state.showControllable} />
+            )}
           </div>
         </div>
         <div className="woodPanel"></div>
