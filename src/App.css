@@ -31,7 +31,6 @@ canvas {
   max-width: 98%;
   width: 98%;
   display: flex;
-  background-color: black;
   color: white;
 }
 
@@ -39,13 +38,19 @@ canvas {
   background-image: url(./woodgrain.jpg);
   width: 30px;
   min-width: 30px;
+  border-radius: 5px;
+  box-shadow: -5px 5px 5px 3px rgba(0,0,0,0.4);
 }
 
 #middle {
   display: flex;
   flex-flow: column;
   flex-grow: 1;
+  align-self: center;
   overflow: hidden;
+  background-color: black;
+  height:98%;
+  box-shadow: 0 3px 5px 5px rgba(0,0,0,0.6);
 }
 
 #header {
