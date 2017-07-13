@@ -48,23 +48,37 @@ canvas {
   flex-grow: 1;
   align-self: center;
   overflow: hidden;
-  background-color: black;
+  background-color: #161616;
   height:98%;
   box-shadow: 0 3px 5px 5px rgba(0,0,0,0.6);
 }
 
 #header {
   flex: 0 1 auto;
+  border-bottom: 1px solid gray;
 }
-#header h1 {
-  margin: 10px 0 10px 0;
+#labelPlate {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  width: 300px;
+  padding: 3px;
+  margin: 5px;
+  /*border: 1px solid white;*/
+  /*background-color: #c0c0c0;*/
+  /*color: black;*/
+  /*border-radius: 3px;*/
+  /*background: linear-gradient(to bottom, #e5e5e5 0%,#596a72 100%);*/
 }
-#footer {
-  flex: 0 1 20px;
+#labelPlate h1 {
+  margin: 0;
+}
+#labelPlate h2 {
+  margin: 0;
+  font-size: 0.75em;
 }
 #controls {
   flex: 1 1 auto;
-  border: 1px solid gray;
   display: flex;
 }
 

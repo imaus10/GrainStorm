@@ -37,7 +37,10 @@ class GrainStorm extends Component {
         <div className="woodPanel"></div>
         <div id="middle">
           <div id="header">
-            <h1>GrainStorm: granular synthesis in the browser</h1>
+            <div id="labelPlate">
+              <h1>GrainStorm</h1>
+              <h2>granular synthesis in the browser</h2>
+            </div>
           </div>
           <div id="controls">
             <div id="leftPanel">
@@ -79,8 +82,6 @@ class GrainStorm extends Component {
                          showControllable={this.state.showControllable} />
               )}
             </div>
-          </div>
-          <div id="footer">
           </div>
         </div>
         <div className="woodPanel"></div>
