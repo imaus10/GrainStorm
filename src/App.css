@@ -21,13 +21,31 @@ canvas {
   background-color: #000f28;
 }
 
-#grainStormDevice {
-  height: 100%;
+#root {
   display: flex;
-  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+}
+#grainStormDevice {
+  height: 98%;
+  max-width: 98%;
+  width: 98%;
+  display: flex;
   background-color: black;
   color: white;
-  padding: 0 5px 0 5px;
+}
+
+.woodPanel {
+  background-image: url(./woodgrain.jpg);
+  width: 30px;
+  min-width: 30px;
+}
+
+#middle {
+  display: flex;
+  flex-flow: column;
+  flex-grow: 1;
+  overflow: hidden;
 }
 
 #header {
@@ -47,6 +65,7 @@ canvas {
 
 #leftPanel {
   border-right: 1px solid gray;
+  min-width: 300px;
   width: 300px;
   padding: 8px;
   display: flex;
@@ -92,6 +111,7 @@ canvas {
 
 .grainCloud {
   padding: 5px;
+  min-width: 300px;
   width: 300px;
   margin: 5px;
   border-radius: 10px;
