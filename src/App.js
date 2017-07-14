@@ -57,7 +57,7 @@ class GrainStorm extends Component {
             </div>
             <div id="metaPanel">
               <h3>HELP</h3>
-              <div className="leftScreen">{this.state.helpText}</div>
+              <div className="screen">{this.state.helpText}</div>
               <span>
                 <h3>PARAMETER CTRL</h3>
                 {<button id="showCtrlBtn"
@@ -66,7 +66,7 @@ class GrainStorm extends Component {
                          onMouseEnter={() => this.changeHelpText(ctrlhalp)}
                          style={{visibility: ctrlBtnViz}}>{ctrlButton}</button>}
               </span>
-              <div id="metaScreen" className="leftScreen"></div>
+              <div id="metaScreen" className="screen"></div>
             </div>
           </div>
           <div id="grainCloudBox">

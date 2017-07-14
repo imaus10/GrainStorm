@@ -30,7 +30,7 @@ function envelope(EnvelopeGenerator, xtraProps) {
       return (
         <div className="envelope"
              onMouseEnter={() => this.props.changeHelpText(EnvelopeGenerator.helpText)}>
-          <canvas ref={c => this.canvas = c}></canvas>
+          <canvas ref={c => this.canvas = c} className="screen"></canvas>
           <EnvelopeGenerator
             ref={eg => this.envelopeGenerator = eg}
             updateEnvelope={() => this.updateEnvelope()}

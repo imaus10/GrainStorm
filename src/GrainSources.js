@@ -66,7 +66,7 @@ export class WaveformGrainSource extends Component {
     });
     return (
       <div className="sourceBox">
-        <canvas ref={c => this.canvas = c}></canvas>
+        <canvas ref={c => this.canvas = c} className="screen"></canvas>
         <div className="waveTypeSelect">
           {wvopts}
         </div>
@@ -260,7 +260,7 @@ export class SampleGrainSource extends Component {
       <div className="sourceBox">
         <div className="sampleViz"
              onMouseEnter={() => this.props.changeHelpText('Move the slider below the wave form to change where grains get sampled from.')}>
-          <canvas ref={c => this.canvas = c}></canvas>
+          <canvas ref={c => this.canvas = c} className="screen"></canvas>
           <Range allowCross={false} defaultValue={[0,100]} onChange={pos => this.changeStartEnd(pos)} />
         </div>
         <Parameter

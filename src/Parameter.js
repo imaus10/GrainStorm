@@ -252,7 +252,7 @@ export default class Parameter extends Component {
     return (
       <div className="parameterBox" onMouseEnter={() => this.props.changeHelpText(this.props.helpText)}>
         <label>{this.props.label}</label>
-        <input type="number" value={this.props.value} readOnly></input>
+        <input type="number" value={this.props.value} readOnly className="screen"></input>
         { this.props.showControllable && this.state.selected
         ? <Range value={[this.state.controlMin,this.props.value,this.state.controlMax]}
                  min={this.props.min}
