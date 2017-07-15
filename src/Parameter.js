@@ -250,38 +250,47 @@ export default class Parameter extends Component {
                             {...restProps} />;
     };
     return (
-      <div className="parameterBox" onMouseEnter={() => this.props.changeHelpText(this.props.helpText)}>
-        <label>{this.props.label}</label>
-        <input type="number" value={this.props.value} readOnly className="screen"></input>
-        { this.props.showControllable && this.state.selected
-        ? <Range value={[this.state.controlMin,this.props.value,this.state.controlMax]}
-                 min={this.props.min}
-                 max={this.props.max}
-                 step={this.props.step}
-                 handle={handle}
-                 className='controller'
-                 onChange={(vals) => this.changeControlRange(vals)} />
-        : <Slider value={this.props.value}
-                  min={this.props.min}
-                  max={this.props.max}
-                  step={this.props.step || 1}
-                  marks={ this.state.controlled
-                        ? { [this.state.controlMin]: ''
-                          , [this.state.controlMax]: ''
-                          }
-                        : {}}
-                  onChange={val => this.wrapOnChange(val)}
-                  onBeforeChange={() => this.handleParameterClick()}
-                  className={this.getClassName()} />
-        }
+      <div>
+        <div className="parameterBox" onMouseEnter={() => this.props.changeHelpText(this.props.helpText)}>
+          <label>{this.props.label}</label>
+          { this.props.showControllable && this.state.selected
+          ? <Range value={[this.state.controlMin,this.props.value,this.state.controlMax]}
+                   min={this.props.min}
+                   max={this.props.max}
+                   step={this.props.step}
+                   handle={handle}
+                   className='controller'
+                   onChange={(vals) => this.changeControlRange(vals)} />
+          : <Slider value={this.props.value}
+                    min={this.props.min}
+                    max={this.props.max}
+                    step={this.props.step || 1}
+                    marks={ this.state.controlled
+                          ? { [this.state.controlMin]: ''
+                            , [this.state.controlMax]: ''
+                            }
+                          : {}}
+                    onChange={val => this.wrapOnChange(val)}
+                    onBeforeChange={() => this.handleParameterClick()}
+                    className={this.getClassName()} />
+          }
+        </div>
         { this.state.controlled
         ? <ControlParams ref={ctrl => this.controlParams = ctrl}
-                         {...this.state}
-                         {...this.props} />
+                             {...this.state}
+                             {...this.props} />
         : ''
         }
       </div>
     );
+  }
+
+  whateverFunc() {
+    if (this.state.controlled) {
+      return
+    } else {
+      return '';
+    }
   }
 
   // methods that call setState:

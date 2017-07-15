@@ -186,6 +186,7 @@ input {
 }
 .waveTypeSelect {
   display: flex;
+  padding: 10px 0 20px 0;
 }
 .waveTypeSelect .waveType {
   border-radius: 7px;
@@ -201,13 +202,6 @@ input {
 }
 .waveTypeSelect .waveType svg {
   width: 100%;
-}
-
-.grainCloud input {
-  width: 5.3em;
-}
-.grainCloud input, .grainCloud select {
-  float: right;
 }
 
 .controlParameters {
@@ -230,20 +224,28 @@ input {
 
 .parameterBox, .envelopeBox {
   border-top: 1px solid;
-  margin: 10px 0 10px 0;
-  padding-top: 10px;
+  padding: 15px 0 15px 0;
+  position: relative;
 }
-.parameterBox .rc-slider {
-  margin-top: 10px;
+.parameterBox label, .envelopeBox label {
+  position: absolute;
+  top: -0.5em;
+  left: 1.5em;
+  background-color: #101010;
+  padding: 0 8px 0 5px;
 }
-
+.parameterBox input {
+  position: absolute;
+  top: -0.5em;
+  right: 0.5em;
+  width: 5.3em;
+}
 
 .envelopeBoxContent {
   display: flex;
   margin-top: 5px;
 }
 .envelopeTypeSelect {
-  /*flex: 1;*/
   flex: 1;
   display: flex;
   flex-direction: column;
