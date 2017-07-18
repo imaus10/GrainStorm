@@ -35,7 +35,7 @@ class LFOControl extends Component {
     return (
       <div className="controlParam"
            onMouseEnter={() => this.props.changeHelpText(lfohalp)}>
-        <label>Period</label><span> = {this.state.period}</span>
+        <label>Period</label>
         <Slider min={0.5}
                 max={60}
                 step={0.1}
@@ -88,7 +88,7 @@ class GaussianControl extends Component {
     return (
       <div className="controlParam"
            onMouseEnter={() => this.props.changeHelpText(stddevhalp)}>
-        <label>Standard deviation</label><span> = {this.state.stdDevPct}</span>
+        <label>Standard deviation</label>
         <Slider defaultValue={this.state.stdDevPct}
                 min={0.1}
                 max={0.33}
@@ -156,21 +156,20 @@ class ControlParams extends Component {
     const style = { display: this.props.selected && this.props.showControllable ? '' : 'none'
                   , position: 'absolute'
                   , left: metaScreen.left
-                  , top: metaScreen.top
+                  , top: metaScreen.top+10
                   , width: 290
                   , padding: 5
                   };
     return (
       <div className="controlParameters" style={style}>
-        <div>
-          <div onMouseEnter={() => this.props.changeHelpText('The type of control function that will be applied to the selected parameter.')}>
+          <div className="controlParam"
+               onMouseEnter={() => this.props.changeHelpText('The type of control function that will be applied to the selected parameter.')}>
             <label>Control function</label>
             <select value={this.state.controlIdx} onChange={evt => this.changeControlType(evt)}>
               {ctrlopts}
             </select>
           </div>
           <CtrlCls ref={ctrl => this.control = ctrl} {...this.props} />
-        </div>
       </div>
     );
   }

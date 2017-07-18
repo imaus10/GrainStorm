@@ -32,6 +32,7 @@ class GrainStorm extends Component {
     const samplehalp = 'Upload a sound file as grain source.';
     const wavehalp = 'Use a sound wave to generate grains.';
     const ctrlBtnViz = this.state.grainClouds.length > 0 ? 'visible' : 'hidden';
+    const ctrlHeadColor = this.state.showControllable ? '#00e5ff' : 'white';
     return (
       <div id="grainStormDevice">
         <div className="woodPanel"></div>
@@ -59,7 +60,7 @@ class GrainStorm extends Component {
               <h3>HELP</h3>
               <div className="screen">{this.state.helpText}</div>
               <span>
-                <h3>PARAMETER CTRL</h3>
+                <h3 style={{color: ctrlHeadColor}}>PARAMETER CTRL</h3>
                 {<button id="showCtrlBtn"
                          type="button"
                          onClick={() => this.changeShowControllable()}

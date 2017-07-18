@@ -114,6 +114,9 @@ input {
 #metaPanel #showCtrlBtn {
   float: right;
 }
+#showCtrlBtn {
+  color: #00e5ff;
+}
 #metaPanel .screen {
   padding: 5px;
   flex: 1;
@@ -206,33 +209,32 @@ input {
 
 .controlParameters {
   font-family: monospace;
-  color: #16ba42;
+  color: #a348ff;
 }
-.controlParameters select {
-  float: none;
-  display: block;
-  margin-top: 10px;
+.controlParameters label {
+  font-weight: bold;
+}
+.controlParameters label, .controlParameters select {
+  color: inherit;
 }
 .controlParameters .rc-slider-rail {
   background-color: black;
 }
-.controlParam {
-  border-top: 1px solid #16ba42;
-  margin-top: 10px;
-  padding: 5px 0;
-}
 
-.parameterBox, .envelopeBox {
+.parameterBox, .envelopeBox, .controlParam {
   border-top: 1px solid;
   padding: 15px 0 15px 0;
   position: relative;
 }
-.parameterBox label, .envelopeBox label {
+.parameterBox label, .envelopeBox label, .controlParam label {
   position: absolute;
   top: -0.5em;
   left: 1.5em;
   background-color: #101010;
   padding: 0 8px 0 5px;
+}
+.controlParam label {
+  background-color: #000f28;
 }
 .parameterBox input {
   position: absolute;
