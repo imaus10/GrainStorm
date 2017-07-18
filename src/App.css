@@ -98,6 +98,8 @@ input {
 }
 #addGrainCloudBox button {
   margin: 0 5px 0 5px;
+  border: 1px solid #16ba42;
+  border-radius: 7px;
 }
 
 #metaPanel {
@@ -113,6 +115,9 @@ input {
 }
 #metaPanel #showCtrlBtn {
   float: right;
+  margin: 5px;
+  border: 1px solid;
+  border-radius: 7px;
 }
 #showCtrlBtn {
   color: #00e5ff;
@@ -176,6 +181,10 @@ input {
   display: flex;
   align-items: center;
 }
+.cloudControls button {
+  border: 1px solid;
+  border-radius: 7px;
+}
 .cloudControls > div {
   width: 100%;
 }
@@ -186,6 +195,7 @@ input {
 
 .sourceBox canvas {
   width: 100%;
+  margin-left: -2px; /* correct for 2px border */
 }
 .waveTypeSelect {
   display: flex;
@@ -216,6 +226,9 @@ input {
 }
 .controlParameters label, .controlParameters select {
   color: inherit;
+}
+.controlParameters select {
+  border: 1px solid #a348ff;
 }
 .controlParameters .rc-slider-rail {
   background-color: black;

@@ -40,33 +40,31 @@ class GrainStorm extends Component {
           <div id="leftPanel">
             <div id="labelPlate">
               <h1>GrainStorm</h1>
-              <h2>(granular synthesis in the browser)</h2>
+              <h2>[granular synthesis in the browser]</h2>
             </div>
             <div id="addGrainCloudBox">
-              <div>
-                <button type="button"
-                        onMouseEnter={() => this.changeHelpText(samplehalp)}
-                        onClick={() => this.fileUpload.click()}>+ sound file</button>
-                <input type="file"
-                       ref={inp => this.fileUpload = inp}
-                       style={{display:'none'}}
-                       onChange={() => this.addSample()}></input>
-                <button type="button"
-                        onClick={() => this.addWaveform()}
-                        onMouseEnter={() => this.changeHelpText(wavehalp)}>+ sound wave</button>
-              </div>
+              <button type="button"
+                      onMouseEnter={() => this.changeHelpText(samplehalp)}
+                      onClick={() => this.fileUpload.click()}>+ sound file</button>
+              <input type="file"
+                     ref={inp => this.fileUpload = inp}
+                     style={{display:'none'}}
+                     onChange={() => this.addSample()}></input>
+              <button type="button"
+                      onClick={() => this.addWaveform()}
+                      onMouseEnter={() => this.changeHelpText(wavehalp)}>+ sound wave</button>
             </div>
             <div id="metaPanel">
               <h3>HELP</h3>
               <div className="screen">{this.state.helpText}</div>
-              <span>
+              <div>
                 <h3 style={{color: ctrlHeadColor}}>PARAMETER CTRL</h3>
                 {<button id="showCtrlBtn"
                          type="button"
                          onClick={() => this.changeShowControllable()}
                          onMouseEnter={() => this.changeHelpText(ctrlhalp)}
                          style={{visibility: ctrlBtnViz}}>{ctrlButton}</button>}
-              </span>
+              </div>
               <div id="metaScreen" className="screen"></div>
             </div>
           </div>

@@ -162,14 +162,14 @@ class ControlParams extends Component {
                   };
     return (
       <div className="controlParameters" style={style}>
-          <div className="controlParam"
-               onMouseEnter={() => this.props.changeHelpText('The type of control function that will be applied to the selected parameter.')}>
-            <label>Control function</label>
-            <select value={this.state.controlIdx} onChange={evt => this.changeControlType(evt)}>
-              {ctrlopts}
-            </select>
-          </div>
-          <CtrlCls ref={ctrl => this.control = ctrl} {...this.props} />
+        <div className="controlParam"
+             onMouseEnter={() => this.props.changeHelpText('The type of control function that will be applied to the selected parameter.')}>
+          <label>Control function</label>
+          <select value={this.state.controlIdx} onChange={evt => this.changeControlType(evt)}>
+            {ctrlopts}
+          </select>
+        </div>
+        <CtrlCls ref={ctrl => this.control = ctrl} {...this.props} />
       </div>
     );
   }
