@@ -52,19 +52,10 @@ input {
   align-items: center;
   width: 300px;
   margin-bottom: 10px;
-  /*border: 1px solid white;*/
-  /*background-color: #c0c0c0;*/
-  /*color: black;*/
-  /*border-radius: 3px;*/
-  /*background: linear-gradient(to bottom, #e5e5e5 0%,#596a72 100%);*/
 }
 #labelPlate h1 {
   margin: 0;
   font-size: 2.5em;
-  /*text-shadow: -2px -2px 0 #000,
-               2px -2px 0 #000,
-               -2px 2px 0 #000,
-               2px 2px 0 #000;*/
 }
 #labelPlate h2 {
   margin: 0;
@@ -166,6 +157,9 @@ input {
 }
 .rc-slider.controlled .rc-slider-track {
   background-color: #000f28;
+}
+.rc-slider.controlled .rc-slider-handle {
+  border: 2px solid #a349ff;
 }
 .rc-slider.controller .rc-slider-track {
   background-color: #a348ff;
