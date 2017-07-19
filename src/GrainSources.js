@@ -52,7 +52,7 @@ export class WaveformGrainSource extends Component {
       const wvhalp = 'Generate a ' + wv + ' wave.';
       const selected = this.state.waveType === wv;
       return (
-        <button className={'waveType' + (selected ? ' selected' : '')}
+        <button className={'waveType' + (selected ? ' selected glow' : '')}
              onClick={() => this.changeWaveType(wv)}
              onMouseEnter={() => this.props.changeHelpText(wvhalp)}
              key={wv}>

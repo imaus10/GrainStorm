@@ -62,7 +62,8 @@ function grainCloud(GrainSource) {
           <div className="cloudControls">
             <button type="button"
                     onMouseEnter={() => this.props.changeHelpText(playhalp)}
-                    onClick={() => this.changePlaying()}>{playButtonTxt}</button>
+                    onClick={() => this.changePlaying()}
+                    className="glow">{playButtonTxt}</button>
             <div onMouseEnter={() => this.props.changeHelpText(volumehalp)}>
               <Slider min={0}
                       max={2}
@@ -70,10 +71,10 @@ function grainCloud(GrainSource) {
                       defaultValue={this.state.gain}
                       onChange={gain => this.changeGain(gain)} />
             </div>
-            <button className="removeCloud"
+            <button className="removeCloud glow"
                     type="button"
                     onMouseEnter={() => this.props.changeHelpText(remhalp)}
-                    onClick={this.props.removeCloud}>[x]</button>
+                    onClick={this.props.removeCloud}>X</button>
           </div>
           <GrainSource
             ref={gs => this.grainSource = gs}

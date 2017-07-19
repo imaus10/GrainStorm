@@ -3,6 +3,7 @@ import 'rc-slider/assets/index.css';
 import 'rc-tooltip/assets/bootstrap.css';
 import './audioshim';
 import { WaveformGrainCloud, SampleGrainCloud } from './GrainCloud';
+import Parameter from './Parameter';
 import './App.css';
 
 // TODO: share across css & js?
@@ -27,12 +28,24 @@ class GrainStorm extends Component {
                  };
   }
   render() {
+    const hasControlled = Parameter.registry.some(p => p.isControlled());
+    const anim = '2s infinite alternate glimmer';
     const ctrlButton = this.state.showControllable ? 'hide' : 'show';
     const ctrlhalp = 'Move sliders automatically with control functions.';
     const samplehalp = 'Upload a sound file as grain source.';
     const wavehalp = 'Use a sound wave to generate grains.';
-    const ctrlBtnViz = this.state.grainClouds.length > 0 ? 'visible' : 'hidden';
+    const ctrlBtnStyle = { visibility: this.state.grainClouds.length > 0
+                                     ? 'visible'
+                                     : 'hidden'
+                         , animation: !this.state.showControllable && !hasControlled
+                                    ? anim
+                                    : ''
+                         };
     const ctrlHeadColor = this.state.showControllable ? '#00e5ff' : 'white';
+    const addCloudStyle = this.state.grainClouds.length > 0
+                        ? {}
+                        : { animation: anim }
+                        ;
     return (
       <div id="grainStormDevice">
         <div className="woodPanel"></div>
@@ -45,14 +58,18 @@ class GrainStorm extends Component {
             <div id="addGrainCloudBox">
               <button type="button"
                       onMouseEnter={() => this.changeHelpText(samplehalp)}
-                      onClick={() => this.fileUpload.click()}>+ sound file</button>
+                      onClick={() => this.fileUpload.click()}
+                      style={addCloudStyle}
+                      className="glow">+ sound file</button>
               <input type="file"
                      ref={inp => this.fileUpload = inp}
                      style={{display:'none'}}
                      onChange={() => this.addSample()}></input>
               <button type="button"
                       onClick={() => this.addWaveform()}
-                      onMouseEnter={() => this.changeHelpText(wavehalp)}>+ sound wave</button>
+                      onMouseEnter={() => this.changeHelpText(wavehalp)}
+                      style={addCloudStyle}
+                      className="glow">+ sound wave</button>
             </div>
             <div id="metaPanel">
               <h3>HELP</h3>
@@ -63,7 +80,8 @@ class GrainStorm extends Component {
                          type="button"
                          onClick={() => this.changeShowControllable()}
                          onMouseEnter={() => this.changeHelpText(ctrlhalp)}
-                         style={{visibility: ctrlBtnViz}}>{ctrlButton}</button>}
+                         style={ctrlBtnStyle}
+                         className="glow">{ctrlButton}</button>}
               </div>
               <div id="metaScreen" className="screen"></div>
             </div>

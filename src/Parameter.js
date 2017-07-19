@@ -93,7 +93,8 @@ class GaussianControl extends Component {
                 min={0.1}
                 max={0.33}
                 step={0.01}
-                onChange={sd => this.changeStdDevPct(sd)} />
+                onChange={sd => this.changeStdDevPct(sd)}
+                className="controller" />
       </div>
     );
   }
@@ -284,14 +285,6 @@ export default class Parameter extends Component {
     );
   }
 
-  whateverFunc() {
-    if (this.state.controlled) {
-      return
-    } else {
-      return '';
-    }
-  }
-
   // methods that call setState:
   handleParameterClick() {
     if (this.props.showControllable) {
@@ -333,5 +326,12 @@ export default class Parameter extends Component {
 
   getControlFunc() {
     return this.controlParams.getControlFunc();
+  }
+
+  isControlled() {
+    return this.state.controlled;
+  }
+  isSelected() {
+    return this.state.selected;
   }
 }

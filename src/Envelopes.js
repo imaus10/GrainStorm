@@ -324,9 +324,7 @@ export default class EnvelopePicker extends Component {
     const envopts = this.envelopeClasses.map((cl,i) => {
       const selected = i === this.state.envelopeType;
       const envhalp = 'Use a ' + cl.label + ' envelope.';
-      const clzNm = 'envelopeType' + (selected ? ' selected' : '')
-                                   + (i === 0 ? ' first' : '')
-                                   + (i === this.envelopeClasses.length-1 ? ' last' : '');
+      const clzNm = 'envelopeType' + (selected ? ' selected glow' : '');
       return (
         <button className={clzNm}
              onClick={() => this.changeEnvelopeType(i)}
