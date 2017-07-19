@@ -25,6 +25,15 @@ input {
   box-shadow: inset 1px -1px 10px -1px rgba(0,0,0,.7);
 }
 
+@keyframes glimmer {
+  from {
+    color: rgba(22,186,66,0.3);
+  }
+  to {
+    color: rgba(22,186,66,1);
+  }
+}
+
 #root {
   display: flex;
   align-items: center;
@@ -89,8 +98,14 @@ input {
 }
 #addGrainCloudBox button {
   margin: 0 5px 0 5px;
-  border: 1px solid #16ba42;
+  border: 1px solid;
   border-radius: 7px;
+  font-weight: bold;
+  box-shadow: 0px 0px 25px -5px;
+  animation: 2s infinite alternate glimmer;
+}
+#addGrainCloudBox button:first-child {
+  animation-delay: 2s;
 }
 
 #metaPanel {
