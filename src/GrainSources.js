@@ -261,7 +261,7 @@ export class SampleGrainSource extends Component {
         <div className="sampleViz">
           <canvas className="screen"
                   ref={c => this.canvas = c}></canvas>
-          { this.props.walkthru < 2
+          { this.props.walkthru !== -1
           ? ''
           : <Range defaultValue={[0,100]}
                    allowCross={false}

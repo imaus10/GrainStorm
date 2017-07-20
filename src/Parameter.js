@@ -249,9 +249,11 @@ export default class Parameter extends Component {
                             }}
                             {...restProps} />;
     };
+
+    const show = this.props.walkthruReveal && this.props.walkthru >= this.props.walkthruReveal;
     return (
-      <div style={{display: this.props.walkthru === -1 ? 'block' : 'none'}}>
-        <div className="parameterBox" onMouseEnter={() => this.props.changeHelpText(this.props.helpText)}>
+      <div style={{display: show ? 'block' : 'none'}}>
+        <div className="parameterBox">
           <label>{this.props.label}</label>
           { this.props.showControllable && this.state.selected
           ? <Range value={[this.state.controlMin,this.props.value,this.state.controlMax]}

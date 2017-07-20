@@ -13,6 +13,7 @@ export const mainColor = '#16ba42';
 // help text that gets displayed in the left panel,
 // and a button that turns on the automatic control functions.
 class GrainStorm extends Component {
+  // React methods:
   constructor(props) {
     super(props);
     this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -82,10 +83,10 @@ class GrainStorm extends Component {
                   <h3 style={{color: ctrlHeadColor}}>PARAMETER CTRL</h3>
                   {<button id="showCtrlBtn"
                            type="button"
-                           onClick={() => this.changeShowControllable()}
-                           onMouseEnter={() => this.changeHelpText(ctrlhalp)}
+                           className="glow"
                            style={ctrlBtnStyle}
-                           className="glow">{ctrlButton}</button>}
+                           onMouseEnter={() => this.changeHelpText(ctrlhalp)}
+                           onClick={() => this.changeShowControllable()}>{ctrlButton}</button>}
                 </div>
                 <div id="paramCtrlScreen" className="screen"></div>
               </div>
@@ -99,7 +100,8 @@ class GrainStorm extends Component {
                        removeCloud={() => this.removeCloud(gc.id)}
                        changeHelpText={text => this.changeHelpText(text)}
                        showControllable={this.state.showControllable}
-                       walkthru={this.state.walkthru} />
+                       walkthru={this.state.walkthru}
+                       bumpWalkthru={() => this.bumpWalkthru()}/>
             )}
           </div>
         </div>
@@ -107,12 +109,17 @@ class GrainStorm extends Component {
       </div>
     );
   }
+
+  // methods that call setState:
   changeShowControllable() {
     const expl = this.state.showControllable ? this.state.helpText : <p>Click on any blue slider to choose automatic control functions for that parameter.</p>;
     this.setState({ showControllable: !this.state.showControllable, helpText: expl });
   }
   changeHelpText(text) {
-    this.setState({ helpText: <p>{text}</p> });
+    this.setState({ helpText: text });
+  }
+  bumpWalkthru() {
+    this.setState({ walkthru: this.state.walkthru+1 });
   }
   addSample() {
     const reader = new FileReader();

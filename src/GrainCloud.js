@@ -51,6 +51,21 @@ function grainCloud(GrainSource) {
       const densehalp = 'How close together grains are packed in a cloud. More specifically, it is the number of times per second a grain gets created.';
       const durhalp = 'How long each grain lasts, in milliseconds.';
 
+      const playBtnClickFunc = () => {
+        if (this.props.walkthru === 1) {
+          const helpText = (
+            <div>
+              <p>The playback sounds stuttery because the red playhead is taking a 30 millisecond grain sample every 100 milliseconds - there are gaps between grains.</p>
+              <p>Grain density is how close together grains are packed. That is, when you increase the density, more grains are created, and grains overlap more.</p>
+              <p>Move the slider to see what this sounds like.</p>
+            </div>
+          );
+          this.props.bumpWalkthru();
+          this.props.changeHelpText(helpText);
+        }
+        this.changePlaying();
+      };
+
       const moreProps = { addControlFunction: (id,fn) => this.addControlFunction(id,fn)
                         , removeControlFunction: id => this.removeControlFunction(id)
                         };
@@ -60,7 +75,7 @@ function grainCloud(GrainSource) {
           <div className="cloudControls">
             <button type="button"
                     className={playBtnCls}
-                    onClick={() => this.changePlaying()}>{playBtnTxt}</button>
+                    onClick={playBtnClickFunc}>{playBtnTxt}</button>
               <Slider min={0}
                       max={2}
                       step={0.1}
@@ -82,6 +97,7 @@ function grainCloud(GrainSource) {
             step={0.1}
             onChange={d => this.changeGrainDensity(d)}
             helpText={densehalp}
+            walkthruReveal={2}
             {...props} />
           <Parameter
             label="Grain duration"
