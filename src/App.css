@@ -13,6 +13,8 @@ input, select, button {
 }
 button {
   background-color: inherit;
+  border: 1px solid;
+  border-radius: 7px;
 }
 button:disabled {
   color: gray;
@@ -26,6 +28,9 @@ input {
   border: 2px solid rgba(0,0,0,.3);
   border-radius: 4px;
   box-shadow: inset 1px -1px 10px -1px rgba(0,0,0,.7);
+}
+.screen p {
+  margin: 0 0 10px 0;
 }
 
 .glow {
@@ -107,8 +112,6 @@ input {
 }
 #addGrainCloudBtns button {
   margin: 0 5px 0 5px;
-  border: 1px solid;
-  border-radius: 7px;
   font-weight: bold;
 }
 #addGrainCloudBtns button:enabled {
@@ -203,8 +206,8 @@ input {
   align-items: center;
 }
 .cloudControls button {
-  border: 1px solid;
-  border-radius: 7px;
+  /*border: 1px solid;
+  border-radius: 7px;*/
 }
 .cloudControls .rc-slider {
   margin: 0 10px 0 10px;
@@ -220,8 +223,7 @@ input {
   padding: 10px 0 20px 0;
 }
 .waveTypeSelect .waveType {
-  border-radius: 7px;
-  border: 1px solid #000f28;
+  color: 1px solid;
   width: 100%;
   margin: 0 15px 0;
   display: flex;
@@ -229,7 +231,7 @@ input {
   padding: 5px;
 }
 .waveTypeSelect .waveType.selected {
-  border: 1px solid #16ba42;
+  color: #16ba42;
 }
 .waveTypeSelect .waveType svg {
   width: 100%;

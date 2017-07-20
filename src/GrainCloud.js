@@ -46,22 +46,27 @@ function grainCloud(GrainSource) {
       const playBtnTxt = this.state.playing ? '\u25a0' : '\u25ba';
       const playBtnCls = 'glow' +
                          (this.props.walkthru === 1 ? ' glimmer' : '');
-
-      // hover help texts
-      const densehalp = 'How close together grains are packed in a cloud. More specifically, it is the number of times per second a grain gets created.';
-      const durhalp = 'How long each grain lasts, in milliseconds.';
-
       const playBtnClickFunc = () => {
         if (this.props.walkthru === 1) {
-          const helpText = (
+          const densityDoneFunc = () => {
+            const durationHelp = (
+              <div>
+                <p>Increasing grain duration also increases overlap, for a kind of chorus effect that multiplies the volume.</p>
+                <p>Try a high density and a low duration and see what happens.</p>
+                <button type="button">OK &gt;&gt;</button>
+              </div>
+            );
+            this.props.bumpWalkthru(durationHelp);
+          }
+          const densityHelp = (
             <div>
               <p>The playback sounds stuttery because the red playhead is taking a 30 millisecond grain sample every 100 milliseconds - there are gaps between grains.</p>
               <p>Grain density is how close together grains are packed. That is, when you increase the density, more grains are created, and grains overlap more.</p>
               <p>Move the slider to see what this sounds like.</p>
+              <button type="button" onClick={densityDoneFunc}>OK &gt;&gt;</button>
             </div>
           );
-          this.props.bumpWalkthru();
-          this.props.changeHelpText(helpText);
+          this.props.bumpWalkthru(densityHelp);
         }
         this.changePlaying();
       };
@@ -96,7 +101,6 @@ function grainCloud(GrainSource) {
             max={100}
             step={0.1}
             onChange={d => this.changeGrainDensity(d)}
-            helpText={densehalp}
             walkthruReveal={2}
             {...props} />
           <Parameter
@@ -104,8 +108,8 @@ function grainCloud(GrainSource) {
             value={this.state.grainDuration*1000}
             min={1}
             max={100}
-            helpText={durhalp}
             onChange={dur => this.changeGrainDuration(dur)}
+            walkthruReveal={3}
             {...props} />
           <EnvelopePicker
             ref={env => this.envelope = env}

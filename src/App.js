@@ -101,7 +101,7 @@ class GrainStorm extends Component {
                        changeHelpText={text => this.changeHelpText(text)}
                        showControllable={this.state.showControllable}
                        walkthru={this.state.walkthru}
-                       bumpWalkthru={() => this.bumpWalkthru()}/>
+                       bumpWalkthru={(txt) => this.bumpWalkthru(txt)}/>
             )}
           </div>
         </div>
@@ -118,8 +118,10 @@ class GrainStorm extends Component {
   changeHelpText(text) {
     this.setState({ helpText: text });
   }
-  bumpWalkthru() {
-    this.setState({ walkthru: this.state.walkthru+1 });
+  bumpWalkthru(text) {
+    this.setState({ walkthru: this.state.walkthru+1
+                  , helpText: text
+                  });
   }
   addSample() {
     const reader = new FileReader();
