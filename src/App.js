@@ -3,7 +3,6 @@ import 'rc-slider/assets/index.css';
 import 'rc-tooltip/assets/bootstrap.css';
 import './audioshim';
 import { WaveformGrainCloud, SampleGrainCloud } from './GrainCloud';
-import Parameter from './Parameter';
 import './App.css';
 
 // TODO: share across css & js?
@@ -19,33 +18,37 @@ class GrainStorm extends Component {
     this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     this.grainCloudIdSeq = 0;
     const expl = (
-      <div><p>Granular synthesis is an electronic music technique where tiny "grains" of sound, typically lasting less than 100 milliseconds, are generated many times per second to make music. When many of these sound particles overlap, it is called a cloud.</p>
-      <p>Generate a grain cloud using one of the two sources above.</p></div>
+      <div>
+        <p>Granular synthesis is an electronic music technique that creates tiny "grains" of sound.</p>
+        <p>Though each individual sound particle is miniscule, when many grains overlap, they create a texture known as a cloud.</p>
+        <p>Generate a grain cloud by clicking the glowing button above.</p>
+      </div>
     );
     this.state = { grainClouds: []
                  , helpText: expl
                  , showControllable: false
+                 , walkthru: 0
                  };
   }
   render() {
-    const hasControlled = Parameter.registry.some(p => p.isControlled());
-    const anim = '2s infinite alternate glimmer';
+    // addGrainCloudBtns
+    const addSampleCls = 'glow' +
+                         (this.state.walkthru === 0 ? ' glimmer' : '');
+    const addWaveStyle = { display: this.state.walkthru === -1
+                                  ? 'block'
+                                  : 'none' };
+
+    // parameter control div
+    const paramCtrlStyle = { display: this.state.walkthru === -1
+                                    ? 'block'
+                                    : 'none' };
     const ctrlButton = this.state.showControllable ? 'hide' : 'show';
     const ctrlhalp = 'Move sliders automatically with control functions.';
-    const samplehalp = 'Upload a sound file as grain source.';
-    const wavehalp = 'Use a sound wave to generate grains.';
     const ctrlBtnStyle = { visibility: this.state.grainClouds.length > 0
                                      ? 'visible'
-                                     : 'hidden'
-                         , animation: !this.state.showControllable && !hasControlled
-                                    ? anim
-                                    : ''
-                         };
+                                     : 'hidden' };
     const ctrlHeadColor = this.state.showControllable ? '#00e5ff' : 'white';
-    const addCloudStyle = this.state.grainClouds.length > 0
-                        ? {}
-                        : { animation: anim }
-                        ;
+
     return (
       <div id="grainStormDevice">
         <div className="woodPanel"></div>
@@ -55,35 +58,37 @@ class GrainStorm extends Component {
               <h1>GrainStorm</h1>
               <h2>[granular synthesis in the browser]</h2>
             </div>
-            <div id="addGrainCloudBox">
+            <div id="addGrainCloudBtns">
               <button type="button"
-                      onMouseEnter={() => this.changeHelpText(samplehalp)}
-                      onClick={() => this.fileUpload.click()}
-                      style={addCloudStyle}
-                      className="glow">+ sound file</button>
+                      className={addSampleCls}
+                      disabled={this.state.walkthru > 0}
+                      onClick={() => this.fileUpload.click()}>+ sound file</button>
               <input type="file"
-                     ref={inp => this.fileUpload = inp}
                      style={{display:'none'}}
+                     ref={inp => this.fileUpload = inp}
                      onChange={() => this.addSample()}></input>
               <button type="button"
-                      onClick={() => this.addWaveform()}
-                      onMouseEnter={() => this.changeHelpText(wavehalp)}
-                      style={addCloudStyle}
-                      className="glow">+ sound wave</button>
+                      className="glow"
+                      style={addWaveStyle}
+                      onClick={() => this.addWaveform()}>+ sound wave</button>
             </div>
             <div id="metaPanel">
-              <h3>HELP</h3>
-              <div className="screen">{this.state.helpText}</div>
               <div>
-                <h3 style={{color: ctrlHeadColor}}>PARAMETER CTRL</h3>
-                {<button id="showCtrlBtn"
-                         type="button"
-                         onClick={() => this.changeShowControllable()}
-                         onMouseEnter={() => this.changeHelpText(ctrlhalp)}
-                         style={ctrlBtnStyle}
-                         className="glow">{ctrlButton}</button>}
+                <h3>HELP</h3>
+                <div className="screen">{this.state.helpText}</div>
               </div>
-              <div id="metaScreen" className="screen"></div>
+              <div style={paramCtrlStyle}>
+                <div>
+                  <h3 style={{color: ctrlHeadColor}}>PARAMETER CTRL</h3>
+                  {<button id="showCtrlBtn"
+                           type="button"
+                           onClick={() => this.changeShowControllable()}
+                           onMouseEnter={() => this.changeHelpText(ctrlhalp)}
+                           style={ctrlBtnStyle}
+                           className="glow">{ctrlButton}</button>}
+                </div>
+                <div id="paramCtrlScreen" className="screen"></div>
+              </div>
             </div>
           </div>
           <div id="grainCloudBox">
@@ -93,7 +98,8 @@ class GrainStorm extends Component {
                        audioData={gc.audioData || null}
                        removeCloud={() => this.removeCloud(gc.id)}
                        changeHelpText={text => this.changeHelpText(text)}
-                       showControllable={this.state.showControllable} />
+                       showControllable={this.state.showControllable}
+                       walkthru={this.state.walkthru} />
             )}
           </div>
         </div>
@@ -124,7 +130,16 @@ class GrainStorm extends Component {
                      , type: SampleGrainCloud
                      };
           this.grainCloudIdSeq += 1;
-          this.setState({ grainClouds: this.state.grainClouds.concat(gc) });
+          let walkthru = this.state.walkthru;
+          let helpText = this.state.helpText;
+          if (walkthru === 0) {
+            walkthru = 1;
+            helpText = <p>Start the cloud by pressing the play button.</p>;
+          }
+          this.setState({ grainClouds: this.state.grainClouds.concat(gc)
+                        , walkthru: walkthru
+                        , helpText: helpText
+                        });
         },
         e => {
           // TODO: prettier, more informative

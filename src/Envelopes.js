@@ -341,16 +341,15 @@ export default class EnvelopePicker extends Component {
     const Env = this.envelopeClasses[this.state.envelopeType];
     const envlabhalp = 'Each grain has an envelope to stop clicks and pops caused by sudden onsets and stops.';
     return (
-      <div className="envelopeBox"
+      <div className="envelopePicker"
+           style={{display: this.props.walkthru === -1 ? 'block' : 'none'}}
            onMouseEnter={() => this.props.changeHelpText(envlabhalp)}>
         <label>Envelope</label>
-        <div className="envelopeBoxContent">
-          <div className="envelopeTypeSelect">
-            {envopts}
-          </div>
-          <Env ref={env => this.envelope = env}
-               {...this.props} />
+        <div className="envelopeTypeSelect">
+          {envopts}
         </div>
+        <Env ref={env => this.envelope = env}
+             {...this.props} />
       </div>
     );
   }

@@ -43,16 +43,14 @@ function grainCloud(GrainSource) {
       this.stopCloud();
     }
     render() {
-      const playButtonTxt = this.state.playing ? '\u25a0' : '\u25ba';
+      const playBtnTxt = this.state.playing ? '\u25a0' : '\u25ba';
+      const playBtnCls = 'glow' +
+                         (this.props.walkthru === 1 ? ' glimmer' : '');
 
       // hover help texts
-      const playhalp = this.state.playing ? 'Stop playing this grain cloud.' : 'Play this grain cloud.';
-      const remhalp = 'Remove this grain cloud.';
       const densehalp = 'How close together grains are packed in a cloud. More specifically, it is the number of times per second a grain gets created.';
       const durhalp = 'How long each grain lasts, in milliseconds.';
-      const volumehalp = 'The volume of this cloud.';
 
-      // add t
       const moreProps = { addControlFunction: (id,fn) => this.addControlFunction(id,fn)
                         , removeControlFunction: id => this.removeControlFunction(id)
                         };
@@ -61,19 +59,16 @@ function grainCloud(GrainSource) {
         <div className="grainCloud">
           <div className="cloudControls">
             <button type="button"
-                    onMouseEnter={() => this.props.changeHelpText(playhalp)}
-                    onClick={() => this.changePlaying()}
-                    className="glow">{playButtonTxt}</button>
-            <div onMouseEnter={() => this.props.changeHelpText(volumehalp)}>
+                    className={playBtnCls}
+                    onClick={() => this.changePlaying()}>{playBtnTxt}</button>
               <Slider min={0}
                       max={2}
                       step={0.1}
                       defaultValue={this.state.gain}
                       onChange={gain => this.changeGain(gain)} />
-            </div>
-            <button className="removeCloud glow"
-                    type="button"
-                    onMouseEnter={() => this.props.changeHelpText(remhalp)}
+            <button type="button"
+                    className="removeCloud glow"
+                    disabled={props.walkthru !== -1}
                     onClick={this.props.removeCloud}>X</button>
           </div>
           <GrainSource

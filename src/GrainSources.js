@@ -258,10 +258,15 @@ export class SampleGrainSource extends Component {
   render() {
     return (
       <div className="sourceBox">
-        <div className="sampleViz"
-             onMouseEnter={() => this.props.changeHelpText('Move the slider below the wave form to change where grains get sampled from.')}>
-          <canvas ref={c => this.canvas = c} className="screen"></canvas>
-          <Range allowCross={false} defaultValue={[0,100]} onChange={pos => this.changeStartEnd(pos)} />
+        <div className="sampleViz">
+          <canvas className="screen"
+                  ref={c => this.canvas = c}></canvas>
+          { this.props.walkthru < 2
+          ? ''
+          : <Range defaultValue={[0,100]}
+                   allowCross={false}
+                   onChange={pos => this.changeStartEnd(pos)} />
+          }
         </div>
         <Parameter
           label="Speed"
@@ -272,15 +277,14 @@ export class SampleGrainSource extends Component {
           onChange={sp => this.changeSpeed(sp)}
           {...this.props} />
         { typeof this.props.audioCtx.createBufferSource().detune === 'undefined'
-          ? ''
-          : <Parameter
-          label="Pitch shift"
-          value={this.state.pitchShift}
-          min={-1200}
-          max={1200}
-          helpText={'How much to change the pitch of each grain, in cents.'}
-          onChange={p => this.changePitchShift(p)}
-          {...this.props} />
+        ? ''
+        : <Parameter label="Pitch shift"
+                     value={this.state.pitchShift}
+                     min={-1200}
+                     max={1200}
+                     helpText={'How much to change the pitch of each grain, in cents.'}
+                     onChange={p => this.changePitchShift(p)}
+                     {...this.props} />
         }
       </div>
     );

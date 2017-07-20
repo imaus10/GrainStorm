@@ -149,15 +149,15 @@ class ControlParams extends Component {
     const ctrlopts = ControlParams.controlClasses.map((cl,i) => <option value={i} key={i}>{cl.label}</option>);
     const CtrlCls = ControlParams.controlClasses[this.state.controlIdx];
     // this ControlParams box would normally be directly under the regular
-    // Parameter. instead, grab the metaScreen div and get its position,
+    // Parameter. instead, grab the paramCtrlScreen div and get its position,
     // and put this over top using absolute positioning.
-    // somewhat hacky, and brittle...if the metaScreen id changes,
+    // somewhat hacky, and brittle...if the paramCtrlScreen id changes,
     // it won't position correctly.
-    const metaScreen = document.getElementById('metaScreen').getBoundingClientRect();
+    const paramCtrlScreen = document.getElementById('paramCtrlScreen').getBoundingClientRect();
     const style = { display: this.props.selected && this.props.showControllable ? '' : 'none'
                   , position: 'absolute'
-                  , left: metaScreen.left
-                  , top: metaScreen.top+10
+                  , left: paramCtrlScreen.left
+                  , top: paramCtrlScreen.top+10
                   , width: 290
                   , padding: 5
                   };
@@ -250,7 +250,7 @@ export default class Parameter extends Component {
                             {...restProps} />;
     };
     return (
-      <div>
+      <div style={{display: this.props.walkthru === -1 ? 'block' : 'none'}}>
         <div className="parameterBox" onMouseEnter={() => this.props.changeHelpText(this.props.helpText)}>
           <label>{this.props.label}</label>
           { this.props.showControllable && this.state.selected

@@ -14,6 +14,9 @@ input, select, button {
 button {
   background-color: inherit;
 }
+button:disabled {
+  color: gray;
+}
 input {
   background-color: #000f28;
 }
@@ -33,8 +36,11 @@ input {
     filter: brightness(200%);
   }
   to {
-    filter: brightness(100%);
+    filter: brightness(70%);
   }
+}
+.glimmer {
+  animation: 1s infinite alternate glimmer;
 }
 
 #root {
@@ -92,21 +98,21 @@ input {
   background-color: #161616;
 }
 
-#addGrainCloudBox {
+#addGrainCloudBtns {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 10px;
   font-family: monospace;
 }
-#addGrainCloudBox button {
+#addGrainCloudBtns button {
   margin: 0 5px 0 5px;
-  border: 1px solid #16ba42;
+  border: 1px solid;
   border-radius: 7px;
   font-weight: bold;
 }
-#addGrainCloudBox button:first-child {
-  animation-delay: 2s;
+#addGrainCloudBtns button:enabled {
+  color: #16ba42;
 }
 
 #metaPanel {
@@ -114,6 +120,11 @@ input {
   display: flex;
   flex-direction: column;
   font-family: monospace;
+}
+#metaPanel > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 #metaPanel h3 {
   margin: 5px 0;
@@ -125,14 +136,13 @@ input {
   margin: 5px;
   border: 1px solid;
   border-radius: 7px;
-}
-#showCtrlBtn {
   color: #00e5ff;
 }
 #metaPanel .screen {
   padding: 5px;
   flex: 1;
   margin: 5px 0;
+  overflow: scroll;
 }
 
 #grainCloudBox {
@@ -196,12 +206,9 @@ input {
   border: 1px solid;
   border-radius: 7px;
 }
-.cloudControls > div {
-  width: 100%;
-}
 .cloudControls .rc-slider {
   margin: 0 10px 0 10px;
-  width: auto;
+  width: 100%;
 }
 
 .sourceBox canvas {
@@ -245,12 +252,12 @@ input {
   background-color: black;
 }
 
-.parameterBox, .envelopeBox, .controlParam {
+.parameterBox, .envelopePicker, .controlParam {
   border-top: 1px solid;
   padding: 15px 0 15px 0;
   position: relative;
 }
-.parameterBox label, .envelopeBox label, .controlParam label {
+.parameterBox label, .envelopePicker label, .controlParam label {
   position: absolute;
   top: -0.5em;
   left: 1.5em;
@@ -267,7 +274,7 @@ input {
   width: 5.3em;
 }
 
-.envelopeBoxContent {
+.envelopePicker {
   display: flex;
   margin-top: 5px;
 }
