@@ -202,6 +202,15 @@ class GrainStorm extends Component {
     </div>
   // 6
   , <p>Try changing the pitch of the sample.</p>
+  // 7
+  , <div>
+      <p>Each grain has an envelope that controls how quickly the sample reaches full volume (attack) and how quickly it fades out (decay).</p>
+      <p>Without the envelope, sounds would be very clicky. Verify this by sliding the left knob all the way left and the right knob all the way right.</p>
+    </div>
+  // 8
+  , <div>
+      <p>Now try different envelopes and see how the sound changes.</p>
+    </div>
   ];
 }
 

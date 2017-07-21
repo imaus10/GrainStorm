@@ -22,6 +22,9 @@ button:disabled {
 input {
   background-color: #000f28;
 }
+svg path {
+  stroke: #16ba42;
+}
 .screen {
   color: #16ba42;
   background-color: #000f28;
@@ -281,6 +284,7 @@ input {
 .envelopePicker {
   display: flex;
   margin-top: 5px;
+  margin-bottom: 10px;
 }
 .envelopeTypeSelect {
   flex: 1;
@@ -289,10 +293,20 @@ input {
   justify-content: center;
 }
 .envelopeTypeSelect .envelopeType {
-  border: 1px solid #000f28;
+  border: 1px solid;
   display: flex;
   align-items: center;
   padding: 3px;
+  border-radius: 0;
+}
+.envelopeTypeSelect .envelopeType svg path {
+  stroke: white;
+}
+.envelopeTypeSelect .envelopeType:enabled {
+  color: #000f28;
+}
+.envelopeTypeSelect .envelopeType:disabled svg path {
+  stroke: gray;
 }
 .envelopeType:first-child {
   border-radius: 7px 0 0 0;
@@ -300,11 +314,18 @@ input {
 .envelopeType:last-child {
   border-radius: 0 0 0 7px;
 }
-.envelopeTypeSelect .envelopeType.selected {
-  border: 1px solid #16ba42;
-}
 .envelopeTypeSelect .envelopeType svg {
   width: 100%;
+}
+.envelopeTypeSelect .envelopeType svg path {
+  stroke-width: 5%;
+}
+.envelopeTypeSelect .envelopeType.selected {
+  color: #16ba42;
+}
+.envelopeTypeSelect .envelopeType.selected svg path {
+  stroke: #16ba42;
+  stroke-width: 10%;
 }
 .envelope {
   width: 100%;

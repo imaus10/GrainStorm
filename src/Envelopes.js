@@ -6,7 +6,6 @@ import { mainColor } from './App';
 // each EnvelopeGenerator has its own particular parameters,
 // but must define the following method:
 // 1. generate(envLength) -- make an envelope with the given number of samples
-// and also a static helpText property that displays when hovered over
 
 // this higher order component (HOC) abstracts the shared drawing code
 // while pushing the envelope implementation to the EnvelopeGenerator
@@ -28,8 +27,7 @@ function envelope(EnvelopeGenerator, xtraProps) {
     }
     render() {
       return (
-        <div className="envelope"
-             onMouseEnter={() => this.props.changeHelpText(EnvelopeGenerator.helpText)}>
+        <div className="envelope">
           <canvas ref={c => this.canvas = c} className="screen"></canvas>
           <EnvelopeGenerator
             ref={eg => this.envelopeGenerator = eg}
@@ -97,8 +95,6 @@ function envelope(EnvelopeGenerator, xtraProps) {
 }
 
 class LinearEnvelopeGenerator extends Component {
-  static helpText = 'Move the range below to change the attack and decay times of the envelope.'
-
   // React methods:
   constructor(props) {
     super(props);
@@ -179,8 +175,6 @@ class MirrorRange extends Component {
 }
 
 class GaussianEnvelopeGenerator extends Component {
-  static helpText = 'Move the slider below to change the width of the Gaussian envelope.'
-
   // React methods:
   constructor(props) {
     super(props);
@@ -217,8 +211,6 @@ const GaussianEnvelope = envelope(GaussianEnvelopeGenerator,
         });
 
 class SincEnvelopeGenerator extends Component {
-  static helpText = 'Move the slider below to change the width of the sinc envelope.'
-
   // React methods:
   constructor(props) {
     super(props);
@@ -265,8 +257,6 @@ const SincEnvelope = envelope(SincEnvelopeGenerator,
 // that flips the envelope around. that way, we can get two components
 // for the price of one. useful abstraction.
 class ExponentialDecayEnvelopeGenerator extends Component {
-  static helpText = 'Move the slider below to change the decay rate of the envelope.'
-
   // React methods:
   constructor(props) {
     super(props);
@@ -323,27 +313,26 @@ export default class EnvelopePicker extends Component {
   render() {
     const envopts = this.envelopeClasses.map((cl,i) => {
       const selected = i === this.state.envelopeType;
-      const envhalp = 'Use a ' + cl.label + ' envelope.';
-      const clzNm = 'envelopeType' + (selected ? ' selected glow' : '');
+      const clzNm = 'envelopeType' + (selected ? ' selected glow' : '')
+                                   + ( (selected && this.props.walkthru === 7) ||
+                                       (i !== 0 && this.props.walkthru === 8)
+                                     ? ' glimmer'
+                                     : '');
       return (
         <button className={clzNm}
-             onClick={() => this.changeEnvelopeType(i)}
-             onMouseEnter={() => this.props.changeHelpText(envhalp)}
-             key={cl.label}>
+                disabled={this.props.walkthru < 8 && i !== 0}
+                key={cl.label}
+                onClick={() => this.changeEnvelopeType(i)}>
           <svg viewBox="0 0 100 50">
-            <path d={cl.path}
-                  stroke={selected ? mainColor : "white"}
-                  strokeWidth={selected ? "10%" : "5%"} />
+            <path d={cl.path} />
           </svg>
         </button>
       );
     });
     const Env = this.envelopeClasses[this.state.envelopeType];
-    const envlabhalp = 'Each grain has an envelope to stop clicks and pops caused by sudden onsets and stops.';
     return (
       <div className="envelopePicker"
-           style={{display: this.props.walkthru === -1 ? 'block' : 'none'}}
-           onMouseEnter={() => this.props.changeHelpText(envlabhalp)}>
+           style={{display: this.props.walkthru >= 7 ? 'flex' : 'none'}}>
         <label>Envelope</label>
         <div className="envelopeTypeSelect">
           {envopts}

@@ -250,7 +250,7 @@ export default class Parameter extends Component {
                             {...restProps} />;
     };
 
-    const show = this.props.walkthruReveal && this.props.walkthru >= this.props.walkthruReveal;
+    const show = this.props.walkthru === -1 || (this.props.walkthruReveal && this.props.walkthru >= this.props.walkthruReveal);
     return (
       <div style={{display: show ? 'block' : 'none'}}>
         <div className="parameterBox">
