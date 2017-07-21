@@ -201,7 +201,7 @@ class GrainStorm extends Component {
       <p>The farther the slider is from the middle, the faster the playhead goes.</p>
     </div>
   // 6
-  , <p>Try changing the pitch of the sample. I like it low.</p>
+  , <p>Try changing the pitch of the sample.</p>
   ];
 }
 

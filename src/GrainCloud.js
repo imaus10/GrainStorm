@@ -63,11 +63,14 @@ function grainCloud(GrainSource) {
             <button type="button"
                     className={playBtnCls}
                     onClick={playBtnClickFunc}>{playBtnTxt}</button>
+            <div className="volume">
+              <label>volume</label>
               <Slider min={0}
                       max={2}
                       step={0.1}
                       defaultValue={this.state.gain}
                       onChange={gain => this.changeGain(gain)} />
+            </div>
             <button type="button"
                     className="removeCloud glow"
                     disabled={props.walkthru !== -1}
