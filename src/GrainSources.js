@@ -261,7 +261,7 @@ export class SampleGrainSource extends Component {
         <div className="sampleViz">
           <canvas className="screen"
                   ref={c => this.canvas = c}></canvas>
-          { this.props.walkthru !== -1
+          { this.props.walkthru < 4
           ? ''
           : <Range defaultValue={[0,100]}
                    allowCross={false}
@@ -273,8 +273,8 @@ export class SampleGrainSource extends Component {
           value={this.state.speed*100}
           min={-200}
           max={200}
-          helpText={'How quickly the playhead moves through the sound sample, as a percentage. Negative values move backward.'}
           onChange={sp => this.changeSpeed(sp)}
+          walkthruReveal={5}
           {...this.props} />
         { typeof this.props.audioCtx.createBufferSource().detune === 'undefined'
         ? ''
@@ -282,7 +282,7 @@ export class SampleGrainSource extends Component {
                      value={this.state.pitchShift}
                      min={-1200}
                      max={1200}
-                     helpText={'How much to change the pitch of each grain, in cents.'}
+                     walkthruReveal={6}
                      onChange={p => this.changePitchShift(p)}
                      {...this.props} />
         }

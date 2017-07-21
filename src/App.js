@@ -18,15 +18,8 @@ class GrainStorm extends Component {
     super(props);
     this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     this.grainCloudIdSeq = 0;
-    const expl = (
-      <div>
-        <p>Granular synthesis is an electronic music technique that creates tiny "grains" of sound.</p>
-        <p>Though each individual sound particle is miniscule, when many grains overlap, they create a texture known as a cloud.</p>
-        <p>Generate a grain cloud by clicking the glowing button above.</p>
-      </div>
-    );
     this.state = { grainClouds: []
-                 , helpText: expl
+                 , helpText: GrainStorm.walkthruHelp[0]
                  , showControllable: false
                  , walkthru: 0
                  };
@@ -74,7 +67,7 @@ class GrainStorm extends Component {
                       onClick={() => this.addWaveform()}>+ sound wave</button>
             </div>
             <div id="metaPanel">
-              <div>
+              <div id="helpSection">
                 <h3>HELP</h3>
                 <div className="screen">{this.state.helpText}</div>
               </div>
@@ -112,15 +105,23 @@ class GrainStorm extends Component {
 
   // methods that call setState:
   changeShowControllable() {
-    const expl = this.state.showControllable ? this.state.helpText : <p>Click on any blue slider to choose automatic control functions for that parameter.</p>;
-    this.setState({ showControllable: !this.state.showControllable, helpText: expl });
+    this.setState({ showControllable: !this.state.showControllable });
   }
   changeHelpText(text) {
     this.setState({ helpText: text });
   }
-  bumpWalkthru(text) {
+  bumpWalkthru() {
+    const halp = (
+      <div>
+        {GrainStorm.walkthruHelp[this.state.walkthru+1]}
+        { this.state.walkthru+1 === 1
+        ? ''
+        : <button type="button"
+                  onClick={() => this.bumpWalkthru()}>OK &gt;&gt;</button>}
+      </div>
+    );
     this.setState({ walkthru: this.state.walkthru+1
-                  , helpText: text
+                  , helpText: halp
                   });
   }
   addSample() {
@@ -139,16 +140,10 @@ class GrainStorm extends Component {
                      , type: SampleGrainCloud
                      };
           this.grainCloudIdSeq += 1;
-          let walkthru = this.state.walkthru;
-          let helpText = this.state.helpText;
-          if (walkthru === 0) {
-            walkthru = 1;
-            helpText = <p>Start the cloud by pressing the play button.</p>;
+          if (this.state.walkthru === 0) {
+            this.bumpWalkthru();
           }
-          this.setState({ grainClouds: this.state.grainClouds.concat(gc)
-                        , walkthru: walkthru
-                        , helpText: helpText
-                        });
+          this.setState({ grainClouds: this.state.grainClouds.concat(gc) });
         },
         e => {
           // TODO: prettier, more informative
@@ -172,6 +167,42 @@ class GrainStorm extends Component {
     const clouds = c1.concat(c2);
     this.setState({ grainClouds: clouds });
   }
+
+  static walkthruHelp = [
+  // 0
+    <div>
+      <p>Granular synthesis is an electronic music technique that creates tiny "grains" of sound.</p>
+      <p>Though each individual sound particle is miniscule, when many grains overlap, they create a texture known as a cloud.</p>
+      <p>Generate a grain cloud by clicking the glowing button above.</p>
+    </div>
+  // 1
+  , <p>Start the cloud by pressing the play button.</p>
+  // 2
+  , <div>
+      <p>The playback sounds stuttery because the red playhead is taking a 30 millisecond grain sample every 100 milliseconds - there are gaps between grains.</p>
+      <p>Grain density is how close together grains are packed. That is, when you increase the density, more grains are created, and grains overlap more.</p>
+      <p>Move the slider to see what this sounds like.</p>
+    </div>
+  // 3
+  , <div>
+      <p>Increasing grain duration also increases overlap, for a kind of chorus effect that multiplies the volume.</p>
+      <p>Try a high density and a low duration and see what happens.</p>
+    </div>
+  // 4
+  , <div>
+      <p>Use the slider below the playhead viewer to make grains from a specific part of the sample.</p>
+      <p>You can get interesting repetitive sounds by narrowing in on a small section of the sample.</p>
+    </div>
+  // 5
+  , <div>
+      <p>Change the speed of the playhead.</p>
+      <p>Move the slider exactly to the middle and the playhead stops moving, and makes the same grain over and over.</p>
+      <p>Move to the left of middle, and the playhead direction reverses. Each grain is still played forward, but the sample position is moving backward.</p>
+      <p>The farther the slider is from the middle, the faster the playhead goes.</p>
+    </div>
+  // 6
+  , <p>Try changing the pitch of the sample. I like it low.</p>
+  ];
 }
 
 export default GrainStorm;

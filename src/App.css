@@ -134,6 +134,14 @@ input {
   display: inline-block;
   font-family: sans-serif;
 }
+#metaPanel #helpSection {
+  position: relative;
+}
+#metaPanel #helpSection button {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
 #metaPanel #showCtrlBtn {
   float: right;
   margin: 5px;
@@ -155,7 +163,6 @@ input {
   border-left: 2px solid rgba(4,4,4,0.5);
   flex: 1 1 auto;
 }
-
 .grainCloud {
   padding: 5px;
   min-width: 300px;
@@ -164,6 +171,39 @@ input {
   border-radius: 10px;
   border: 1px solid white;
   overflow: scroll;
+}
+
+.cloudControls {
+  display: flex;
+  align-items: center;
+}
+.cloudControls .rc-slider {
+  margin: 0 10px 0 10px;
+  width: 100%;
+}
+
+.sourceBox canvas {
+  width: 100%;
+  margin-left: -2px; /* correct for 2px border */
+}
+
+.waveTypeSelect {
+  display: flex;
+  padding: 10px 0 20px 0;
+}
+.waveTypeSelect .waveType {
+  color: 1px solid;
+  width: 100%;
+  margin: 0 15px 0;
+  display: flex;
+  align-items: center;
+  padding: 5px;
+}
+.waveTypeSelect .waveType.selected {
+  color: #16ba42;
+}
+.waveTypeSelect .waveType svg {
+  width: 100%;
 }
 
 .rc-slider-track {
@@ -201,42 +241,18 @@ input {
   border: 2px solid #16ba42;
 }
 
-.cloudControls {
-  display: flex;
-  align-items: center;
+.parameterBox, .envelopePicker, .controlParam {
+  border-top: 1px solid;
+  padding: 15px 0 15px 0;
+  position: relative;
 }
-.cloudControls button {
-  /*border: 1px solid;
-  border-radius: 7px;*/
+.parameterBox label, .envelopePicker label, .controlParam label {
+  position: absolute;
+  top: -0.5em;
+  left: 1.5em;
+  background-color: #101010;
+  padding: 0 8px 0 5px;
 }
-.cloudControls .rc-slider {
-  margin: 0 10px 0 10px;
-  width: 100%;
-}
-
-.sourceBox canvas {
-  width: 100%;
-  margin-left: -2px; /* correct for 2px border */
-}
-.waveTypeSelect {
-  display: flex;
-  padding: 10px 0 20px 0;
-}
-.waveTypeSelect .waveType {
-  color: 1px solid;
-  width: 100%;
-  margin: 0 15px 0;
-  display: flex;
-  align-items: center;
-  padding: 5px;
-}
-.waveTypeSelect .waveType.selected {
-  color: #16ba42;
-}
-.waveTypeSelect .waveType svg {
-  width: 100%;
-}
-
 .controlParameters {
   font-family: monospace;
   color: #a348ff;
@@ -254,26 +270,8 @@ input {
   background-color: black;
 }
 
-.parameterBox, .envelopePicker, .controlParam {
-  border-top: 1px solid;
-  padding: 15px 0 15px 0;
-  position: relative;
-}
-.parameterBox label, .envelopePicker label, .controlParam label {
-  position: absolute;
-  top: -0.5em;
-  left: 1.5em;
-  background-color: #101010;
-  padding: 0 8px 0 5px;
-}
 .controlParam label {
   background-color: #000f28;
-}
-.parameterBox input {
-  position: absolute;
-  top: -0.5em;
-  right: 0.5em;
-  width: 5.3em;
 }
 
 .envelopePicker {
@@ -308,11 +306,11 @@ input {
   width: 100%;
   flex: 5;
 }
-
 .envelope canvas {
   width: 100%;
   height: 100%;
 }
+
 .sampleViz {
   margin-bottom: 10px;
 }

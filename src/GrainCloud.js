@@ -48,25 +48,7 @@ function grainCloud(GrainSource) {
                          (this.props.walkthru === 1 ? ' glimmer' : '');
       const playBtnClickFunc = () => {
         if (this.props.walkthru === 1) {
-          const densityDoneFunc = () => {
-            const durationHelp = (
-              <div>
-                <p>Increasing grain duration also increases overlap, for a kind of chorus effect that multiplies the volume.</p>
-                <p>Try a high density and a low duration and see what happens.</p>
-                <button type="button">OK &gt;&gt;</button>
-              </div>
-            );
-            this.props.bumpWalkthru(durationHelp);
-          }
-          const densityHelp = (
-            <div>
-              <p>The playback sounds stuttery because the red playhead is taking a 30 millisecond grain sample every 100 milliseconds - there are gaps between grains.</p>
-              <p>Grain density is how close together grains are packed. That is, when you increase the density, more grains are created, and grains overlap more.</p>
-              <p>Move the slider to see what this sounds like.</p>
-              <button type="button" onClick={densityDoneFunc}>OK &gt;&gt;</button>
-            </div>
-          );
-          this.props.bumpWalkthru(densityHelp);
+          this.props.bumpWalkthru();
         }
         this.changePlaying();
       };
