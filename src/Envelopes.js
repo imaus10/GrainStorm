@@ -112,7 +112,10 @@ class LinearEnvelopeGenerator extends Component {
   render() {
     const dfault = [this.state.attackTime*100, 100-this.state.decayTime*100];
     return (
-      <Range allowCross={false} defaultValue={dfault} onChange={env => this.changeAttackDecay(env)} />
+      <Range allowCross={false}
+             defaultValue={dfault}
+             className={this.props.walkthru === 7 ? 'glimmer' : ''}
+             onChange={env => this.changeAttackDecay(env)} />
     );
   }
 

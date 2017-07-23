@@ -16,7 +16,7 @@ button {
   border: 1px solid;
   border-radius: 7px;
 }
-button:disabled {
+button:disabled, select:disabled {
   color: gray;
 }
 input {
@@ -142,6 +142,8 @@ svg path {
   margin: 5px;
   border: 1px solid;
   border-radius: 7px;
+}
+#metaPanel #showCtrlBtn:enabled {
   color: #00e5ff;
 }
 #metaPanel .screen {
@@ -199,7 +201,7 @@ svg path {
   padding: 10px 0 20px 0;
 }
 .waveTypeSelect .waveType {
-  color: 1px solid;
+  border: 1px solid;
   width: 100%;
   margin: 0 15px 0;
   display: flex;
@@ -247,6 +249,15 @@ svg path {
 .rc-slider.controller .rc-slider-dot {
   border: 2px solid #16ba42;
 }
+.rc-slider-disabled {
+  background-color: inherit;
+}
+.rc-slider.rc-slider-disabled .rc-slider-track {
+  background-color: gray;
+}
+.rc-slider.rc-slider-disabled .rc-slider-handle {
+  border: 2px solid gray;
+}
 
 .parameterBox, .envelopePicker, .controlParam {
   border-top: 1px solid;
@@ -267,11 +278,11 @@ svg path {
 .controlParameters label {
   font-weight: bold;
 }
-.controlParameters label, .controlParameters select {
+.controlParameters label {
   color: inherit;
 }
-.controlParameters select {
-  border: 1px solid #a348ff;
+.controlParameters select:enabled {
+  color: #a348ff;
 }
 .controlParameters .rc-slider-rail {
   background-color: black;

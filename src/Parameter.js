@@ -31,17 +31,16 @@ class LFOControl extends Component {
     }
   }
   render() {
-    const lfohalp = 'The amount of time it takes to complete one cycle from the lowest parameter value to the highest and back again.';
     return (
-      <div className="controlParam"
-           onMouseEnter={() => this.props.changeHelpText(lfohalp)}>
+      <div className="controlParam">
         <label>Period</label>
         <Slider min={0.5}
                 max={60}
                 step={0.1}
                 defaultValue={this.state.period}
+                disabled={this.props.walkthru < 12}
                 onChange={T => this.changePeriod(T)}
-                className='controller' />
+                className={'controller' + (this.props.walkthru === 12 ? ' glimmer' : '')} />
       </div>
     );
   }
@@ -84,10 +83,8 @@ class GaussianControl extends Component {
     this.state = { stdDevPct: 0.2 };
   }
   render() {
-    const stddevhalp = 'Standard deviation of values from the midpoint. Here it is defined as a percentage of the distance from the middle. For instance, a standard deviation of 0.2 means that the min and max values are 5 standard deviations away from the middle.';
     return (
-      <div className="controlParam"
-           onMouseEnter={() => this.props.changeHelpText(stddevhalp)}>
+      <div className="controlParam">
         <label>Standard deviation</label>
         <Slider defaultValue={this.state.stdDevPct}
                 min={0.1}
@@ -163,10 +160,12 @@ class ControlParams extends Component {
                   };
     return (
       <div className="controlParameters" style={style}>
-        <div className="controlParam"
-             onMouseEnter={() => this.props.changeHelpText('The type of control function that will be applied to the selected parameter.')}>
+        <div className="controlParam">
           <label>Control function</label>
-          <select value={this.state.controlIdx} onChange={evt => this.changeControlType(evt)}>
+          <select value={this.state.controlIdx}
+                  disabled={this.props.walkthru < 13}
+                  className={this.props.walkthru === 13 ? 'glimmer' : ''}
+                  onChange={evt => this.changeControlType(evt)}>
             {ctrlopts}
           </select>
         </div>
@@ -243,7 +242,7 @@ export default class Parameter extends Component {
       const { index, dragging, ...restProps } = props;
       return <Slider.Handle key={index}
                             onClick={() => {
-                              if (index === 1) {
+                              if ( index === 1 && (this.props.walkthru < 11 || this.props.walkthru >= 14) ) {
                                 this.stopControlling();
                               }
                             }}
@@ -261,7 +260,7 @@ export default class Parameter extends Component {
                    max={this.props.max}
                    step={this.props.step}
                    handle={handle}
-                   className='controller'
+                   className={'controller' + (this.props.walkthru === 11 ? ' glimmer' : '')}
                    onChange={(vals) => this.changeControlRange(vals)} />
           : <Slider value={this.props.value}
                     min={this.props.min}
@@ -272,6 +271,7 @@ export default class Parameter extends Component {
                             , [this.state.controlMax]: ''
                             }
                           : {}}
+                    disabled={this.props.walkthru >= 11 && this.props.walkthru < 14}
                     onChange={val => this.wrapOnChange(val)}
                     onBeforeChange={() => this.handleParameterClick()}
                     className={this.getClassName()} />
@@ -290,9 +290,11 @@ export default class Parameter extends Component {
   // methods that call setState:
   handleParameterClick() {
     if (this.props.showControllable) {
+      if (this.props.walkthru === 10) {
+        this.props.bumpWalkthru();
+      }
       // select it (and deselect the other parameters)
       Parameter.registry.forEach(pb => pb.deselect());
-      this.props.changeHelpText('Move the purple range to select a minimum and maximum value for the control function. Click the middle knob to remove the control function. Once you are done, you can click another parameter or revert to manual control by pressing the "hide" button.');
       this.setState({ selected: true, controlled: true });
     }
   }
@@ -320,7 +322,9 @@ export default class Parameter extends Component {
     if (this.state.controlled) {
       return 'controlled';
     } else if (this.props.showControllable) {
-      return 'controllable';
+      return 'controllable' + (this.props.walkthru === 10 ? ' glimmer' : '');
+    } else if (this.props.walkthru === this.props.walkthruReveal) {
+      return 'glimmer';
     } else {
       return '';
     }

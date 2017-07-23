@@ -265,6 +265,7 @@ export class SampleGrainSource extends Component {
           ? ''
           : <Range defaultValue={[0,100]}
                    allowCross={false}
+                   className={this.props.walkthru === 4 ? 'glimmer' : ''}
                    onChange={pos => this.changeStartEnd(pos)} />
           }
         </div>
