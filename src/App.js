@@ -28,11 +28,20 @@ class GrainStorm extends Component {
     // addGrainCloudBtns
     const addSampleCls = 'glow' +
                          (this.state.walkthru === 0 ? ' glimmer' : '');
+    const addSampleDisabled = this.state.walkthru > 0 && this.state.walkthru < 18;
     const addWaveCls = 'glow' +
                        (this.state.walkthru === 16 ? ' glimmer' : '');
     const addWaveStyle = { display: this.state.walkthru < 16
                                   ? 'none'
                                   : 'block' };
+
+    // help div
+    const helpStyle = { display: this.state.walkthru >= GrainStorm.walkthruHelp.length
+                               ? 'none'
+                               : 'flex' };
+    const endTutBtnCls = this.state.walkthru === GrainStorm.walkthruHelp.length-1
+                       ? 'glimmer'
+                       : '';
 
     // parameter control div
     const paramCtrlStyle = { display: this.state.walkthru < 9
@@ -58,10 +67,11 @@ class GrainStorm extends Component {
               <h1>GrainStorm</h1>
               <h2>[granular synthesis in the browser]</h2>
             </div>
-            <div id="addGrainCloudBtns">
+            <div id="addGrainCloudBtns"
+                 className={this.state.walkthru === 18 ? 'glimmer' : ''}>
               <button type="button"
                       className={addSampleCls}
-                      disabled={this.state.walkthru > 0}
+                      disabled={addSampleDisabled}
                       onClick={() => this.fileUpload.click()}>+ sound file</button>
               <input type="file"
                      style={{display:'none'}}
@@ -73,9 +83,15 @@ class GrainStorm extends Component {
                       onClick={() => this.addWaveform()}>+ sound wave</button>
             </div>
             <div id="metaPanel">
-              <div id="helpSection">
+              <div id="helpSection" style={helpStyle}>
                 <h3>HELP</h3>
-                <div className="screen">{this.state.helpText}</div>
+                <div className="screen">
+                  {this.state.helpText}
+                  <button type="button"
+                          id="walkthruEndBtn"
+                          className={endTutBtnCls}
+                          onClick={() => this.endTutorial()}>skip tutorial</button>
+                </div>
               </div>
               <div style={paramCtrlStyle}>
                 <div>
@@ -122,6 +138,7 @@ class GrainStorm extends Component {
         {helpText}
         { includeOKBtn
         ? <button type="button"
+                  id="walkthruOKBtn"
                   onClick={() => this.bumpWalkthru()}>OK &gt;&gt;</button>
         : ''
         }
@@ -130,6 +147,9 @@ class GrainStorm extends Component {
     this.setState({ walkthru: this.state.walkthru+1
                   , helpText: halp
                   });
+  }
+  endTutorial() {
+    this.setState({ walkthru: GrainStorm.walkthruHelp.length });
   }
   addSample() {
     const reader = new FileReader();
@@ -252,7 +272,14 @@ class GrainStorm extends Component {
   // 16
   , [ <p>There's a new button above! It will add another grain source, this time using a pure sound wave instead of a sampled sound. Click the button!</p>, false ]
   // 17
-  , [ <p>Wave form grains have many of the same parameters. But the frequency and wave type parameters are unique to wave forms.</p>, false ]
+  , [ <p>Wave form grains have many of the same parameters. But the frequency and wave type parameters are unique to wave forms.</p>, true ]
+  // 18
+  , [ <p>One last thing - you can add as many grain sources as you want! If you want to get rid of a grain source, click the X at the top.</p>, true ]
+  // 19
+  , [ <div>
+        <p>Congratulations! You've made it through the tutorial! Now go make some weird noises.</p>
+        <p>Click the "skip tutorial" button to get this help screen out of your way.</p>
+      </div>, false ]
   ];
 }
 

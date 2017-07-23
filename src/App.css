@@ -145,6 +145,15 @@ button.selected svg path {
   display: inline-block;
   font-family: sans-serif;
 }
+#metaPanel #helpSection .screen {
+  position: relative;
+}
+#metaPanel #helpSection #walkthruOKBtn {
+  float: left;
+}
+#metaPanel #helpSection #walkthruEndBtn {
+  float: right;
+}
 #metaPanel #showCtrlBtn {
   float: right;
   margin: 5px;
