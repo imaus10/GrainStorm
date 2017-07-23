@@ -22,8 +22,16 @@ button:disabled, select:disabled {
 input {
   background-color: #000f28;
 }
-svg path {
+button svg {
+  width: 100%;
+}
+button svg path {
+  stroke: white;
+  stroke-width: 5%;
+}
+button.selected svg path {
   stroke: #16ba42;
+  stroke-width: 10%;
 }
 .screen {
   color: #16ba42;
@@ -207,12 +215,10 @@ svg path {
   display: flex;
   align-items: center;
   padding: 5px;
+  color: white;
 }
 .waveTypeSelect .waveType.selected {
   color: #16ba42;
-}
-.waveTypeSelect .waveType svg {
-  width: 100%;
 }
 
 .rc-slider-track {
@@ -310,9 +316,6 @@ svg path {
   padding: 3px;
   border-radius: 0;
 }
-.envelopeTypeSelect .envelopeType svg path {
-  stroke: white;
-}
 .envelopeTypeSelect .envelopeType:enabled {
   color: #000f28;
 }
@@ -325,18 +328,8 @@ svg path {
 .envelopeType:last-child {
   border-radius: 0 0 0 7px;
 }
-.envelopeTypeSelect .envelopeType svg {
-  width: 100%;
-}
-.envelopeTypeSelect .envelopeType svg path {
-  stroke-width: 5%;
-}
 .envelopeTypeSelect .envelopeType.selected {
   color: #16ba42;
-}
-.envelopeTypeSelect .envelopeType.selected svg path {
-  stroke: #16ba42;
-  stroke-width: 10%;
 }
 .envelope {
   width: 100%;

@@ -49,17 +49,13 @@ export class WaveformGrainSource extends Component {
   }
   render() {
     const wvopts = Object.keys(WaveformGrainSource.waveTypeSVGPaths).map(wv => {
-      const wvhalp = 'Generate a ' + wv + ' wave.';
       const selected = this.state.waveType === wv;
       return (
         <button className={'waveType' + (selected ? ' selected glow' : '')}
              onClick={() => this.changeWaveType(wv)}
-             onMouseEnter={() => this.props.changeHelpText(wvhalp)}
              key={wv}>
           <svg viewBox="0 0 100 50">
-            <path d={WaveformGrainSource.waveTypeSVGPaths[wv]}
-                  stroke={selected ? mainColor : 'white'}
-                  strokeWidth={selected ? '10%' : '5%'} />
+            <path d={WaveformGrainSource.waveTypeSVGPaths[wv]} />
           </svg>
         </button>
       );
@@ -67,7 +63,7 @@ export class WaveformGrainSource extends Component {
     return (
       <div className="sourceBox">
         <canvas ref={c => this.canvas = c} className="screen"></canvas>
-        <div className="waveTypeSelect">
+        <div className={'waveTypeSelect' + (this.props.walkthru === 17 ? ' glimmer' : '')}>
           {wvopts}
         </div>
         <Parameter
@@ -75,7 +71,7 @@ export class WaveformGrainSource extends Component {
           value={this.state.waveFrequency}
           min={20}
           max={20000}
-          helpText={'The pitch of the grains in Hz.'}
+          walkthruReveal={17}
           onChange={f => this.changeWaveFrequency(f)}
           {...this.props} />
       </div>

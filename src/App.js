@@ -28,19 +28,26 @@ class GrainStorm extends Component {
     // addGrainCloudBtns
     const addSampleCls = 'glow' +
                          (this.state.walkthru === 0 ? ' glimmer' : '');
-    const addWaveStyle = { display: this.state.walkthru === -1
-                                  ? 'block'
-                                  : 'none' };
+    const addWaveCls = 'glow' +
+                       (this.state.walkthru === 16 ? ' glimmer' : '');
+    const addWaveStyle = { display: this.state.walkthru < 16
+                                  ? 'none'
+                                  : 'block' };
 
     // parameter control div
     const paramCtrlStyle = { display: this.state.walkthru < 9
                                     ? 'none'
                                     : 'flex' };
-    const paramCtrlBtnCls = 'glow' + (this.state.walkthru === 9 || this.state.walkthru === 14 ? ' glimmer' : '');
-    const ctrlButton = this.state.showControllable ? 'hide' : 'show';
-    const ctrlBtnStyle = { visibility: this.state.grainClouds.length > 0
-                                     ? 'visible'
-                                     : 'hidden' };
+    // show/hide parameter control button
+    const paramCtrlBtnCls = 'glow' +
+                            ( this.state.walkthru === 9 || this.state.walkthru === 14
+                            ? ' glimmer'
+                            : '' );
+    const paramCtrlBtnTxt = this.state.showControllable ? 'hide' : 'show';
+    const paramCtrlBtnStyle = { visibility: this.state.grainClouds.length > 0
+                                          ? 'visible'
+                                          : 'hidden' };
+    const paramCtrlBtnDisabled = this.state.walkthru >= 10 && this.state.walkthru < 14;
 
     return (
       <div id="grainStormDevice">
@@ -61,7 +68,7 @@ class GrainStorm extends Component {
                      ref={inp => this.fileUpload = inp}
                      onChange={() => this.addSample()}></input>
               <button type="button"
-                      className="glow"
+                      className={addWaveCls}
                       style={addWaveStyle}
                       onClick={() => this.addWaveform()}>+ sound wave</button>
             </div>
@@ -76,9 +83,9 @@ class GrainStorm extends Component {
                   {<button type="button"
                            id="showCtrlBtn"
                            className={paramCtrlBtnCls}
-                           style={ctrlBtnStyle}
-                           disabled={this.state.walkthru >= 10 && this.state.walkthru < 14 }
-                           onClick={() => this.changeShowControllable()}>{ctrlButton}</button>}
+                           style={paramCtrlBtnStyle}
+                           disabled={paramCtrlBtnDisabled}
+                           onClick={() => this.changeShowControllable()}>{paramCtrlBtnTxt}</button>}
                 </div>
                 <div id="paramCtrlScreen" className="screen"></div>
               </div>
@@ -107,9 +114,6 @@ class GrainStorm extends Component {
       this.bumpWalkthru();
     }
     this.setState({ showControllable: !this.state.showControllable });
-  }
-  changeHelpText(text) {
-    this.setState({ helpText: text });
   }
   bumpWalkthru() {
     const [helpText, includeOKBtn] = GrainStorm.walkthruHelp[this.state.walkthru+1];
@@ -161,6 +165,9 @@ class GrainStorm extends Component {
                , type: WaveformGrainCloud
                };
     this.grainCloudIdSeq += 1;
+    if (this.state.walkthru === 16) {
+      this.bumpWalkthru();
+    }
     this.setState({ grainClouds: [gc].concat(this.state.grainClouds) });
   }
   removeCloud(id) {
@@ -240,7 +247,12 @@ class GrainStorm extends Component {
   // 15
   , [ <div>
         <p>Purple sliders will remain controlled, but now you can set green sliders manually again.</p>
-      </div>, false ]
+        <p>Just a couple more things before you can explore on your own!</p>
+      </div>, true ]
+  // 16
+  , [ <p>There's a new button above! It will add another grain source, this time using a pure sound wave instead of a sampled sound. Click the button!</p>, false ]
+  // 17
+  , [ <p>Wave form grains have many of the same parameters. But the frequency and wave type parameters are unique to wave forms.</p>, false ]
   ];
 }
 
