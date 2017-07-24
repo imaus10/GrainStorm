@@ -6,21 +6,18 @@ h3, label {
   font-style: italic;
   color: white;
 }
-input, select, button {
+select, button {
   font-family: monospace;
   color: #16ba42;
   background-color: inherit;
+  border: 1px solid;
 }
 button {
   background-color: inherit;
-  border: 1px solid;
   border-radius: 7px;
 }
 button:disabled, select:disabled {
   color: gray;
-}
-input {
-  background-color: #000f28;
 }
 button svg {
   width: 100%;
@@ -33,6 +30,9 @@ button.selected svg path {
   stroke: #16ba42;
   stroke-width: 10%;
 }
+button:disabled svg path {
+  stroke: gray;
+}
 .screen {
   color: #16ba42;
   background-color: #000f28;
@@ -44,6 +44,7 @@ button.selected svg path {
   margin: 0 0 10px 0;
 }
 
+/* walkthru */
 .glow {
   box-shadow: 0px 0px 25px -5px;
 }
@@ -327,9 +328,6 @@ button.selected svg path {
 }
 .envelopeTypeSelect .envelopeType:enabled {
   color: #000f28;
-}
-.envelopeTypeSelect .envelopeType:disabled svg path {
-  stroke: gray;
 }
 .envelopeType:first-child {
   border-radius: 7px 0 0 0;
