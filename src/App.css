@@ -250,6 +250,9 @@ button:disabled svg path {
 .rc-slider.controllable .rc-slider-track {
   background-color: #00e5ff;
 }
+.rc-slider.controllable .rc-slider-dot-active {
+  border: 2px solid #00e5ff;
+}
 .rc-slider.controlled .rc-slider-dot {
   border: 2px solid #a349ff;
 }

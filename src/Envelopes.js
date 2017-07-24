@@ -317,13 +317,13 @@ export default class EnvelopePicker extends Component {
     const envopts = this.envelopeClasses.map((cl,i) => {
       const selected = i === this.state.envelopeType;
       const clzNm = 'envelopeType' + (selected ? ' selected glow' : '')
-                                   + ( (selected && this.props.walkthru === 7) ||
-                                       (i !== 0 && this.props.walkthru === 8)
+                                   + ( (selected && this.props.walkthru === 8) ||
+                                       (i !== 0 && this.props.walkthru === 9)
                                      ? ' glimmer'
                                      : '');
       return (
         <button className={clzNm}
-                disabled={this.props.walkthru < 8 && i !== 0}
+                disabled={this.props.walkthru < 9 && i !== 0}
                 key={cl.label}
                 onClick={() => this.changeEnvelopeType(i)}>
           <svg viewBox="0 0 100 50">
@@ -335,7 +335,7 @@ export default class EnvelopePicker extends Component {
     const Env = this.envelopeClasses[this.state.envelopeType];
     return (
       <div className="envelopePicker"
-           style={{display: this.props.walkthru >= 7 ? 'flex' : 'none'}}>
+           style={{display: this.props.walkthru >= 8 ? 'flex' : 'none'}}>
         <label>Envelope</label>
         <div className="envelopeTypeSelect">
           {envopts}

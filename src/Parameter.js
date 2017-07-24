@@ -38,9 +38,9 @@ class LFOControl extends Component {
                 max={60}
                 step={0.1}
                 defaultValue={this.state.period}
-                disabled={this.props.walkthru < 12}
+                disabled={this.props.walkthru < 13}
                 onChange={T => this.changePeriod(T)}
-                className={'controller' + (this.props.walkthru === 12 ? ' glimmer' : '')} />
+                className={'controller' + (this.props.walkthru === 13 ? ' glimmer' : '')} />
       </div>
     );
   }
@@ -163,8 +163,8 @@ class ControlParams extends Component {
         <div className="controlParam">
           <label>Control function</label>
           <select value={this.state.controlIdx}
-                  disabled={this.props.walkthru < 13}
-                  className={this.props.walkthru === 13 ? 'glimmer' : ''}
+                  disabled={this.props.walkthru < 14}
+                  className={this.props.walkthru === 14 ? 'glimmer' : ''}
                   onChange={evt => this.changeControlType(evt)}>
             {ctrlopts}
           </select>
@@ -242,7 +242,7 @@ export default class Parameter extends Component {
       const { index, dragging, ...restProps } = props;
       return <Slider.Handle key={index}
                             onClick={() => {
-                              if ( index === 1 && (this.props.walkthru < 11 || this.props.walkthru >= 14) ) {
+                              if ( index === 1 && this.props.walkthru >= 15 ) {
                                 this.stopControlling();
                               }
                             }}
@@ -271,7 +271,7 @@ export default class Parameter extends Component {
                             , [this.state.controlMax]: ''
                             }
                           : this.props.marks }
-                    disabled={this.props.walkthru >= 11 && this.props.walkthru < 14}
+                    disabled={this.props.walkthru >= 12 && this.props.walkthru < 15}
                     onChange={val => this.wrapOnChange(val)}
                     onBeforeChange={() => this.handleParameterClick()}
                     className={this.getClassName()} />
@@ -290,7 +290,7 @@ export default class Parameter extends Component {
   // methods that call setState:
   handleParameterClick() {
     if (this.props.showControllable) {
-      if (this.props.walkthru === 10) {
+      if (this.props.walkthru === 11) {
         this.props.bumpWalkthru();
       }
       // select it (and deselect the other parameters)
@@ -322,7 +322,7 @@ export default class Parameter extends Component {
     if (this.state.controlled) {
       return 'controlled';
     } else if (this.props.showControllable) {
-      return 'controllable' + (this.props.walkthru === 10 ? ' glimmer' : '');
+      return 'controllable' + (this.props.walkthru === 11 ? ' glimmer' : '');
     } else if (this.props.walkthru === this.props.walkthruReveal) {
       return 'glimmer';
     } else {

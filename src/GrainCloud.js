@@ -73,8 +73,8 @@ function grainCloud(GrainSource) {
             </div>
             <button type="button"
                     className={'removeCloud glow' +
-                               (this.props.walkthru === 18 ? ' glimmer' : '')}
-                    disabled={props.walkthru < 18}
+                               (this.props.walkthru === 19 ? ' glimmer' : '')}
+                    disabled={props.walkthru < 19}
                     onClick={this.props.removeCloud}>X</button>
           </div>
           <GrainSource

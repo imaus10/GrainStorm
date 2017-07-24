@@ -28,10 +28,10 @@ class GrainStorm extends Component {
     // addGrainCloudBtns
     const addSampleCls = 'glow' +
                          (this.state.walkthru === 0 ? ' glimmer' : '');
-    const addSampleDisabled = this.state.walkthru > 0 && this.state.walkthru < 18;
+    const addSampleDisabled = this.state.walkthru > 0 && this.state.walkthru < 19;
     const addWaveCls = 'glow' +
-                       (this.state.walkthru === 16 ? ' glimmer' : '');
-    const addWaveStyle = { display: this.state.walkthru < 16
+                       (this.state.walkthru === 17 ? ' glimmer' : '');
+    const addWaveStyle = { display: this.state.walkthru < 17
                                   ? 'none'
                                   : 'block' };
 
@@ -44,19 +44,19 @@ class GrainStorm extends Component {
                        : '';
 
     // parameter control div
-    const paramCtrlStyle = { display: this.state.walkthru < 9
+    const paramCtrlStyle = { display: this.state.walkthru < 10
                                     ? 'none'
                                     : 'flex' };
     // show/hide parameter control button
     const paramCtrlBtnCls = 'glow' +
-                            ( this.state.walkthru === 9 || this.state.walkthru === 14
+                            ( this.state.walkthru === 10 || this.state.walkthru === 15
                             ? ' glimmer'
                             : '' );
     const paramCtrlBtnTxt = this.state.showControllable ? 'hide' : 'show';
     const paramCtrlBtnStyle = { visibility: this.state.grainClouds.length > 0
                                           ? 'visible'
                                           : 'hidden' };
-    const paramCtrlBtnDisabled = this.state.walkthru >= 10 && this.state.walkthru < 14;
+    const paramCtrlBtnDisabled = this.state.walkthru >= 11 && this.state.walkthru < 15;
 
     return (
       <div id="grainStormDevice">
@@ -68,7 +68,7 @@ class GrainStorm extends Component {
               <h2>[granular synthesis in the browser]</h2>
             </div>
             <div id="addGrainCloudBtns"
-                 className={this.state.walkthru === 18 ? 'glimmer' : ''}>
+                 className={this.state.walkthru === 19 ? 'glimmer' : ''}>
               <button type="button"
                       className={addSampleCls}
                       disabled={addSampleDisabled}
@@ -126,7 +126,7 @@ class GrainStorm extends Component {
 
   // methods that call setState:
   changeShowControllable() {
-    if (this.state.walkthru === 9 || this.state.walkthru === 14) {
+    if (this.state.walkthru === 10 || this.state.walkthru === 15) {
       this.bumpWalkthru();
     }
     this.setState({ showControllable: !this.state.showControllable });
@@ -185,7 +185,7 @@ class GrainStorm extends Component {
                , type: WaveformGrainCloud
                };
     this.grainCloudIdSeq += 1;
-    if (this.state.walkthru === 16) {
+    if (this.state.walkthru === 17) {
       this.bumpWalkthru();
     }
     this.setState({ grainClouds: [gc].concat(this.state.grainClouds) });
@@ -221,61 +221,70 @@ class GrainStorm extends Component {
   // 4
   , [ <div>
         <p>Use the slider below the playhead viewer to make grains from a specific part of the sample.</p>
-        <p>You can get interesting repetitive sounds by narrowing in on a small section of the sample.</p>
+        <p>You can get interesting repetitive sounds by narrowing in on a small section.</p>
       </div>, true ]
   // 5
+  , [ <div>
+        <p>Rather than always sample exactly where the playhead is, you can opt to take grains from a random position nearby the playhead. This scattered sound is often what people think of when they think about granular synthesis.</p>
+        <p>Try it out by increasing the randomness parameter. As randomness increases, the grains will be sampled from a larger area around the playhead. If you slide it all the way to the right, each sample will come from a completely random position.</p>
+      </div>, true ]
+  // 6
   , [ <div>
         <p>Change the speed of the playhead.</p>
         <p>Move the slider exactly to the middle and the playhead stops moving, and makes the same grain over and over.</p>
         <p>Move to the left of middle, and the playhead direction reverses. Each grain is still played forward, but the sample position is moving backward.</p>
         <p>The farther the slider is from the middle, the faster the playhead goes.</p>
       </div>, true ]
-  // 6
-  , [ <p>Try changing the pitch of the sample.</p>, true ]
   // 7
+  , [ <p>Try changing the pitch of the sample.</p>, true ]
+  // 8
   , [ <div>
         <p>Each grain has an envelope that controls how quickly the sample reaches full volume (attack) and how quickly it fades out (decay). Below the envelope screen is a slider with two knobs that control the attack and decay.</p>
         <p>Without the envelope, grains sound clicky. Verify this by sliding the attack knob all the way left and the decay knob all the way right.</p>
       </div>, true ]
-  // 8
-  , [ <p>Now try different envelopes and see how the sound changes.</p>, true ]
   // 9
+  , [ <p>Now try different envelopes and see how the sound changes.</p>, true ]
+  // 10
   , [ <div>
         <p>Now for the fun part! See the PARAMETER CTRL panel that appeared below? You can use this to automatically move knobs.</p>
         <p>First, click the blue "show" button to the right of the PARAMETER CTRL label.</p>
       </div>, false ]
-  // 10
-  , [ <p>Now click any of the blue sliders to start controlling it.</p>, false ]
   // 11
+  , [ <p>Now click any of the blue sliders to start controlling it.</p>, false ]
+  // 12
   , [ <div>
         <p>You are now using a low frequency oscillator (LFO) on your parameter!</p>
         <p>The parameter value alternates between the low knob and the high knob. Drag these around and see what happens.</p>
       </div>, true ]
-  // 12
+  // 13
   , [ <div>
         <p>The PARAMETER CTRL panel has additional parameters for whatever control function you select.</p>
         <p>For example, LFO has a period, which controls how quickly the parameter alternates between the low and high values. Try changing the period til you find a value you like.</p>
       </div>, true ]
-  // 13
-  , [ <p>Now that you've learned the basics of the LFO, try out some other functions. Select from the "Control function" dropdown in the PARAMETER CTRL panel.</p>, true ]
   // 14
+  , [ <p>Now that you've learned the basics of the LFO, try out some other functions. Select from the "Control function" dropdown in the PARAMETER CTRL panel.</p>, true ]
+  // 15
   , [ <div>
         <p>If you want to remove automatic control, click the middle knob, and the slider will return to the blue color.</p>
         <p>You may now also click on other blue parameters to control those as well.</p>
         <p>Once you're done setting controls, click the blue "hide" button next to PARAMETER CTRL.</p>
       </div>, false ]
-  // 15
+  // 16
   , [ <div>
         <p>Purple sliders will remain controlled, but now you can set green sliders manually again.</p>
         <p>Just a couple more things before you can explore on your own!</p>
       </div>, true ]
-  // 16
-  , [ <p>There's a new button above! It will add another grain source, this time using a pure sound wave instead of a sampled sound. Click the button!</p>, false ]
   // 17
-  , [ <p>Wave form grains have many of the same parameters. But the frequency and wave type parameters are unique to wave forms.</p>, true ]
+  , [ <p>There's a new button above! It will add another grain source, this time using a pure sound wave instead of a sampled sound. Click it!</p>, false ]
   // 18
-  , [ <p>One last thing - you can add as many grain sources as you want! If you want to get rid of a grain source, click the X at the top.</p>, true ]
+  , [ <p>Wave form grains have many of the same parameters, but frequency and wave type are unique to wave forms.</p>, true ]
   // 19
+  , [ <div>
+        <p>Two more things -- </p>
+        <p>You can now add as many grain sources as you want! Check out the glowing buttons above.</p>
+        <p>If you want to get rid of a grain source, click the X at the top right, next to the volume.</p>
+      </div>, true ]
+  // 20
   , [ <div>
         <p>Congratulations! You've made it through the tutorial! Now go make some weird noises.</p>
         <p>Click the "skip tutorial" button to get this help screen out of your way.</p>

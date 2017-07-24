@@ -63,7 +63,7 @@ export class WaveformGrainSource extends Component {
     return (
       <div className="sourceBox">
         <canvas ref={c => this.canvas = c} className="screen"></canvas>
-        <div className={'waveTypeSelect' + (this.props.walkthru === 17 ? ' glimmer' : '')}>
+        <div className={'waveTypeSelect' + (this.props.walkthru === 18 ? ' glimmer' : '')}>
           {wvopts}
         </div>
         <Parameter
@@ -71,7 +71,7 @@ export class WaveformGrainSource extends Component {
           value={this.state.waveFrequency}
           min={20}
           max={20000}
-          walkthruReveal={17}
+          walkthruReveal={18}
           onChange={f => this.changeWaveFrequency(f)}
           {...this.props} />
       </div>
@@ -280,7 +280,7 @@ export class SampleGrainSource extends Component {
                    min={-200}
                    max={200}
                    marks={{ 0: '', 100: '', '-100': '' }}
-                   walkthruReveal={5}
+                   walkthruReveal={6}
                    onChange={sp => this.changeSpeed(sp)}
                    {...this.props} />
         { typeof this.props.audioCtx.createBufferSource().detune === 'undefined'
@@ -290,7 +290,7 @@ export class SampleGrainSource extends Component {
                      min={-1200}
                      max={1200}
                      marks={{0: ''}}
-                     walkthruReveal={6}
+                     walkthruReveal={7}
                      onChange={p => this.changePitchShift(p)}
                      {...this.props} />
         }
@@ -330,7 +330,6 @@ export class SampleGrainSource extends Component {
     const startTime = this.state.sampleStart*this.props.audioData.duration;
     const endTime = this.state.sampleEnd*this.props.audioData.duration;
     const dur = (endTime - startTime);
-
     return (pos - startTime) % dur + startTime;
   }
   wrapBackward(pos) {
