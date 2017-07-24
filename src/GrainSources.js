@@ -185,10 +185,12 @@ export class SampleGrainSource extends Component {
     //                    (see componentDidMount)
     // this.trimmedAudioImage -- image of audio plus sampleStart
     //                           and sampleEnd markers
+    // this.lastRandPos -- last randomly chosen grain position
     this.state = { sampleStart: 0 // pct of total duration
                  , sampleEnd: 1 // pct of total duration
                  , speed: 1 // pct - 0 means playhead is still, negative reverses audio
                  , pitchShift: 0 // cents
+                 , randomness: 0 // pct of total duration
                  };
   }
   componentDidMount() {
@@ -265,14 +267,21 @@ export class SampleGrainSource extends Component {
                    onChange={pos => this.changeStartEnd(pos)} />
           }
         </div>
-        <Parameter
-          label="Speed"
-          value={this.state.speed*100}
-          min={-200}
-          max={200}
-          onChange={sp => this.changeSpeed(sp)}
-          walkthruReveal={5}
-          {...this.props} />
+        <Parameter label="Randomness"
+                   value={this.state.randomness}
+                   min={0}
+                   max={1}
+                   step={0.01}
+                   walkthruReveal={5}
+                   onChange={r => this.changeRandomness(r)}
+                   {...this.props} />
+        <Parameter label="Speed"
+                   value={this.state.speed*100}
+                   min={-200}
+                   max={200}
+                   walkthruReveal={5}
+                   onChange={sp => this.changeSpeed(sp)}
+                   {...this.props} />
         { typeof this.props.audioCtx.createBufferSource().detune === 'undefined'
         ? ''
         : <Parameter label="Pitch shift"
@@ -292,18 +301,21 @@ export class SampleGrainSource extends Component {
     if (this.props.playing) {
       // catch the current playhead position before state change
       // to use as initialPos after state change
-      this.initialPos = this.getAbsolutePos();
+      this.initialPos = this.getPlayheadPos();
       this.playTime = this.props.audioCtx.currentTime;
     } else {
       this.initialPos = pos[0]/100*this.props.audioData.duration;
     }
     this.setState({ sampleStart: pos[0]/100, sampleEnd: pos[1]/100 });
   }
+  changeRandomness(rand) {
+    this.setState({ randomness: rand });
+  }
   changeSpeed(sp) {
     if (this.props.playing) {
       // catch the current playhead position before state change
       // to use as initialPos after state change
-      this.initialPos = this.getAbsolutePos();
+      this.initialPos = this.getPlayheadPos();
       this.playTime = this.props.audioCtx.currentTime;
     }
     this.setState({ speed: sp/100 });
@@ -312,20 +324,17 @@ export class SampleGrainSource extends Component {
     this.setState({ pitchShift: p });
   }
 
-  getAbsolutePos() {
+  wrapForward(pos) {
     const startTime = this.state.sampleStart*this.props.audioData.duration;
     const endTime = this.state.sampleEnd*this.props.audioData.duration;
-
-    // if the speed is zero, return the same position over and over again
-    if (this.state.speed === 0) {
-      // but don't go beyond startTime or endTime
-      return Math.min(Math.max(this.initialPos, startTime), endTime);
-    }
-
-    // the current position is
-    const timeElapsed = this.props.playing ? (this.props.audioCtx.currentTime - this.playTime)*this.state.speed : 0;
     const dur = (endTime - startTime);
-    const pos = (timeElapsed + this.initialPos - startTime) % dur + startTime;
+
+    return (pos - startTime) % dur + startTime;
+  }
+  wrapBackward(pos) {
+    const startTime = this.state.sampleStart*this.props.audioData.duration;
+    const endTime = this.state.sampleEnd*this.props.audioData.duration;
+    const dur = (endTime - startTime);
 
     // if the speed is negative, the playhead will go below startTime and
     // continue to decrease.
@@ -339,20 +348,55 @@ export class SampleGrainSource extends Component {
       return endTime - Math.abs(startTime-pos)%dur;
     }
   }
+  getRandomPos() {
+    const pos = this.getPlayheadPos();
+    const dur = (this.state.sampleEnd - this.state.sampleStart)*this.props.audioData.duration;
+    const randDelta = this.state.randomness*dur;
+    const randPos = Math.random()*randDelta + (pos-randDelta/2);
+    const randPosWrap = this.wrapBackward(this.wrapForward(randPos));
 
-  // draw a red playhead at current position on the trimmedAudioImage
-  // (clip before sampleStart and after sampleEnd greyed out)
+    // store for visualizing
+    this.lastRandPos = randPosWrap;
+    return randPosWrap;
+  }
+  getPlayheadPos() {
+    const startTime = this.state.sampleStart*this.props.audioData.duration;
+    const endTime = this.state.sampleEnd*this.props.audioData.duration;
+
+    // if the speed is zero, return the same position over and over again
+    if (this.state.speed === 0) {
+      // but don't go beyond startTime or endTime
+      return Math.min(Math.max(this.initialPos, startTime), endTime);
+    }
+
+    // the current position is the last position plus the time elapsed
+    const timeElapsed = this.props.playing ? (this.props.audioCtx.currentTime - this.playTime)*this.state.speed : 0;
+    const pos = timeElapsed + this.initialPos;
+
+    return this.wrapBackward(this.wrapForward(pos));
+  }
+
   drawViz() {
     const stepsize = this.canvas.width/this.props.audioData.getChannelData(0).length;
     const sampleRate = this.props.audioData.sampleRate;
     const canvasCtx = this.canvas.getContext('2d');
     canvasCtx.putImageData(this.trimmedAudioImage, 0, 0);
-    const pos = Math.floor( sampleRate * (this.getAbsolutePos()) );
-    canvasCtx.strokeStyle = 'red';
+    // draw a red playhead at current position on the trimmedAudioImage
+    const pos = Math.floor(sampleRate*this.getPlayheadPos());
+    canvasCtx.strokeStyle = 'rgba(255, 56, 56, 1)';
     canvasCtx.beginPath();
     canvasCtx.moveTo(stepsize*pos, 0);
     canvasCtx.lineTo(stepsize*pos, this.canvas.height);
     canvasCtx.stroke();
+    // draw a less opaque line for the random grain choice
+    if (this.state.randomness > 0) {
+      const rPos = Math.floor(sampleRate*this.lastRandPos);
+      canvasCtx.strokeStyle = 'rgba(255, 56, 56, 0.5)';
+      canvasCtx.beginPath();
+      canvasCtx.moveTo(stepsize*rPos, 0);
+      canvasCtx.lineTo(stepsize*rPos, this.canvas.height);
+      canvasCtx.stroke();
+    }
   }
 
   // reset the trimmedAudioImage
@@ -368,7 +412,7 @@ export class SampleGrainSource extends Component {
     const grain = this.props.audioCtx.createBuffer(nchan, grainSamples, sampleRate);
 
     // fill it from the sound file starting at the current position
-    const startSample = Math.round(this.getAbsolutePos()*sampleRate);
+    const startSample = Math.round(this.getRandomPos()*sampleRate);
     for (let ch=0; ch<nchan; ch++) {
       const chanBuff = new Float32Array(grainSamples);
       this.props.audioData.copyFromChannel(chanBuff, ch, startSample);
