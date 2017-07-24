@@ -265,12 +265,12 @@ export default class Parameter extends Component {
           : <Slider value={this.props.value}
                     min={this.props.min}
                     max={this.props.max}
-                    step={this.props.step || 1}
+                    step={this.props.step}
                     marks={ this.state.controlled
                           ? { [this.state.controlMin]: ''
                             , [this.state.controlMax]: ''
                             }
-                          : {}}
+                          : this.props.marks }
                     disabled={this.props.walkthru >= 11 && this.props.walkthru < 14}
                     onChange={val => this.wrapOnChange(val)}
                     onBeforeChange={() => this.handleParameterClick()}

@@ -279,6 +279,7 @@ export class SampleGrainSource extends Component {
                    value={this.state.speed*100}
                    min={-200}
                    max={200}
+                   marks={{ 0: '', 100: '', '-100': '' }}
                    walkthruReveal={5}
                    onChange={sp => this.changeSpeed(sp)}
                    {...this.props} />
@@ -288,6 +289,7 @@ export class SampleGrainSource extends Component {
                      value={this.state.pitchShift}
                      min={-1200}
                      max={1200}
+                     marks={{0: ''}}
                      walkthruReveal={6}
                      onChange={p => this.changePitchShift(p)}
                      {...this.props} />

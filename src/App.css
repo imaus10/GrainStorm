@@ -231,6 +231,9 @@ button:disabled svg path {
   color: #16ba42;
 }
 
+.rc-slider-dot-active {
+  border: 2px solid #16ba42;
+}
 .rc-slider-track {
   background-color: #16ba42;
   box-shadow: 0px 0px 25px -5px #16ba42;
