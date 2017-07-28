@@ -8,6 +8,45 @@ import './App.css';
 // TODO: share across css & js?
 export const mainColor = '#16ba42';
 
+class AddSoundBtns extends Component {
+  render() {
+    // addGrainCloudBtns
+    const addSampleCls = 'glow' +
+                         (this.props.walkthru === 0 ? ' glimmer' : '');
+    const addSampleDisabled = this.props.walkthru > 0 && this.props.walkthru < 19;
+    const addWaveCls = 'glow' +
+                       (this.props.walkthru === 17 ? ' glimmer' : '');
+    const addWaveStyle = { display: this.props.walkthru < 17
+                                  ? 'none'
+                                  : 'block' };
+    const loadSampleFunc = () => {
+      const reader = new FileReader();
+      // TODO: prettier, more informative
+      reader.onerror = e => alert("Error reading file: \n" + e);
+      reader.onload = () => this.props.addSample(reader.result);
+      reader.onloadend = () => this.fileUpload.value = '';
+      reader.readAsArrayBuffer(this.fileUpload.files[0]);
+    };
+    return (
+      <div id="addGrainCloudBtns"
+           className={this.props.walkthru === 19 ? 'glimmer' : ''}>
+        <button type="button"
+                className={addSampleCls}
+                disabled={addSampleDisabled}
+                onClick={() => this.fileUpload.click()}>+ sound file</button>
+        <input type="file"
+               style={{display:'none'}}
+               ref={inp => this.fileUpload = inp}
+               onChange={loadSampleFunc}></input>
+        <button type="button"
+                className={addWaveCls}
+                style={addWaveStyle}
+                onClick={this.props.addWaveform}>+ sound wave</button>
+      </div>
+    );
+  }
+}
+
 // the main class of the app,
 // which has a list of grain sources,
 // help text that gets displayed in the left panel,
@@ -25,16 +64,6 @@ class GrainStorm extends Component {
                  };
   }
   render() {
-    // addGrainCloudBtns
-    const addSampleCls = 'glow' +
-                         (this.state.walkthru === 0 ? ' glimmer' : '');
-    const addSampleDisabled = this.state.walkthru > 0 && this.state.walkthru < 19;
-    const addWaveCls = 'glow' +
-                       (this.state.walkthru === 17 ? ' glimmer' : '');
-    const addWaveStyle = { display: this.state.walkthru < 17
-                                  ? 'none'
-                                  : 'block' };
-
     // help div
     const helpStyle = { display: this.state.walkthru >= GrainStorm.walkthruHelp.length
                                ? 'none'
@@ -67,21 +96,9 @@ class GrainStorm extends Component {
               <h1>GrainStorm</h1>
               <h2>[granular synthesis in the browser]</h2>
             </div>
-            <div id="addGrainCloudBtns"
-                 className={this.state.walkthru === 19 ? 'glimmer' : ''}>
-              <button type="button"
-                      className={addSampleCls}
-                      disabled={addSampleDisabled}
-                      onClick={() => this.fileUpload.click()}>+ sound file</button>
-              <input type="file"
-                     style={{display:'none'}}
-                     ref={inp => this.fileUpload = inp}
-                     onChange={() => this.addSample()}></input>
-              <button type="button"
-                      className={addWaveCls}
-                      style={addWaveStyle}
-                      onClick={() => this.addWaveform()}>+ sound wave</button>
-            </div>
+            <AddSoundBtns walkthru={this.state.walkthru}
+                          addSample={rawdata => this.addSample(rawdata)}
+                          addWaveform={() => this.addWaveform()} />
             <div id="metaPanel">
               <div id="helpSection" style={helpStyle}>
                 <h3>HELP</h3>
@@ -151,34 +168,25 @@ class GrainStorm extends Component {
   endTutorial() {
     this.setState({ walkthru: GrainStorm.walkthruHelp.length });
   }
-  addSample() {
-    const reader = new FileReader();
-    reader.onerror = e => {
-      // TODO: prettier, more informative
-      alert("Error reading file: \n" + e);
-    }
-    reader.onload = () => {
-      // console.log('decoding...');
-      this.audioCtx.decodeAudioData(reader.result,
-        decodedAudioData => {
-          // console.log('decoded.');
-          const gc = { id: this.grainCloudIdSeq
-                     , audioData: decodedAudioData
-                     , type: SampleGrainCloud
-                     };
-          this.grainCloudIdSeq += 1;
-          if (this.state.walkthru === 0) {
-            this.bumpWalkthru();
-          }
-          this.setState({ grainClouds: this.state.grainClouds.concat(gc) });
-        },
-        e => {
-          // TODO: prettier, more informative
-          alert("Error decoding audio data: \n" + e);
-        });
-      this.fileUpload.value = '';
-    };
-    reader.readAsArrayBuffer(this.fileUpload.files[0]);
+  addSample(rawdata) {
+    // console.log('decoding...');
+    this.audioCtx.decodeAudioData(rawdata,
+      decodedAudioData => {
+        // console.log('decoded.');
+        const gc = { id: this.grainCloudIdSeq
+                   , audioData: decodedAudioData
+                   , type: SampleGrainCloud
+                   };
+        this.grainCloudIdSeq += 1;
+        if (this.state.walkthru === 0) {
+          this.bumpWalkthru();
+        }
+        this.setState({ grainClouds: this.state.grainClouds.concat(gc) });
+      },
+      e => {
+        // TODO: prettier, more informative
+        alert("Error decoding audio data: \n" + e);
+      });
   }
   addWaveform() {
     const gc = { id: this.grainCloudIdSeq
