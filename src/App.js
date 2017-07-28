@@ -9,41 +9,70 @@ import './App.css';
 export const mainColor = '#16ba42';
 
 class AddSoundBtns extends Component {
+  constructor(props){
+    super(props);
+    this.state = { showBtnGroup: false };
+  }
   render() {
-    // addGrainCloudBtns
     const addSampleCls = 'glow' +
                          (this.props.walkthru === 0 ? ' glimmer' : '');
     const addSampleDisabled = this.props.walkthru > 0 && this.props.walkthru < 19;
+    const btnGroupStyle = { visibility: this.state.showBtnGroup ? 'visible' : 'hidden' };
     const addWaveCls = 'glow' +
                        (this.props.walkthru === 17 ? ' glimmer' : '');
     const addWaveStyle = { display: this.props.walkthru < 17
                                   ? 'none'
                                   : 'block' };
-    const loadSampleFunc = () => {
-      const reader = new FileReader();
-      // TODO: prettier, more informative
-      reader.onerror = e => alert("Error reading file: \n" + e);
-      reader.onload = () => this.props.addSample(reader.result);
-      reader.onloadend = () => this.fileUpload.value = '';
-      reader.readAsArrayBuffer(this.fileUpload.files[0]);
-    };
     return (
       <div id="addGrainCloudBtns"
            className={this.props.walkthru === 19 ? 'glimmer' : ''}>
-        <button type="button"
-                className={addSampleCls}
-                disabled={addSampleDisabled}
-                onClick={() => this.fileUpload.click()}>+ sound file</button>
-        <input type="file"
-               style={{display:'none'}}
-               ref={inp => this.fileUpload = inp}
-               onChange={loadSampleFunc}></input>
+        <div>
+          <button type="button"
+                  className={addSampleCls}
+                  disabled={addSampleDisabled}
+                  onClick={() => this.changeShowBtnGroup()}>+ sound file</button>
+          <div className="btn-group"
+               style={btnGroupStyle}>
+            <button type="button"
+                    className={addSampleCls}
+                    onClick={() => this.loadPreset()}>&gt; guitar</button>
+            <button type="button"
+                    className={addSampleCls}
+                    onClick={() => this.fileUpload.click()}>&gt; load my own</button>
+            <input type="file"
+                   style={{display:'none'}}
+                   ref={inp => this.fileUpload = inp}
+                   onChange={() => this.loadSample()}></input>
+          </div>
+        </div>
         <button type="button"
                 className={addWaveCls}
                 style={addWaveStyle}
                 onClick={this.props.addWaveform}>+ sound wave</button>
       </div>
     );
+  }
+  changeShowBtnGroup() {
+    this.setState({ showBtnGroup: !this.state.showBtnGroup });
+  }
+  loadPreset() {
+    const req = new XMLHttpRequest();
+    req.addEventListener('load', e => {
+      this.props.addSample(e.target.response);
+      this.changeShowBtnGroup();
+    });
+    req.addEventListener('error', e => alert('Error downloading file: \n' + e));
+    req.open('GET', require('./guitar.mp3'));
+    req.responseType = 'arraybuffer';
+    req.send();
+  }
+  loadSample() {
+    const reader = new FileReader();
+    // TODO: prettier, more informative
+    reader.onerror = e => alert("Error reading file: \n" + e);
+    reader.onload = () => this.props.addSample(reader.result);
+    reader.onloadend = () => this.fileUpload.value = '';
+    reader.readAsArrayBuffer(this.fileUpload.files[0]);
   }
 }
 
