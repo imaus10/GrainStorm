@@ -33,6 +33,18 @@ button.selected svg path {
 button:disabled svg path {
   stroke: gray;
 }
+::-webkit-scrollbar {
+  background: transparent;
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #16ba42;
+  background-clip: padding-box;
+  border-width: 6px 2px;
+  border-color: rgba(0,0,0,0);
+  border-style: solid;
+}
 .screen {
   color: #16ba42;
   background-color: #000f28;
@@ -85,7 +97,6 @@ button:disabled svg path {
   display: flex;
   flex-flow: column;
   align-items: center;
-  width: 300px;
   margin-bottom: 10px;
 }
 #labelPlate h1 {
@@ -107,8 +118,8 @@ button:disabled svg path {
 }
 
 #leftPanel {
-  min-width: 300px;
-  width: 300px;
+  min-width: 285px;
+  width: 33%;
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -175,24 +186,25 @@ button:disabled svg path {
   padding: 5px;
   flex: 1;
   margin: 5px 0;
-  overflow: scroll;
+  overflow-y: scroll;
 }
 
 #grainCloudBox {
   display: flex;
-  overflow: scroll;
+  overflow-x: scroll;
   background-color: #101010;
   border-left: 2px solid rgba(4,4,4,0.5);
   flex: 1 1 auto;
 }
 .grainCloud {
   padding: 5px;
-  min-width: 300px;
-  width: 300px;
+  width: 33%;
+  min-width: 200px;
   margin: 5px;
   border-radius: 10px;
   border: 1px solid white;
-  overflow: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .cloudControls {
@@ -228,7 +240,7 @@ button:disabled svg path {
 .waveTypeSelect .waveType {
   border: 1px solid;
   width: 100%;
-  margin: 0 15px 0;
+  margin: 0 10px 0;
   display: flex;
   align-items: center;
   padding: 5px;
@@ -356,8 +368,9 @@ button:disabled svg path {
   flex: 5;
 }
 .envelope canvas {
-  width: 100%;
+  width: 99%;
   height: 100%;
+  border-radius: 0 4px 4px 0;
 }
 
 .sampleViz {
