@@ -17,7 +17,7 @@ class AddSoundBtns extends Component {
     const addSampleCls = 'glow' +
                          (this.props.walkthru === 0 ? ' glimmer' : '');
     const addSampleDisabled = this.props.walkthru > 0 && this.props.walkthru < 19;
-    const btnGroupStyle = { visibility: this.state.showBtnGroup ? 'visible' : 'hidden' };
+    const btnGroupStyle = { display: this.state.showBtnGroup ? 'block' : 'none' };
     const addWaveCls = 'glow' +
                        (this.props.walkthru === 17 ? ' glimmer' : '');
     const addWaveStyle = { display: this.props.walkthru < 17
@@ -131,7 +131,7 @@ class GrainStorm extends Component {
             <div id="metaPanel">
               <div id="helpSection" style={helpStyle}>
                 <h3>HELP</h3>
-                <div className="screen">
+                <div className="screen" ref={hlpScn => this.helpScreen = hlpScn}>
                   {this.state.helpText}
                   <button type="button"
                           id="walkthruEndBtn"
@@ -141,7 +141,7 @@ class GrainStorm extends Component {
               </div>
               <div style={paramCtrlStyle}>
                 <div>
-                  <h3>PARAMETER CTRL</h3>
+                  <h3>CTRL</h3>
                   {<button type="button"
                            id="showCtrlBtn"
                            className={paramCtrlBtnCls}
@@ -190,6 +190,7 @@ class GrainStorm extends Component {
         }
       </div>
     );
+    this.helpScreen.scrollTop = 0;
     this.setState({ walkthru: this.state.walkthru+1
                   , helpText: halp
                   });
@@ -272,8 +273,8 @@ class GrainStorm extends Component {
       </div>, true ]
   , [ <div key="9"><p>Now try different envelopes and see how the sound changes.</p></div>, true ]
   , [ <div key="10">
-        <p>Now for the fun part! See the PARAMETER CTRL panel that appeared below? You can use this to automatically move knobs.</p>
-        <p>First, click the blue "show" button to the right of the PARAMETER CTRL label.</p>
+        <p>Now for the fun part! See the CTRL panel that appeared? You can use this to automatically move knobs.</p>
+        <p>First, click the blue "show" button to the right of the CTRL label.</p>
       </div>, false ]
   , [ <div key="11"><p>Now click any of the blue sliders to start controlling it.</p></div>, false ]
   , [ <div key="12">
@@ -281,14 +282,14 @@ class GrainStorm extends Component {
         <p>The parameter value alternates between the low knob and the high knob. Drag these around and see what happens.</p>
       </div>, true ]
   , [ <div key="13">
-        <p>The PARAMETER CTRL panel has additional parameters for whatever control function you select.</p>
+        <p>The CTRL panel has additional parameters for whatever control function you select.</p>
         <p>For example, LFO has a period, which controls how quickly the parameter alternates between the low and high values. Try changing the period til you find a value you like.</p>
       </div>, true ]
-  , [ <div key="14"><p>Now that you've learned the basics of the LFO, try out some other functions. Select from the "Control function" dropdown in the PARAMETER CTRL panel.</p></div>, true ]
+  , [ <div key="14"><p>Now that you've learned the basics of the LFO, try out some other functions. Select from the "Control function" dropdown in the CTRL panel.</p></div>, true ]
   , [ <div key="15">
         <p>If you want to remove automatic control, click the middle knob, and the slider will return to the blue color.</p>
         <p>You may now also click on other blue parameters to control those as well.</p>
-        <p>Once you're done setting controls, click the blue "hide" button next to PARAMETER CTRL.</p>
+        <p>Once you're done setting controls, click the blue "hide" button next to CTRL.</p>
       </div>, false ]
   , [ <div key="16">
         <p>Purple sliders will remain controlled, but now you can set green sliders manually again.</p>

@@ -115,15 +115,16 @@ button:disabled svg path {
   overflow: hidden;
   height:98%;
   box-shadow: 0 3px 5px 5px rgba(0,0,0,0.6);
+  background-color: #161616;
+  padding: 0 8px;
 }
 
 #leftPanel {
+  width: 285px;
   min-width: 285px;
-  width: 33%;
-  padding: 8px;
   display: flex;
   flex-direction: column;
-  background-color: #161616;
+  padding-right: 8px;
 }
 
 #addGrainCloudBtns {
@@ -144,7 +145,7 @@ button:disabled svg path {
   margin-left: 15px;
 }
 #addGrainCloudBtns .btn-group button {
-  display:block;
+  display: block;
   margin-top: 5px;
 }
 
@@ -378,4 +379,38 @@ button:disabled svg path {
 }
 .envelope .rc-slider, .sampleViz .rc-slider {
   margin-top: -10px;
+}
+
+
+@media (max-width: 600px) {
+  #controls {
+    flex-direction: column;
+  }
+  #leftPanel {
+    width: 100%;
+    padding-right: 0;
+    flex: 1;
+    min-height: 200px;
+  }
+  #metaPanel {
+    flex-direction: row;
+  }
+  #metaPanel h3 {
+    margin: 0;
+  }
+  #metaPanel #showCtrlBtn {
+    margin: 0;
+  }
+  #metaPanel .screen {
+    margin: 2px 0;
+  }
+  #grainCloudBox {
+    flex: 0 1 auto;
+  }
+  #labelPlate {
+    margin-bottom: 3px;
+  }
+  #addGrainCloudBtns {
+    padding: 3px;
+  }
 }

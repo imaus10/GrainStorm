@@ -154,9 +154,11 @@ class ControlParams extends Component {
     const style = { display: this.props.selected && this.props.showControllable ? '' : 'none'
                   , position: 'absolute'
                   , left: paramCtrlScreen.left
-                  , top: paramCtrlScreen.top+10
-                  , width: 290
-                  , padding: 5
+                  , top: paramCtrlScreen.top
+                  , width: paramCtrlScreen.width
+                  , height: paramCtrlScreen.height-20
+                  , padding: '10px 0'
+                  , overflowY: 'scroll'
                   };
     return (
       <div className="controlParameters" style={style}>
